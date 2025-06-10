@@ -8,7 +8,7 @@ export default function HomePage() {
   const router = useRouter();
 
   const handleStart = () => {
-    router.push("/pre-analysis"); // Changed to pre-analysis
+    router.push("/pre-questionnaire-form"); // Alterado para a nova rota do formulário
   };
 
   return <WelcomeScreen onStart={handleStart} />;

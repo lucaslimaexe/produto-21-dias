@@ -2,15 +2,31 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { PreAnalysisScreen } from "@/components/pre-analysis-screen";
-import { useEffect } from "react";
+import { PreQuestionnaireFormScreen, type PreQuestionnaireFormData } from "@/components/pre-questionnaire-form-screen"; // Renomeado e tipo de dados
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
 
-export default function PreAnalysisPage() {
+function PreQuestionnaireFormContent() {
   const router = useRouter();
 
-  const handleAnalysisComplete = () => {
-    router.push("/questionnaire");
+  const handleFormComplete = (data: PreQuestionnaireFormData) => {
+    // Os dados já devem estar formatados corretamente pelo componente do formulário
+    const queryParams = new URLSearchParams({
+      name: data.fullName,
+      dob: data.dateOfBirth.toISOString().split('T')[0], // Formato YYYY-MM-DD
+      dreams: JSON.stringify(data.selectedDreams.map(d => d.id)) // Array de IDs dos sonhos
+    }).toString();
+    router.push(`/questionnaire?${queryParams}`);
   };
 
-  return <PreAnalysisScreen onComplete={handleAnalysisComplete} />;
+  return <PreQuestionnaireFormScreen onSubmitForm={handleFormComplete} />;
+}
+
+
+export default function PreAnalysisPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-black to-red-950"><Loader2 className="h-16 w-16 text-yellow-400 animate-spin" /></div>}>
+      <PreQuestionnaireFormContent/>
+    </Suspense>
+  );
 }

@@ -117,28 +117,30 @@ body {
   .dark {
     --background: 266 17% 8%; /* #14111A */
     --foreground: 266 30% 85%; /* Light grayish purple for text */
-    --card: 266 17% 12%;
+    --card: 266 17% 12%; /* Um pouco mais claro que o fundo para contraste */
     --card-foreground: 266 30% 85%;
-    --popover: 266 17% 10%;
+    --popover: 266 17% 10%; /* Mais escuro para pop-ups */
     --popover-foreground: 266 30% 85%;
-    --primary: 266 72% 60%; /* #9B51E0 */
-    --primary-foreground: 266 80% 95%; /* Light color for text on primary */
-    --secondary: 266 25% 25%;
-    --secondary-foreground: 266 15% 75%;
-    --muted: 266 20% 18%;
-    --muted-foreground: 266 15% 60%;
-    --accent: 47 65% 52%; /* #D4AF37 */
-    --accent-foreground: 47 90% 10%; /* Dark color for text on accent */
-    --destructive: 0 70% 55%;
+    --primary: 266 72% 60%; /* #9B51E0 - Roxo vibrante */
+    --primary-foreground: 266 80% 95%; /* Quase branco para contraste no roxo */
+    --secondary: 266 25% 25%; /* Roxo mais escuro e dessaturado */
+    --secondary-foreground: 266 15% 75%; /* Cinza claro arroxeado */
+    --muted: 266 20% 18%; /* Roxo bem escuro, quase preto */
+    --muted-foreground: 266 15% 60%; /* Cinza arroxeado médio */
+    --accent: 47 65% 52%; /* #D4AF37 - Dourado/Amarelo Ouro */
+    --accent-foreground: 47 90% 10%; /* Marrom escuro para contraste no dourado */
+    --destructive: 0 60% 50%; /* Vermelho para alertas */
     --destructive-foreground: 0 0% 98%;
-    --border: 266 20% 22%;
-    --input: 266 20% 22%;
-    --ring: 266 72% 65%; /* Primary color for rings */
+    --border: 266 20% 22%; /* Roxo escuro para bordas sutis */
+    --input: 266 20% 22%; /* Mesma cor da borda para inputs */
+    --ring: 266 72% 65%; /* Roxo um pouco mais claro que o primário para anéis de foco */
+    
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
     --sidebar-background: 266 17% 10%;
     --sidebar-foreground: 266 25% 70%;
     --sidebar-primary: 266 72% 60%;

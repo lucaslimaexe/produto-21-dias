@@ -1,10 +1,11 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { QuestionnaireScreen, questions, type Question } from '@/components/questionnaire-screen';
-import type { BehavioralAnalysisOutput } from '@/ai/flows/behavioral-analysis-flow'; // Importando o tipo
+import type { BehavioralAnalysisOutput } from '@/ai/flows/behavioral-analysis-flow';
+import { Loader2 } from 'lucide-react';
 
 interface Answer {
   questionId: number;
@@ -94,12 +95,30 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
   };
 };
 
-
-export default function QuestionnairePage() {
+function QuestionnaireContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Answer[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [preQuestionnaireData, setPreQuestionnaireData] = useState<any>(null);
+
+  useEffect(() => {
+    // Captura dados do formulário de pré-questionário, se existirem
+    const name = searchParams.get('name');
+    const dob = searchParams.get('dob');
+    const dreamsString = searchParams.get('dreams');
+    if (name && dob && dreamsString) {
+      try {
+        const dreams = JSON.parse(dreamsString);
+        setPreQuestionnaireData({ name, dob, dreams });
+        // Você pode usar esses dados como quiser, por exemplo, logá-los
+        console.log("Dados do formulário pré-questionário:", { name, dob, dreams });
+      } catch (e) {
+        console.error("Erro ao parsear sonhos dos query params:", e);
+      }
+    }
+  }, [searchParams]);
 
 
   const handleAnswer = (question: Question, answer: string) => {
@@ -116,8 +135,13 @@ export default function QuestionnairePage() {
       const localAnalysisResult = generateLocalAnalysis(userAnswers);
       const analysisJsonString = JSON.stringify(localAnalysisResult);
       const analysisQueryParam = encodeURIComponent(analysisJsonString);
-      const targetUrl = `/results?analysis=${analysisQueryParam}`;
-      console.log('Navigating to:', targetUrl); 
+      
+      // Mantém os dados do formulário de pré-questionário nos query params, se existirem
+      const existingParams = new URLSearchParams(searchParams.toString());
+      existingParams.set('analysis', analysisQueryParam);
+      
+      const targetUrl = `/results?${existingParams.toString()}`;
+      console.log('Navigating to results:', targetUrl); 
       router.push(targetUrl);
     } else {
       setCurrentQuestionIndex(prevIndex => prevIndex + 1);
@@ -136,5 +160,13 @@ export default function QuestionnairePage() {
       isLastQuestion={isLastQuestion}
       onComplete={handleQuestionProceed} 
     />
+  );
+}
+
+export default function QuestionnairePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-black to-red-950"><Loader2 className="h-16 w-16 text-yellow-400 animate-spin" /></div>}>
+      <QuestionnaireContent />
+    </Suspense>
   );
 }
