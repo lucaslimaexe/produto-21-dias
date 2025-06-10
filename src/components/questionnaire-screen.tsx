@@ -109,13 +109,13 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   const exitTimeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    console.log(`[${COMPONENT_NAME}] Component mounted. Initial question ID: ${question.id}`);
+    console.log(`[${COMPONENT_NAME}] Component mounted. Initial question ID: ${question.id}. Setting up main timer.`);
     const intervalId = setInterval(() => {
       setElapsedTime(prevTime => prevTime + 1);
     }, 1000);
 
     return () => {
-      console.log(`[${COMPONENT_NAME}] Component unmounting. Clearing main interval, and any pending animation timeouts.`);
+      console.log(`[${COMPONENT_NAME}] Component unmounting. Clearing main timer, and any pending animation timeouts.`);
       clearInterval(intervalId);
       if (enterTimeoutIdRef.current) clearTimeout(enterTimeoutIdRef.current);
       if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
@@ -124,26 +124,32 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   }, []); 
 
   useEffect(() => {
-    console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}] triggered. currentAnswer: "${currentAnswer}", current transitionState: "${transitionState}"`);
+    console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}] triggered. currentAnswer prop: "${currentAnswer}", current transitionState: "${transitionState}"`);
     
     // Clear any pending timeouts from previous question transitions
-    if (enterTimeoutIdRef.current) clearTimeout(enterTimeoutIdRef.current);
-    if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
-    if (exitTimeoutIdRef.current) clearTimeout(exitTimeoutIdRef.current);
+    if (enterTimeoutIdRef.current) {
+      console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Clearing previous enterTimeoutId: ${enterTimeoutIdRef.current}`);
+      clearTimeout(enterTimeoutIdRef.current);
+    }
+    if (feedbackTimeoutIdRef.current) { // Also clear feedback/exit timeouts if a new question loads unexpectedly
+      console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Clearing previous feedbackTimeoutId: ${feedbackTimeoutIdRef.current}`);
+      clearTimeout(feedbackTimeoutIdRef.current);
+    }
+    if (exitTimeoutIdRef.current) {
+      console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Clearing previous exitTimeoutId: ${exitTimeoutIdRef.current}`);
+      clearTimeout(exitTimeoutIdRef.current);
+    }
 
-    setSelectedOptionText(currentAnswer || null);
+    setSelectedOptionText(currentAnswer || null); // Set based on prop for potential re-hydration
     setTransitionState('entering');
-    console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Set state to 'entering'. currentAnswer: "${currentAnswer}"`);
+    console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Set selectedOptionText to "${currentAnswer || null}", transitionState to 'entering'.`);
 
     enterTimeoutIdRef.current = setTimeout(() => {
       setTransitionState('idle');
-      console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: ENTER_TIMEOUT - Transitioned to 'idle'.`);
+      console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: ENTER_TIMEOUT - Transitioned to 'idle'. enterTimeoutId: ${enterTimeoutIdRef.current}`);
     }, 400); 
+    console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Configured enterTimeoutId: ${enterTimeoutIdRef.current}`);
 
-    return () => {
-      console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Cleanup for question change. Clearing enterTimeoutId.`);
-      if (enterTimeoutIdRef.current) clearTimeout(enterTimeoutIdRef.current);
-    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question.id]);
 
@@ -155,29 +161,33 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
       return; 
     }
 
-    setSelectedOptionText(option.text);
-    onAnswer(option.text);
+    setSelectedOptionText(option.text); // Update local state immediately for styling
+    onAnswer(option.text); // Inform parent
     playSound('answer_select.mp3');
     setTransitionState('feedback');
-    console.log(`[${COMPONENT_NAME}] handleSelectOption: Set state to 'feedback'.`);
+    console.log(`[${COMPONENT_NAME}] handleSelectOption: Set selectedOptionText to "${option.text}", transitionState to 'feedback'.`);
     
     if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
     feedbackTimeoutIdRef.current = setTimeout(() => {
       playSound('feedback_show.mp3'); 
       setTransitionState('exiting');
-      console.log(`[${COMPONENT_NAME}] handleSelectOption: FEEDBACK_TIMEOUT - Set state to 'exiting'.`);
+      console.log(`[${COMPONENT_NAME}] handleSelectOption: FEEDBACK_TIMEOUT - Set transitionState to 'exiting'. feedbackTimeoutId: ${feedbackTimeoutIdRef.current}`);
       
       if (exitTimeoutIdRef.current) clearTimeout(exitTimeoutIdRef.current);
       exitTimeoutIdRef.current = setTimeout(() => {
-        console.log(`[${COMPONENT_NAME}] handleSelectOption: EXIT_TIMEOUT - Calling onComplete().`);
+        console.log(`[${COMPONENT_NAME}] handleSelectOption: EXIT_TIMEOUT - Calling onComplete(). exitTimeoutId: ${exitTimeoutIdRef.current}`);
+        setSelectedOptionText(null); // Reset for the next question card, currentAnswer prop will hydrate if needed.
         onComplete(); 
-      }, 400); 
+        // The useEffect listening to question.id will handle setting 'entering' for the new question.
+      }, 400); // Duration of slide-out animation
+      console.log(`[${COMPONENT_NAME}] handleSelectOption: Configured exitTimeoutId: ${exitTimeoutIdRef.current}`);
 
-    }, 1500); 
+    }, 1500); // Duration of feedback display
+    console.log(`[${COMPONENT_NAME}] handleSelectOption: Configured feedbackTimeoutId: ${feedbackTimeoutIdRef.current}`);
   };
   
-  const showQuestionContent = transitionState === 'idle' || transitionState === 'entering';
-  const showFeedbackContent = transitionState === 'feedback' || transitionState === 'exiting'; 
+  const showQuestionContent = transitionState === 'idle' || transitionState === 'entering' || (transitionState === 'feedback' && selectedOptionText !== null);
+  const showFeedbackStateVisuals = transitionState === 'feedback'; // For the loader and feedback text
 
   let animationClass = '';
   if (transitionState === 'entering') {
@@ -215,36 +225,55 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
         </div>
 
         <div className={cn("bg-purple-900/30 p-6 rounded-xl border border-purple-700 mb-6 min-h-[300px] flex flex-col justify-center overflow-hidden", animationClass)}>
-          {showQuestionContent && (
-            <>
-              <h2 className="font-headline text-xl sm:text-2xl md:text-3xl font-semibold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-400 to-purple-300 leading-tight">
-                {currentQuestionText}
-              </h2>
-              <div className="space-y-3 sm:space-y-4">
-                {question.options.map((option, index) => (
+          {/* Question Title - Always shown if not in pure feedback mode without selection */}
+          {(transitionState === 'entering' || transitionState === 'idle' || (transitionState === 'feedback' && !showFeedbackStateVisuals) || (transitionState === 'feedback' && selectedOptionText)) && (
+            <h2 className={cn(
+              "font-headline text-xl sm:text-2xl md:text-3xl font-semibold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-400 to-purple-300 leading-tight",
+              showFeedbackStateVisuals && selectedOptionText ? "opacity-70" : "opacity-100" // Dim question text slightly if feedback is also shown
+            )}>
+              {currentQuestionText}
+            </h2>
+          )}
+
+          {/* Options Area - Shown when entering, idle, or during feedback if an option is selected */}
+          {(transitionState === 'entering' || transitionState === 'idle' || (transitionState === 'feedback' && selectedOptionText)) && (
+            <div className="space-y-3 sm:space-y-4">
+              {question.options.map((option, index) => {
+                const isSelected = selectedOptionText === option.text;
+                const isDisabledDuringTransition = transitionState !== 'idle' && !isSelected;
+
+                return (
                   <Button
                     key={index}
                     onClick={() => handleSelectOption(option)}
-                    disabled={transitionState !== 'idle'}
+                    disabled={isDisabledDuringTransition || transitionState === 'exiting'}
                     className={cn(
                       "w-full text-left justify-start p-4 h-auto text-sm sm:text-base leading-normal whitespace-normal transition-all duration-300 ease-in-out rounded-md", // Base classes
-                      selectedOptionText === option.text
-                        ? 'bg-gradient-to-r from-yellow-500 to-pink-600 text-white border-transparent ring-2 ring-yellow-300 shadow-lg scale-105' // Estilo selecionado
-                        : 'bg-purple-800/50 border border-purple-600 text-purple-200 hover:bg-purple-700/70 hover:border-purple-400 hover:text-white hover:scale-102', // Estilo não selecionado
                       
-                      // Controle de opacidade e interatividade durante transições para opções NÃO selecionadas
-                      (transitionState !== 'idle' && selectedOptionText !== option.text) && 'opacity-50 cursor-not-allowed'
+                      // Default non-selected styles
+                      !isSelected && 'bg-purple-800/50 border border-purple-600 text-purple-200 hover:bg-purple-700/70 hover:border-purple-400 hover:text-white hover:scale-102',
+                      
+                      // Selected styles (takes precedence)
+                      isSelected && 'bg-gradient-to-r from-yellow-500 to-pink-600 text-white border-transparent ring-2 ring-yellow-300 shadow-lg scale-105 hover:from-yellow-400 hover:to-pink-500',
+                      
+                      // Opacity and interactivity during transitions
+                      (transitionState !== 'idle') && (
+                        isSelected 
+                          ? 'opacity-100' // Selected item remains fully opaque
+                          : 'opacity-50 cursor-not-allowed' // Non-selected items fade
+                      )
                     )}
                   >
-                    <Sparkles className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${selectedOptionText === option.text ? 'text-yellow-300' : 'text-purple-400'}`} />
+                    <Sparkles className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${isSelected ? 'text-yellow-300' : 'text-purple-400'}`} />
                     {option.text}
                   </Button>
-                ))}
-              </div>
-            </>
+                );
+              })}
+            </div>
           )}
 
-          {showFeedbackContent && (
+          {/* Feedback Content - Shown primarily during 'feedback' state, or 'exiting' */}
+          {(transitionState === 'feedback' || transitionState === 'exiting') && (
             <div className="text-center animate-fade-in flex flex-col items-center justify-center">
               <MessageCircle className="h-10 w-10 text-yellow-400 mx-auto mb-4 animate-pulse" />
               <p className="text-yellow-300 font-semibold text-lg sm:text-xl mb-4">{question.feedback}</p>
@@ -256,4 +285,6 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
     </div>
   );
 };
+
+    
     
