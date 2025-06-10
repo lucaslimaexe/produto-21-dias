@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { AlertTriangle, Clock, Zap, Eye, ExternalLink, XCircle, Sparkles, CheckCircle2, Unlock, Brain, HeartHandshake, TrendingUp, Quote, UserCircle } from 'lucide-react';
+import { AlertTriangle, Clock, Zap, Eye, ExternalLink, XCircle, Sparkles, CheckCircle2, Unlock, Brain, HeartHandshake, TrendingUp, Quote, UserCircle, ShieldCheck, BarChartBig, Palette } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Image from 'next/image';
 
@@ -14,32 +14,41 @@ interface ResultsScreenProps {
 
 const testimonials = [
   {
-    name: "Maria S.",
-    quote: "Eu estava perdida, tentando de tudo sem resultado. O Código da Deusa foi um divisor de águas. Em 21 dias, minha energia mudou, atraí um novo emprego e me sinto poderosa!",
-    image: "https://placehold.co/80x80.png",
-    aiHint: "woman smiling"
+    name: "Maria S., 38 anos",
+    location: "São Paulo",
+    transformation: "TRANSFORMAÇÃO FINANCEIRA",
+    quote: "Eu estava endividada, sem esperança. Em 15 dias com o Código da Deusa, recebi uma proposta de emprego que triplicou minha renda! É inacreditável! Minha vida financeira explodiu!",
+    image: "https://placehold.co/120x120.png",
+    aiHint: "woman success"
   },
   {
-    name: "Juliana P.",
-    quote: "Achava que manifestação era bobagem até encontrar esse método. Os bloqueios que eu nem sabia que tinha sumiram! Minha autoestima está nas alturas e meus relacionamentos melhoraram 100%.",
-    image: "https://placehold.co/80x80.png",
-    aiHint: "person portrait"
+    name: "Ana L., 45 anos",
+    location: "Rio de Janeiro",
+    transformation: "TRANSFORMAÇÃO AMOROSA",
+    quote: "Depois de anos sozinha, sem fé no amor, apliquei o método. Em menos de uma semana, conheci o homem da minha vida. É como se o universo tivesse me entregado ele de bandeja! Adeus solidão!",
+    image: "https://placehold.co/120x120.png",
+    aiHint: "woman happy love"
   },
   {
-    name: "Fernanda L.",
-    quote: "Depois de anos de frustração, finalmente entendi o que me impedia de prosperar. O Código da Deusa é direto ao ponto e REALMENTE funciona. Recomendo de olhos fechados!",
-    image: "https://placehold.co/80x80.png",
-    aiHint: "woman happy"
+    name: "Carla P., 29 anos",
+    location: "Belo Horizonte",
+    transformation: "TRANSFORMAÇÃO PROFISSIONAL",
+    quote: "Meu negócio estava estagnado. Com as práticas do ebook, em 21 dias, minhas vendas explodiram! Eu não acreditaria se não tivesse vivido. É poder puro! Meu negócio decolou!",
+    image: "https://placehold.co/120x120.png",
+    aiHint: "businesswoman achievement"
   }
 ];
 
-const offerBenefits = [
-  { text: "Desbloquear sua capacidade inata de manifestar desejos.", icon: Unlock },
-  { text: "Reprogramar sua mente para o sucesso e a abundância.", icon: Brain },
-  { text: "Elevar sua vibração energética e atrair o que você merece.", icon: TrendingUp },
-  { text: "Curar crenças limitantes sobre dinheiro, amor e merecimento.", icon: HeartHandshake },
-  { text: "Ativar seu poder pessoal e se tornar a Deusa da sua própria realidade.", icon: CheckCircle2 }
+const codeBenefits = [
+  { text: "O Reset Mental: Por que focar só em pensamento positivo é inútil se você não limpar seu espaço interno e praticar a aceitação do que é agora. (Dia 3 e 4)", icon: Brain },
+  { text: "O Upgrade da Autoresponsabilidade: Como a autoresponsabilidade te tira do papel de vítima e te dá o controle total sobre sua experiência interna. (Dia 9)", icon: ShieldCheck },
+  { text: "A Ação Alinhada (O Caminho Sem Esforço): A diferença brutal entre ação desesperada e ação alinhada, e como a segunda faz o universo conspirar a seu favor. (Dia 11)", icon: TrendingUp },
+  { text: "O GPS da Clareza: Como a clareza sobre o que você realmente quer (e por que quer) é o GPS que guia a manifestação. (Dia 12)", icon: Palette },
+  { text: "O Escudo da Confiança: Por que a confiança e o soltar o controle são mais importantes que a força bruta para permitir que o universo entregue. (Dia 13 e 15)", icon: Unlock },
+  { text: "O Multiplicador de Milagres: Como a gratidão e o amor-próprio elevam sua vibração a um nível que atrai milagres. (Dia 16 e 17)", icon: HeartHandshake },
+  { text: "O Poder da Repetição: O segredo simples para consolidar novos hábitos e reprogramar sua realidade. (Dia 8)", icon: BarChartBig }
 ];
+
 
 export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart }) => {
   const initialTime = 15 * 60; 
@@ -49,35 +58,32 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart }) => {
 
   useEffect(() => {
     toast({
-      title: "🔥 Seu Diagnóstico Exclusivo Está Pronto!",
-      description: "Veja como o Código da Deusa pode transformar sua realidade em 21 dias.",
+      title: "🔥 Seu Diagnóstico Revelador Chegou!",
+      description: "Descubra como o Código da Deusa pode ser a chave para sua transformação total.",
       variant: "default",
-      duration: 7000,
+      duration: 8000,
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    if (timeLeft <= 0) {
+       setIsBlinking(false);
+       return;
+    }
     const timerId = setInterval(() => {
       setTimeLeft(prevTime => (prevTime > 0 ? prevTime - 1 : 0));
     }, 1000);
-    return () => clearInterval(timerId);
-  }, [timeLeft]);
+    
+    const blinkTimerId = setInterval(() => setIsBlinking(prev => !prev), 600);
 
-  useEffect(() => {
-    let blinkTimerId: NodeJS.Timeout | undefined;
-    if (timeLeft > 0) {
-      blinkTimerId = setInterval(() => setIsBlinking(prev => !prev), 700);
-    } else {
-      setIsBlinking(false);
-    }
     return () => {
-      if (blinkTimerId) clearInterval(blinkTimerId);
-      setIsBlinking(false);
+      clearInterval(timerId);
+      clearInterval(blinkTimerId);
     };
   }, [timeLeft]);
+
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -86,140 +92,181 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart }) => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center px-4 py-8 relative bg-gradient-to-br from-red-950 via-purple-950 to-black overflow-y-auto">
-      <div className="w-full max-w-4xl">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center px-4 py-12 relative bg-gradient-to-br from-purple-950 via-black to-red-950 overflow-y-auto text-foreground">
+      <div className="w-full max-w-5xl space-y-12 md:space-y-16">
         
-        <section className="animate-fade-in mb-8 sm:mb-12" style={{animationDuration: '0.5s'}}>
-          <div className={`flex items-center justify-center space-x-3 bg-red-700/80 border-2 border-yellow-400 rounded-full px-6 py-3 sm:px-8 sm:py-4 shadow-xl ${isBlinking && timeLeft > 0 ? 'animate-pulse ring-4 ring-yellow-500/70' : ''}`}>
-            <AlertTriangle className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-300 animate-bounce" />
-            <span className="text-yellow-100 font-bold text-md sm:text-lg tracking-wider">🚨 SEU DIAGNÓSTICO FINAL CHEGOU 🚨</span>
-            <Eye className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-300 animate-pulse" />
+        {/* SEÇÃO 1: A DOR E A CONSPIRAÇÃO */}
+        <section className="animate-fade-in text-center md:text-left" style={{animationDuration: '0.7s', animationDelay: '0.2s'}}>
+          <div className="md:flex md:items-center md:gap-8">
+            <div className="mb-6 md:mb-0 md:w-1/3 flex justify-center">
+              <Image 
+                data-ai-hint="woman frustrated"
+                src="https://placehold.co/400x400.png" 
+                alt="Mulher Frustrada" 
+                width={300} 
+                height={300} 
+                className="rounded-lg shadow-2xl border-2 border-purple-700/50"
+              />
+            </div>
+            <div className="md:w-2/3">
+              <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl font-bold mb-6 goddess-text-gradient leading-tight">
+                Você Sente Que Algo Te Impede de Avançar?
+              </h2>
+              <p className="text-md sm:text-lg leading-relaxed text-purple-200/90 mb-4">
+                Querida mulher, sinta por um momento... essa sensação de que algo te impede de avançar. Você já tentou de tudo, não é? Leu os livros, seguiu os gurus, fez todas as visualizações... mas a vida que você tanto sonha, a realização plena, parece sempre fora de alcance. Parece que você está presa num ciclo, repetindo os mesmos erros, enquanto outras mulheres conquistam tudo. Você se sente frustrada, exausta, talvez até um pouco enganada pelos métodos que prometem o mapa do tesouro, mas te deixam perdida.
+              </p>
+              <p className="text-md sm:text-lg leading-relaxed text-purple-200/90 mb-4">
+                A verdade é que existe um <span className="text-red-400 font-semibold text-xl">BLOQUEIO</span> no sistema. Um código oculto que foi deliberadamente programado para te manter na estagnação. Eles não querem que você descubra seu verdadeiro poder. Eles querem que você continue comprando os 'cursos' e 'treinamentos' que não funcionam, enquanto a chave para sua abundância e felicidade está adormecida dentro de você. Os 'métodos' que você conhece são apenas a ponta do iceberg, projetados para te manter na busca eterna, sem nunca alcançar a plenitude.
+              </p>
+              <p className="text-yellow-400 font-semibold text-lg sm:text-xl">
+                Mas o tempo para quebrar esse BLOQUEIO está acabando. A janela para essa REVELAÇÃO está se fechando. E rápido.
+              </p>
+            </div>
           </div>
         </section>
 
-        <section className="animate-fade-in mb-8 sm:mb-12 bg-gradient-to-br from-black/70 via-red-900/60 to-purple-900/70 rounded-2xl p-6 sm:p-8 border-2 border-red-600/70 shadow-2xl" style={{animationDuration: '0.5s', animationDelay: '0.2s'}}>
-          <h1 className="font-headline text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-center text-red-400">
-            ALERTA MÁXIMO DE BLOQUEIO!
+        <hr className="border-purple-700/50 my-8 md:my-12" />
+
+        {/* SEÇÃO 2: A REVELAÇÃO: O CÓDIGO DA DEUSA */}
+        <section className="animate-fade-in text-center" style={{animationDuration: '0.7s', animationDelay: '0.8s'}}>
+          <div className="mb-8 flex justify-center">
+             <Image 
+                data-ai-hint="binary code transformation"
+                src="https://placehold.co/600x300.png" 
+                alt="Código Binário se Transformando" 
+                width={500} 
+                height={250} 
+                className="rounded-lg shadow-2xl border-2 border-accent/70"
+              />
+          </div>
+          <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 goddess-text-gradient leading-tight">
+            Prepare-se para a sua MAIOR DESCOBERTA:
           </h1>
-          <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6 text-center">
-            <div className="text-lg sm:text-xl md:text-2xl">
-              <span className="text-purple-300/80">NÍVEL DE PODER DE MANIFESTAÇÃO: </span>
-              <span className="text-red-400 font-bold text-3xl sm:text-4xl md:text-5xl glow">17% </span>
-              <span className="text-red-500 ml-1 sm:ml-2">(ZONA DE PERIGO)</span>
-            </div>
-            <div className="text-md sm:text-lg md:text-xl">
-              <span className="text-purple-300/80">DIAGNÓSTICO PRECISO: </span>
-              <span className="text-yellow-400 font-bold">
-                SÍNDROME DA AUTOSSABOTAGEM CRÔNICA (NÍVEL AVANÇADO)
-              </span>
-            </div>
-            <div className="text-red-400 font-semibold text-sm sm:text-lg">
-              (PADRÕES NEGATIVOS PROFUNDAMENTE ARRAIGADOS)
-            </div>
-          </div>
-        </section>
-
-        <section className="animate-fade-in mb-8 sm:mb-12 text-left space-y-4 sm:space-y-6 p-4 sm:p-6 bg-black/60 rounded-xl border border-purple-700/50" style={{animationDuration: '0.5s', animationDelay: '0.4s'}}>
-          <p className="text-md sm:text-lg leading-relaxed text-purple-200/90">
-            "Alma poderosa, a verdade nua e crua é esta: <span className="text-red-400 font-semibold">você está presa em um ciclo vicioso de autossabotagem</span>. 
-            Suas respostas revelam uma infecção profunda pelo <span className="text-yellow-400 font-semibold">'Vírus da Dúvida Paralisante'</span> e pelo <span className="text-yellow-400 font-semibold">'Malware da Procrastinação Destrutiva'</span>. 
-            Esses 'programas' foram instalados por anos de condicionamento e métodos incompletos que só te frustraram."
+          <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl font-bold mb-6 text-yellow-300 bg-black/50 p-4 rounded-xl border border-yellow-500/70 inline-block">
+            O CÓDIGO DA DEUSA™: 21 DIAS PARA REESCREVER SEU DESTINO.
+          </h2>
+          <p className="text-md sm:text-lg leading-relaxed text-purple-200/90 max-w-3xl mx-auto mb-4">
+            Este não é mais um 'guia' genérico. Não é mais uma 'fórmula' que não resolve nada. É a <span className="text-pink-400 font-semibold">REVELAÇÃO</span>. É o mapa completo que desmascara o BLOQUEIO e te dá o CÓDIGO que faltava pra você <span className="text-green-400 font-bold">COMANDAR</span> a porra da sua vida. Em apenas 21 dias, você vai passar por uma iniciação intensiva que vai reprogramar sua mente, sua energia e suas ações. Você vai aprender, dia após dia, a ativar as leis internas que realmente fazem a manifestação acontecer, de forma <span className="text-yellow-400 font-semibold">INEVITÁVEL</span>.
           </p>
-          <p className="text-md sm:text-lg leading-relaxed text-purple-200/90">
-            "Eles te venderam sonhos, mas te esconderam o <span className="text-green-400 font-semibold">MAPA DA MINA</span>, as chaves reais para destravar os portais da abundância. 
-            Você possui um potencial divino ilimitado, mas está tentando dirigir uma nave espacial com o manual de um patinete. É por isso que a vida parece uma luta constante e os resultados não vêm."
-          </p>
-          <div className="text-center py-4 sm:py-6">
-            <p className="font-headline text-xl sm:text-2xl md:text-3xl font-bold goddess-text-gradient mb-2">
-              CHEGA DE SOFRER! A CURA DEFINITIVA EXISTE. E É MAIS RÁPIDA DO QUE VOCÊ IMAGINA.
-            </p>
-          </div>
-          <p className="text-md sm:text-lg leading-relaxed text-purple-200/90">
-            "Existe um <span className="text-pink-400 font-semibold">PROTOCOLO DE ATIVAÇÃO QUÂNTICA</span>, 
-            um programa intensivo de 21 dias que age como um 'reset' completo para sua mente e energia, 
-            eliminando toda programação negativa e ativando seu verdadeiro DNA de Deusa Manifestadora. 
-            Este é o <span className="goddess-text-gradient font-bold text-lg sm:text-xl">CÓDIGO DA DEUSA™</span>."
-          </p>
-        </section>
-
-        <section className="animate-fade-in mb-8 sm:mb-12 p-6 sm:p-8 bg-purple-900/30 rounded-2xl border-2 border-purple-600" style={{animationDuration: '0.5s', animationDelay: '0.6s'}}>
-          <h2 className="font-headline text-2xl sm:text-3xl text-center mb-6 goddess-text-gradient">Com o CÓDIGO DA DEUSA™ você vai...</h2>
-          <ul className="space-y-4">
-            {offerBenefits.map((item, index) => (
-              <li key={index} className="flex items-start text-purple-200/90 text-md sm:text-lg">
-                <item.icon className="h-6 w-6 mr-3 text-yellow-400 shrink-0 mt-1" />
-                <span>{item.text}</span>
-              </li>
+          <p className="font-headline text-xl sm:text-2xl text-center my-8 text-purple-300">Você vai DESBLOQUEAR o que eles não querem que você saiba:</p>
+          <div className="grid md:grid-cols-2 gap-x-8 gap-y-6 max-w-4xl mx-auto text-left">
+            {codeBenefits.map((item, index) => (
+              <div key={index} className="flex items-start p-4 bg-purple-900/40 rounded-lg border border-purple-700/60 hover:shadow-purple-500/30 shadow-lg transition-shadow">
+                <item.icon className="h-8 w-8 mr-4 text-yellow-400 shrink-0 mt-1" />
+                <p className="text-purple-200/95 text-sm sm:text-md leading-relaxed">{item.text}</p>
+              </div>
             ))}
-          </ul>
+          </div>
+          <p className="text-md sm:text-lg leading-relaxed text-purple-200/90 max-w-3xl mx-auto mt-8 mb-4">
+            Este ebook te dá a anatomia completa da manifestação, dia após dia, por 21 dias. É prático, é direto, é baseado na porra da experiência real (como a Amanda conta na Introdução) e no que realmente funciona. Não é teoria. É <span className="text-accent font-bold text-xl">TREINAMENTO DE ELITE</span>.
+          </p>
         </section>
-        
-        <section className="animate-fade-in mb-8 sm:mb-12" style={{animationDuration: '0.5s', animationDelay: '0.8s'}}>
-          <h2 className="font-headline text-2xl sm:text-3xl text-center mb-8 text-yellow-300">O Que Outras Deusas Despertas Estão Dizendo:</h2>
-          <div className="grid md:grid-cols-3 gap-6">
+
+        <hr className="border-purple-700/50 my-8 md:my-12" />
+
+        {/* SEÇÃO 3: AS PROVAS IRREFUTÁVEIS */}
+        <section className="animate-fade-in" style={{animationDuration: '0.7s', animationDelay: '1.4s'}}>
+          <h2 className="font-headline text-3xl sm:text-4xl text-center mb-10 goddess-text-gradient">Veja o que mulheres como você estão CONQUISTANDO com o CÓDIGO DA DEUSA™:</h2>
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-black/50 border-purple-700/70 text-purple-200/90 animate-fade-in" style={{animationDuration: '0.5s', animationDelay: `${1 + index * 0.2}s`}}>
-                <CardHeader className="pb-4">
-                  <div className="flex items-center space-x-3">
-                    <Image data-ai-hint={testimonial.aiHint} src={testimonial.image} alt={testimonial.name} width={60} height={60} className="rounded-full border-2 border-yellow-400" />
-                    <div>
-                      <CardTitle className="text-lg text-yellow-300">{testimonial.name}</CardTitle>
-                    </div>
-                  </div>
+              <Card key={index} className="bg-black/60 border-purple-700/80 text-purple-200/90 shadow-xl hover:shadow-purple-600/40 transition-shadow duration-300 flex flex-col">
+                <CardHeader className="pb-4 items-center text-center">
+                  <Image data-ai-hint={testimonial.aiHint} src={testimonial.image} alt={testimonial.name} width={100} height={100} className="rounded-full border-4 border-yellow-400 mb-3" />
+                  <CardTitle className="text-xl text-yellow-300">{testimonial.name}</CardTitle>
+                  <p className="text-xs text-purple-400">{testimonial.location}</p>
+                  <p className="text-sm font-semibold text-pink-400 mt-1">{testimonial.transformation}</p>
                 </CardHeader>
-                <CardContent>
-                  <Quote className="h-5 w-5 text-purple-400 mb-2" />
+                <CardContent className="flex-grow">
+                  <Quote className="h-6 w-6 text-purple-500 mb-2 transform scale-x-[-1]" />
                   <p className="italic text-sm sm:text-md leading-relaxed">"{testimonial.quote}"</p>
                 </CardContent>
               </Card>
             ))}
           </div>
+           <div className="flex justify-center mt-8">
+             <Image 
+                data-ai-hint="women success celebration"
+                src="https://placehold.co/700x200.png" 
+                alt="Mulheres Felizes e Realizadas" 
+                width={600} 
+                height={171} 
+                className="rounded-lg shadow-xl border-2 border-accent/50"
+              />
+          </div>
         </section>
 
-        <section className="animate-fade-in bg-gradient-to-r from-yellow-800/70 via-red-700/80 to-yellow-800/70 rounded-2xl p-6 sm:p-8 mb-6 sm:mb-8 border-2 border-yellow-500 shadow-2xl text-center sticky bottom-4 z-20 md:static" style={{animationDuration: '0.5s', animationDelay: '1.2s'}}>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-yellow-100 mb-3 sm:mb-4 animate-pulse [animation-duration:1.5s]">
-            O PORTAL PARA SUA TRANSFORMAÇÃO FECHA EM BREVE!
+        <hr className="border-purple-700/50 my-8 md:my-12" />
+
+        {/* SEÇÃO 4: A OFERTA IRRECUSÁVEL */}
+        <section className="animate-fade-in bg-gradient-to-br from-red-800/80 via-black to-purple-900/80 rounded-3xl p-6 sm:p-8 lg:p-12 mb-6 sm:mb-8 border-4 border-yellow-500 shadow-2xl text-center" style={{animationDuration: '0.7s', animationDelay: '2.0s'}}>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-yellow-200 mb-3 sm:mb-4 animate-pulse [animation-duration:1.2s]">
+            Chega de ser feita de otária. Chega de ver seus sonhos no ralo enquanto outros vendem ilusão.
           </h2>
-          <div className="mb-4 sm:mb-6">
-            <div className={`flex items-center justify-center space-x-2 mb-2 sm:mb-4 ${timeLeft < 60 && timeLeft > 0 ? 'text-red-400 animate-ping' : 'text-yellow-200'}`}>
-              <Clock className="h-6 w-6 sm:h-8 sm:w-8" />
-              <span className={`text-3xl sm:text-4xl md:text-6xl font-bold font-mono ${timeLeft === 0 ? 'text-red-600' : ''}`}>
+          <p className="text-lg sm:text-xl text-red-300 mb-6">Esta é a sua <span className="font-bold underline">ÚLTIMA CHANCE</span> de pegar o atalho ético para a vida que você deseja. O CÓDIGO DA DEUSA™ não é para todas. É para as mulheres que estão cansadas de serem enganadas, que têm coragem de encarar a verdade e que estão prontas para <span className="font-bold text-2xl">COMANDAR</span>.</p>
+          
+          <div className="bg-black/70 border-2 border-red-500 rounded-xl p-4 sm:p-6 mb-6">
+            <h3 className="text-red-400 font-bold text-xl sm:text-2xl mb-2">🚨 ALERTA FINAL: Restam APENAS 3 VAGAS! 🚨</h3>
+            <p className="text-yellow-300 text-sm sm:text-md">E quando elas acabarem, o preço vai subir. Não sabemos quando teremos outra oportunidade como essa.</p>
+          </div>
+
+          <p className="text-purple-200/90 text-lg sm:text-xl mb-2">O valor real deste conhecimento, que vai mudar sua vida para sempre, é de <span className="line-through text-red-500/80">R$ 1.997,00</span>.</p>
+          <p className="text-purple-200/90 text-md sm:text-lg mb-4">Mas, por um tempo <span className="text-yellow-300 font-bold">LIMITADÍSSIMO</span> e para provar que você merece essa transformação, você pode ter acesso a todo o CÓDIGO DA DEUSA™ por um valor simbólico de apenas:</p>
+          
+          <p className="text-6xl sm:text-7xl md:text-8xl font-extrabold text-green-400 my-4 sm:my-6 glow">
+            R$ 47,00
+          </p>
+          <p className="text-yellow-300 font-semibold text-lg sm:text-xl mb-6">SIM! APENAS R$ 47,00! É menos que um lanche na rua para você ter o poder de reescrever seu destino. É uma piada de tão barato, mas é a nossa forma de garantir que você não tenha desculpa para não agir.</p>
+
+
+          <div className="mb-6 sm:mb-8">
+            <div className={`flex items-center justify-center space-x-2 mb-2 sm:mb-3 ${timeLeft < 60 && timeLeft > 0 ? 'text-red-400' : 'text-yellow-200'}`}>
+              <Clock className="h-7 w-7 sm:h-10 sm:w-10" />
+              <span className={`text-4xl sm:text-5xl md:text-7xl font-bold font-mono ${timeLeft === 0 ? 'text-red-600' : ''} ${isBlinking && timeLeft > 0 ? 'animate-ping':''}`}>
                 {formatTime(timeLeft)}
               </span>
-              <Zap className={`h-6 w-6 sm:h-8 sm:w-8 ${timeLeft < 300 && timeLeft > 0 ? 'animate-spin' : ''}`} />
+              <Zap className={`h-7 w-7 sm:h-10 sm:w-10 ${timeLeft < 300 && timeLeft > 0 && timeLeft > 0 ? 'animate-spin' : ''}`} />
             </div>
-            <div className="w-full bg-black/50 rounded-full h-3 sm:h-4 border border-yellow-600 overflow-hidden">
+            <div className="w-full bg-black/60 rounded-full h-4 sm:h-5 border-2 border-yellow-600/70 overflow-hidden shadow-inner">
               <div 
-                className="bg-gradient-to-r from-red-500 via-yellow-400 to-orange-500 h-full rounded-full transition-all duration-1000 ease-linear"
+                className="bg-gradient-to-r from-red-500 via-yellow-400 to-orange-500 h-full rounded-full transition-all duration-1000 ease-linear shadow-md"
                 style={{ width: `${(timeLeft / initialTime) * 100}%` }}
               ></div>
             </div>
-             {timeLeft === 0 && <p className="text-red-400 font-bold mt-2 text-sm sm:text-md">TEMPO ESGOTADO!</p>}
+             {timeLeft === 0 && <p className="text-red-500 font-bold mt-2 text-md sm:text-lg">TEMPO ESGOTADO! OFERTA ENCERRADA.</p>}
           </div>
+
           <Button
             asChild
             size="lg"
-            className={`w-full sm:max-w-md mx-auto font-headline text-lg sm:text-xl px-8 sm:px-12 py-6 sm:py-7 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-200 pulse-goddess
-            ${timeLeft === 0 ? 'bg-gray-600 hover:bg-gray-700 cursor-not-allowed opacity-70' : 'bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 hover:from-green-600 hover:via-emerald-600 hover:to-green-700 text-white'}`}
+            className={`w-full sm:w-auto font-headline text-xl sm:text-2xl px-10 sm:px-16 py-7 sm:py-8 rounded-xl shadow-2xl transform hover:scale-105 transition-transform duration-200 pulse-goddess
+            ${timeLeft === 0 ? 'bg-gray-700 hover:bg-gray-800 cursor-not-allowed opacity-60' : 'bg-gradient-to-r from-green-500 via-emerald-600 to-green-700 hover:from-green-600 hover:via-emerald-700 hover:to-green-800 text-white'}`}
             disabled={timeLeft === 0}
           >
             <a href="https://pay.kiwify.com.br/xxxxxxxx" target="_blank" rel="noopener noreferrer">
-              <Sparkles className="mr-2 h-5 w-5" />
-              {timeLeft > 0 ? "SIM! QUERO ATIVAR O CÓDIGO DA DEUSA AGORA!" : "OFERTA EXPIRADA"}
-              <ExternalLink className="ml-2 h-5 w-5" />
+              <Sparkles className="mr-2 h-6 w-6" />
+              {timeLeft > 0 ? "QUERO COMANDAR MEU DESTINO AGORA!" : "OFERTA EXPIRADA"}
+              <ExternalLink className="ml-2 h-6 w-6" />
             </a>
           </Button>
-           <p className="text-xs text-yellow-200/70 mt-3">Vagas ultra limitadas. Acesso imediato após confirmação.</p>
+           <p className="text-xs sm:text-sm text-yellow-200/80 mt-4">Acesso imediato após confirmação. Garantia Incondicional de 7 Dias.</p>
+           <p className="text-md sm:text-lg text-purple-200/90 mt-6">
+            Não perca mais um segundo. A cada segundo que você hesita, você está escolhendo continuar na mesma estagnação, no mesmo ciclo de frustração. Você está escolhendo ver outras mulheres conquistando o que você poderia ter. Você está escolhendo a mediocridade. <span className="font-bold text-yellow-300">Aja agora.</span> Ou continue sonhando pequeno enquanto outras mulheres estão usando este código para manifestar a porra toda.
+           </p>
         </section>
         
-        <section className="animate-fade-in text-center" style={{animationDuration: '0.5s', animationDelay: '1.4s'}}>
+        {/* SEÇÃO FINAL: A ESCOLHA É SUA */}
+        <section className="animate-fade-in text-center py-8 bg-black/80 rounded-xl border-2 border-purple-800/60" style={{animationDuration: '0.7s', animationDelay: '2.6s'}}>
+          <h2 className="font-headline text-2xl sm:text-3xl text-purple-300 mb-6">A escolha é sua.</h2>
+          <p className="text-lg sm:text-xl text-yellow-200 mb-8">
+            Prove para si mesma que você não é mais uma vítima. <br/>Prove que você é uma Deusa. <br/>Sua hora de virar o jogo é <span className="text-green-400 font-extrabold text-2xl underline">AGORA</span>.
+          </p>
           <Button
             onClick={onRestart}
             variant="ghost"
-            className="font-headline text-sm sm:text-md text-purple-300/70 hover:text-purple-200 hover:bg-purple-800/30 rounded-lg px-4 py-2"
+            className="font-headline text-sm sm:text-md text-purple-400/70 hover:text-purple-300 hover:bg-purple-900/40 rounded-lg px-4 py-2 transition-colors"
           >
             <XCircle className="mr-2 h-4 w-4" />
-            Não, obrigado. Prefiro continuar no ciclo de frustração.
+            Não, obrigado. Entendo as consequências da minha inação.
           </Button>
         </section>
       </div>

@@ -1,10 +1,10 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Progress } from './ui/progress';
-import { Sparkles, Send, MessageCircle } from 'lucide-react';
+import { Sparkles, MessageCircle, Loader2 } from 'lucide-react';
 
 interface Question {
   id: number;
@@ -15,10 +15,10 @@ interface Question {
 
 interface QuestionnaireScreenProps {
   question: Question;
-  onAnswer: (answer: string) => void; // This now implies proceeding after answer
+  onAnswer: (answer: string) => void; // For parent to log answer
   progress: number;
   isLastQuestion: boolean;
-  onComplete: () => void; // Called by parent to advance or finish
+  onComplete: () => void; // Parent handles advancing or finishing quiz
 }
 
 export const questions: Question[] = [
@@ -31,7 +31,7 @@ export const questions: Question[] = [
       "Inveja (mesmo que eu não admita) de outras mulheres que parecem ter tudo.",
       "Cansaço. Estou exausta de lutar e não ver resultados."
     ],
-    feedback: "✨ INTERESSANTE... SUA HONESTIDADE É O PRIMEIRO PASSO. PRÓXIMA PERGUNTA. ✨"
+    feedback: "✨ INTERESSANTE... SUA HONESTIDADE É O PRIMEIRO PASSO. ✨"
   },
   {
     id: 2,
@@ -42,7 +42,7 @@ export const questions: Question[] = [
       "Às vezes até piora, como se o universo estivesse rindo da minha cara.",
       "Eu esqueço de fazer a maior parte do tempo, a rotina me engole."
     ],
-    feedback: "🎯 OK, ESTOU COMEÇANDO A VER UM PADRÃO AQUI. CONTINUE. 🎯"
+    feedback: "🎯 OK, ESTOU COMEÇANDO A VER UM PADRÃO AQUI. 🎯"
   },
   {
     id: 3,
@@ -53,7 +53,7 @@ export const questions: Question[] = [
       "Não sei se é um bloqueio, mas sinto que não tenho a mesma 'sorte' que os outros.",
       "Sim, e desconfio que os métodos que ensinam por aí são incompletos de propósito."
     ],
-    feedback: "🔥 BINGO! AGORA ESTAMOS CHEGANDO NA RAIZ DO PROBLEMA. MAIS UMA. 🔥"
+    feedback: "🔥 BINGO! AGORA ESTAMOS CHEGANDO NA RAIZ DO PROBLEMA. 🔥"
   },
   {
     id: 4,
@@ -64,7 +64,7 @@ export const questions: Question[] = [
       "Eu me sinto merecedora, mas acho que não sou capaz de conseguir.",
       "Sim, mas sinto que o mundo é injusto e não me dá o que eu mereço."
     ],
-    feedback: "💎 A VERDADE DÓI, MAS LIBERTA. ESTA É A CHAVE. ÚLTIMA PERGUNTA. 💎"
+    feedback: "💎 A VERDADE DÓI, MAS LIBERTA. ESTA É A CHAVE. 💎"
   },
   {
     id: 5,
@@ -81,21 +81,29 @@ export const questions: Question[] = [
 
 
 export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ question, onAnswer, progress, isLastQuestion, onComplete }) => {
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [answeredOption, setAnsweredOption] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Reset state when question changes
+  useEffect(() => {
+    setSelectedOption(null);
+    setShowFeedback(false);
+    setIsProcessing(false);
+  }, [question.id]);
 
   const handleSelectOption = (option: string) => {
-    if (showFeedback) return; // Prevent re-answering while feedback is shown
+    if (isProcessing || showFeedback) return;
 
-    setAnsweredOption(option);
-    onAnswer(option); // Send answer to parent
-    setShowFeedback(true); // Show feedback immediately
-  };
-  
-  const handleProceed = () => {
-    setShowFeedback(false);
-    setAnsweredOption(null);
-    onComplete(); // Parent handles advancing or completing quiz
+    setSelectedOption(option);
+    onAnswer(option); // Inform parent about the answer
+    setShowFeedback(true);
+    setIsProcessing(true);
+
+    setTimeout(() => {
+      onComplete(); // Parent will advance or finish
+      // State reset will be handled by useEffect when question.id changes
+    }, 2000); // Time to display feedback
   };
 
   return (
@@ -111,43 +119,44 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ questi
           <p className="text-center text-sm text-yellow-300 mt-2">PERGUNTA {question.id} DE {questions.length}</p>
         </div>
 
-        <div className={`bg-purple-900/30 p-6 rounded-xl border border-purple-700 mb-6 ${showFeedback ? 'opacity-50 pointer-events-none' : ''}`}>
-          <h2 className="font-headline text-xl sm:text-2xl md:text-3xl font-semibold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-400 to-purple-300 leading-tight">
-            {question.question}
-          </h2>
-          
-          <div className="space-y-3 sm:space-y-4">
-            {question.options.map((option, index) => (
-              <Button
-                key={index}
-                variant={answeredOption === option ? "default" : "outline"}
-                onClick={() => handleSelectOption(option)}
-                disabled={showFeedback}
-                className={`w-full text-left justify-start p-4 h-auto text-sm sm:text-base leading-normal whitespace-normal transition-all duration-300 ease-in-out
-                  ${answeredOption === option 
-                    ? 'bg-gradient-to-r from-yellow-500 to-pink-600 text-white border-transparent ring-2 ring-yellow-300 shadow-lg scale-105' 
-                    : 'bg-purple-800/50 border-purple-600 hover:bg-purple-700/70 hover:border-purple-400 text-purple-200 hover:text-white hover:scale-102'}`}
-              >
-                <Sparkles className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${answeredOption === option ? 'text-yellow-300' : 'text-purple-400'}`} />
-                {option}
-              </Button>
-            ))}
-          </div>
-        </div>
+        <div className="bg-purple-900/30 p-6 rounded-xl border border-purple-700 mb-6 min-h-[300px] flex flex-col justify-center">
+          {!showFeedback && !isProcessing && (
+            <>
+              <h2 className="font-headline text-xl sm:text-2xl md:text-3xl font-semibold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-400 to-purple-300 leading-tight">
+                {question.question}
+              </h2>
+              <div className="space-y-3 sm:space-y-4">
+                {question.options.map((option, index) => (
+                  <Button
+                    key={index}
+                    variant={selectedOption === option ? "default" : "outline"}
+                    onClick={() => handleSelectOption(option)}
+                    disabled={isProcessing || showFeedback}
+                    className={`w-full text-left justify-start p-4 h-auto text-sm sm:text-base leading-normal whitespace-normal transition-all duration-300 ease-in-out
+                      ${selectedOption === option 
+                        ? 'bg-gradient-to-r from-yellow-500 to-pink-600 text-white border-transparent ring-2 ring-yellow-300 shadow-lg scale-105' 
+                        : 'bg-purple-800/50 border-purple-600 hover:bg-purple-700/70 hover:border-purple-400 text-purple-200 hover:text-white hover:scale-102'
+                      }
+                      ${(isProcessing || showFeedback) && selectedOption !== option ? 'opacity-50 cursor-not-allowed' : ''}
+                    `}
+                  >
+                    <Sparkles className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${selectedOption === option ? 'text-yellow-300' : 'text-purple-400'}`} />
+                    {option}
+                  </Button>
+                ))}
+              </div>
+            </>
+          )}
 
-        {showFeedback && (
-          <div className="mt-6 p-4 bg-black/50 border-2 border-yellow-400 rounded-xl text-center animate-fade-in">
-            <MessageCircle className="h-8 w-8 text-yellow-400 mx-auto mb-3 animate-pulse" />
-            <p className="text-yellow-300 font-semibold text-lg sm:text-xl">{question.feedback}</p>
-            <Button
-              onClick={handleProceed}
-              className="mt-4 font-headline px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg shadow-md transform hover:scale-105 transition-transform duration-200"
-            >
-              {isLastQuestion ? "VER MEU DIAGNÓSTICO" : "PRÓXIMA PERGUNTA"}
-              <Sparkles className="ml-2 h-4 w-4"/>
-            </Button>
-          </div>
-        )}
+          {(showFeedback || isProcessing) && (
+            <div className="text-center animate-fade-in flex flex-col items-center justify-center">
+              <MessageCircle className="h-10 w-10 text-yellow-400 mx-auto mb-4 animate-pulse" />
+              <p className="text-yellow-300 font-semibold text-lg sm:text-xl mb-4">{question.feedback}</p>
+              {isProcessing && !showFeedback && <p className="text-purple-300 text-sm">Aguarde...</p>}
+              {isProcessing && <Loader2 className="h-8 w-8 text-yellow-400 animate-spin mt-4" />}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
