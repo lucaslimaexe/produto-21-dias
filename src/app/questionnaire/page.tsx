@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { QuestionnaireScreen, questions, type Question } from '@/components/questionnaire-screen';
 import type { BehavioralAnalysisOutput } from '@/ai/flows/behavioral-analysis-flow'; // Importando o tipo
@@ -11,6 +12,7 @@ interface Answer {
   answer: string;
 }
 
+// REGRAS DE ANÁLISE LOCAL
 const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
   const findAnswerText = (id: number): string | undefined => {
     return answers.find(a => a.questionId === id)?.answer;
@@ -85,6 +87,8 @@ export default function QuestionnairePage() {
   const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Answer[]>([]);
+  const [isNavigating, setIsNavigating] = useState(false);
+
 
   const handleAnswer = (question: Question, answer: string) => {
     const newAnswer = { questionId: question.id, questionText: question.question, answer };
@@ -92,12 +96,17 @@ export default function QuestionnairePage() {
   };
   
   const handleQuestionProceed = () => {
+    if (isNavigating) return; 
+
     const isLast = currentQuestionIndex === questions.length - 1;
     if (isLast) {
-      // Todas as perguntas respondidas, gerar análise local e passar para a página de resultados
+      setIsNavigating(true);
       const localAnalysisResult = generateLocalAnalysis(userAnswers);
-      const analysisQueryParam = encodeURIComponent(JSON.stringify(localAnalysisResult));
-      router.push(`/results?analysis=${analysisQueryParam}`);
+      const analysisJsonString = JSON.stringify(localAnalysisResult);
+      const analysisQueryParam = encodeURIComponent(analysisJsonString);
+      const targetUrl = `/results?analysis=${analysisQueryParam}`;
+      console.log('Navigating to:', targetUrl); // Log para depuração
+      router.push(targetUrl);
     } else {
       setCurrentQuestionIndex(prevIndex => prevIndex + 1);
     }
@@ -116,3 +125,4 @@ export default function QuestionnairePage() {
       onComplete={handleQuestionProceed} 
     />
   );
+}
