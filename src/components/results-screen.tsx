@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, Lightbulb, BookOpen, Users, TimerIcon as LucideTimerIcon, Map, GitCompareArrows, Heart, Bolt, Sun, Loader2, Sparkles as LucideSparkles, ThumbsDown, ThumbsUp, Lock, CircleDollarSign, ShoppingCart, Star, ChevronLeft, ChevronRight, Eye, Group, Key, Unlock, Brain, TrendingUp, Target, ShieldOff, ShieldCheck, MessageCircle, Rocket, Gift, Palette, Activity, RouteOff, MountainSnow, TrendingUpIcon, Plane, Car, Castle, Briefcase, Gem } from 'lucide-react';
+import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, Lightbulb, BookOpen, Users, Map, GitCompareArrows, Heart, Bolt, Sun, Loader2, Sparkles as LucideSparkles, ThumbsDown, ThumbsUp, Lock, CircleDollarSign, ShoppingCart, Star, ChevronLeft, ChevronRight, Eye, Group, Key, Unlock, Brain, TrendingUp, Target, ShieldOff, ShieldCheck, MessageCircle, Rocket, Gift, Palette, Activity, RouteOff, MountainSnow, TrendingUpIcon, Plane, Car, Castle, Briefcase, Gem, TimerIcon as LucideTimerIcon } from 'lucide-react';
 
 import { useToast } from "@/hooks/use-toast";
 import Image from 'next/image';
@@ -111,30 +111,21 @@ const TestimonialCard: React.FC<{ name: string, age: number, quote: string, star
 );
 
 const TestimonialStoryCard: React.FC<{ name: string, avatar: string, dataAiHint: string, message: string, className?: string }> = ({ name, avatar, dataAiHint, message, className }) => (
-    <Card className={cn("bg-slate-800/60 border-purple-600/70 text-foreground w-[280px] sm:w-[320px] shrink-0 scroll-snap-align-center p-5 flex flex-col items-start text-left shadow-lg", className)}>
-      <div className="flex items-center mb-3">
-        <Image data-ai-hint={dataAiHint} src={avatar} alt={name} width={40} height={40} className="rounded-full border-2 border-accent mr-3" />
-        <CardTitle className="text-md text-accent">{name}</CardTitle>
+  <Card className={cn("bg-slate-800/60 border-purple-600/70 text-foreground w-[280px] sm:w-[320px] shrink-0 scroll-snap-align-center p-5 flex flex-col items-start text-left shadow-lg", className)}>
+    <div className="flex items-center mb-3">
+      <Image data-ai-hint={dataAiHint} src={avatar} alt={name} width={40} height={40} className="rounded-full border-2 border-accent mr-3" />
+      <CardTitle className="text-md text-accent">{name}</CardTitle>
+    </div>
+    <CardContent className="p-0">
+      <p className="text-sm text-purple-200/90 leading-relaxed whitespace-pre-line">{message}</p>
+    </CardContent>
+     <div className="mt-2 flex items-center">
+          <div className="h-2 w-2 bg-green-400 rounded-full mr-1 animate-pulse"></div>
+          <span className="text-xs text-green-300/70">online</span>
       </div>
-      <CardContent className="p-0">
-        <p className="text-sm text-purple-200/90 leading-relaxed whitespace-pre-line">{message}</p>
-      </CardContent>
-       <div className="mt-2 flex items-center">
-            <div className="h-2 w-2 bg-green-400 rounded-full mr-1 animate-pulse"></div>
-            <span className="text-xs text-green-300/70">online</span>
-        </div>
-    </Card>
-  );
-
-const TimerIconComponent: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props} >
-    <line x1="10" y1="2" x2="14" y2="2" /> <line x1="12" y1="18" x2="12" y2="22" />
-    <path d="M5 10.5a7 7 0 0 1 7-7 7 7 0 0 1 7 7c0 1.92-.782 3.667-2.05 4.95A1 1 0 0 0 16.12 17H7.88a1 1 0 0 0-.83.45A7.003 7.003 0 0 1 5 10.5Z" />
-    <path d="M12 18V7.5" /> <path d="m9 11 3-3 3 3" />
-  </svg>
+  </Card>
 );
 
-// BLOCO 14 - Componente
 const PhaseCard: React.FC<{ phase: string, title: string, description: string | React.ReactNode, icon: React.ElementType, delay: string, lockedIcon?: React.ElementType }> = ({ phase, title, description, icon: Icon, delay, lockedIcon: LockedIcon = Lock }) => (
     <Card className="bg-slate-800/70 border-purple-600/80 p-5 text-center animate-fade-in transform hover:scale-105 transition-transform duration-300" style={{ animationDelay: delay }}>
         <div className="flex flex-col items-center">
@@ -149,7 +140,6 @@ const PhaseCard: React.FC<{ phase: string, title: string, description: string | 
     </Card>
 );
 
-// BLOCO 15 - Componente
 const BeforeAfterCard: React.FC<{ title: string, items: string[], bgColor: string, borderColor: string, textColor: string, icon: React.ElementType, className?: string }> = ({ title, items, bgColor, borderColor, textColor, icon: Icon, className }) => (
     <Card className={cn("p-6 rounded-xl shadow-xl w-full h-full flex flex-col", bgColor, borderColor, className)}>
         <CardHeader className="p-0 mb-4 text-center">
@@ -169,7 +159,6 @@ const BeforeAfterCard: React.FC<{ title: string, items: string[], bgColor: strin
     </Card>
 );
 
-// BLOCO 16 - Componente
 const VisionCard: React.FC<{ title: string, icon: React.ElementType, dataAiHint: string, onClick: () => void, isSelected: boolean, className?: string }> = ({ title, icon: Icon, dataAiHint, onClick, isSelected, className }) => (
     <button
         onClick={onClick}
@@ -195,18 +184,19 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   userDreams,
   dreamsAchievementDateLabel
 }) => {
-  const [currentHeaderText, setCurrentHeaderText] = useState<string>("ALERTA: SEU DIAGNÓSTICO É CRÍTICO!");
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+  const [currentHeaderText, setCurrentHeaderText] = useState<string>("ALERTA: SEU DIAGNÓSTICO É CRÍTICO!");
 
   const [priceCardTimeLeft, setPriceCardTimeLeft] = useState(7 * 60);
   const [priceCardVacancies, setPriceCardVacancies] = useState(3);
   
-  const initialStickyMessages = (vacancies: number) => [
+  const initialStickyMessages = useCallback((vacancies: number) => [
     "Garanta seu código agora ✨",
     `Faltam ${vacancies} acessos no seu estado 🔥`,
     "+9 mulheres desbloqueando agora ⏳",
     "A chance tá se fechando… 💔"
-  ];
+  ], []); // Adicionado useCallback
+
   const [stickyMessages, setStickyMessages] = useState(initialStickyMessages(priceCardVacancies));
   const [stickyMessageIndex, setStickyMessageIndex] = useState(0);
   
@@ -252,44 +242,50 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   }, []);
 
   useEffect(() => {
+    let scrollTimeout: NodeJS.Timeout;
     const handleScroll = () => {
-      let activeSectionId = 'diagnostics-section'; // Default
-      let minDistance = Infinity;
-      const viewportHeight = window.innerHeight;
-      const threshold = viewportHeight * 0.2; 
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        let activeSectionId = 'diagnostics-section'; 
+        let minDistance = Infinity;
+        const viewportHeight = window.innerHeight;
+        const threshold = viewportHeight * 0.2;
 
-      Object.entries(sectionRefs.current).forEach(([id, element]) => {
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          if (rect.top < threshold && rect.bottom > 0) {
-            if (rect.top < minDistance) {
-                 minDistance = rect.top;
-                 activeSectionId = id;
+        Object.entries(sectionRefs.current).forEach(([id, element]) => {
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            const elementTopRelativeToViewport = rect.top;
+            const elementBottomRelativeToViewport = rect.bottom;
+            
+            // Check if the element is within the "active zone" near the top of the viewport
+            if (elementTopRelativeToViewport < threshold && elementBottomRelativeToViewport > 0) {
+              // Element is in the primary active zone
+              if (elementTopRelativeToViewport < minDistance) {
+                   minDistance = elementTopRelativeToViewport;
+                   activeSectionId = id;
+              }
+            } else if (elementTopRelativeToViewport < viewportHeight && elementBottomRelativeToViewport > 0 && minDistance === Infinity) {
+               // Fallback for elements that are visible but not yet in the primary active zone (e.g., first element on load)
+               if (activeSectionId === 'diagnostics-section') { // Only override default if no primary active section found yet
+                  minDistance = elementTopRelativeToViewport;
+                  activeSectionId = id;
+               }
             }
-          } else if (rect.top < viewportHeight && rect.bottom > 0 && activeSectionId === 'diagnostics-section' && minDistance === Infinity) {
-             minDistance = rect.top;
-             activeSectionId = id;
           }
-        }
-      });
-      setCurrentHeaderText(sectionHeaderMessages[activeSectionId] || "ALERTA: SEU DIAGNÓSTICO É CRÍTICO!");
+        });
+        setCurrentHeaderText(sectionHeaderMessages[activeSectionId] || "ALERTA: SEU DIAGNÓSTICO É CRÍTICO!");
+      }, 50); // Debounce time
     };
     
-    let scrollTimeout: NodeJS.Timeout;
-    const debouncedScrollHandler = () => {
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(handleScroll, 50);
-    };
-
-    window.addEventListener('scroll', debouncedScrollHandler);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); 
 
     return () => {
-      window.removeEventListener('scroll', debouncedScrollHandler);
+      window.removeEventListener('scroll', handleScroll);
       clearTimeout(scrollTimeout);
       if (unlockingTimeoutRef.current) clearTimeout(unlockingTimeoutRef.current);
     };
-  }, [sectionHeaderMessages]);
+  }, [sectionHeaderMessages]); // Removido sectionRefs.current das dependências
   
   useEffect(() => {
     if (priceCardTimeLeft <= 0) return;
@@ -300,12 +296,12 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   }, [priceCardTimeLeft]);
 
   useEffect(() => {
-    if (priceCardTimeLeft === (5 * 60)) { 
+    if (priceCardTimeLeft <= (5 * 60) && priceCardTimeLeft > 0 && priceCardVacancies !== 1) { 
         setPriceCardVacancies(1);
         playSound('limit_reached.mp3');
     }
     setStickyMessages(initialStickyMessages(priceCardVacancies));
-  }, [priceCardTimeLeft, priceCardVacancies]);
+  }, [priceCardTimeLeft, priceCardVacancies, initialStickyMessages]);
 
   useEffect(() => {
     if (!isPriceRevealed || finalOfferTimeLeft <= 0) {
@@ -523,7 +519,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 </div>
                  <div className="text-center mt-10">
                     <Button onClick={() => document.getElementById('price-anchor-section')?.scrollIntoView({ behavior: 'smooth' })} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float">
-                        <HeartHandshake className="mr-2 h-5 w-5 shrink-0" /> QUERO MINHA TRANSFORMAÇÃO AGORA!
+                        <Gift className="mr-2 h-5 w-5 shrink-0" /> QUERO MINHA TRANSFORMAÇÃO AGORA!
                     </Button>
                 </div>
             </section>
@@ -548,7 +544,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             HOJE POR APENAS: R$ {offerPriceAnchor.toFixed(2).replace('.',',')}
                         </p>
                         <div className="text-sm text-yellow-400/90 space-y-1">
-                            <p className="animate-subtle-pulse"><TimerIconComponent className="inline h-4 w-4 mr-1 shrink-0" /> Promoção válida por: <span className="font-bold">{formatTime(priceCardTimeLeft)}</span></p>
+                            <p className="animate-subtle-pulse"><LucideTimerIcon className="inline h-4 w-4 mr-1 shrink-0" /> Promoção válida por: <span className="font-bold">{formatTime(priceCardTimeLeft)}</span></p>
                             <p className={priceCardVacancies === 1 ? 'text-red-400 font-bold animate-intense-pulse' : ''}><Users className="inline h-4 w-4 mr-1 shrink-0" /> Restam apenas: <span className="font-bold">{priceCardVacancies}</span> {priceCardVacancies === 1 ? 'acesso com este valor!' : 'acessos com este valor!'}</p>
                         </div>
                         {!isPriceRevealed && (
@@ -583,11 +579,12 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             <Progress value={(finalOfferTimeLeft / finalOfferTimerInitial) * 100} className="w-full h-2.5 sm:h-3 bg-yellow-600/30 border border-yellow-600/50 [&>div]:bg-gradient-to-r [&>div]:from-red-500 [&>div]:via-yellow-400 [&>div]:to-orange-500" />
                             {finalOfferTimeLeft === 0 && <p className="text-red-500 font-bold mt-2 text-sm sm:text-base">TEMPO ESGOTADO! OFERTA ENCERRADA.</p>}
                         </div>
+                        {/* O botão de CTA direto para R$47 foi movido para o Bloco 19 */}
                     </div>
                 )}
             </section>
 
-            {/* Novos Blocos com Copy Blackhat e Gamificação */}
+            {/* Novos Blocos com Copy Blackhat e Gamificação - Inseridos APÓS a revelação do preço de R$47 */}
             {isPriceRevealed && (
               <>
                 <hr className="border-purple-700/30 my-10 md:my-14" />
@@ -595,9 +592,9 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 <section id="map-section" ref={registerSectionRef('map-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.2s'}}>
                     <h2 className="font-headline text-3xl sm:text-4xl text-yellow-300 mb-3">⚡ Sua Jornada de 21 Dias</h2>
                     <p className="text-purple-200/90 text-lg sm:text-xl mb-2 max-w-2xl mx-auto">Você está prestes a atravessar o portal mais importante da sua vida.</p>
-                    <p className="text-purple-300/80 text-md sm:text-lg mb-8 max-w-xl mx-auto">
-                        21 dias.<br/>
-                        Cada dia uma ruptura.<br/>
+                    <p className="text-purple-300/80 text-md sm:text-lg mb-8 max-w-xl mx-auto whitespace-pre-line">
+                        21 dias.{'\n'}
+                        Cada dia uma ruptura.{'\n'}
                         Cada etapa, um fio solto que você vai costurar de volta em você mesma.
                     </p>
                     <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
@@ -605,12 +602,12 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         <PhaseCard phase="DIAS 8-14" title="Recriar a sua identidade." description="🧠 Reprograme sua autoimagem." icon={Brain} delay="0.5s" />
                         <PhaseCard phase="DIAS 15-21" title="Cocriar a sua nova realidade." description="🔥 Manifeste a vida que merece." icon={LucideSparkles} delay="0.7s" />
                     </div>
-                    <p className="text-purple-200/90 text-lg sm:text-xl mt-8 max-w-2xl mx-auto">
-                        Isso não é só um plano.<br/>
+                    <p className="text-purple-200/90 text-lg sm:text-xl mt-8 max-w-2xl mx-auto whitespace-pre-line">
+                        Isso não é só um plano.{'\n'}
                         É um processo <span className="font-semibold text-pink-400">irreversível</span> de reconstrução interna.
                     </p>
-                    <p className="text-yellow-300 text-lg sm:text-xl mt-4 max-w-xl mx-auto">
-                        Você pode continuar adiando…<br/>
+                    <p className="text-yellow-300 text-lg sm:text-xl mt-4 max-w-xl mx-auto whitespace-pre-line">
+                        Você pode continuar adiando…{'\n'}
                         Ou se dar a chance de descobrir quem você teria sido se ninguém tivesse te quebrado.
                     </p>
                 </section>
@@ -650,9 +647,9 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             className="shadow-2xl shadow-green-500/30"
                          />
                     </div>
-                    <p className="text-purple-200/90 text-lg sm:text-xl mt-8 max-w-xl mx-auto">
-                        Essa escolha tá na sua mão agora.<br/>
-                        <span className="text-red-400 font-semibold">E o tempo tá olhando.</span>
+                    <p className="text-purple-200/90 text-lg sm:text-xl mt-8 max-w-xl mx-auto whitespace-pre-line">
+                        Essa escolha tá na sua mão agora.{'\n'}
+                        E o tempo tá olhando.
                     </p>
                 </section>
 
@@ -661,14 +658,14 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 {/* BLOCO 16 – VISÃO DE VIDA (Simulação de Possibilidades) */}
                 <section id="vision-section" ref={registerSectionRef('vision-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.6s'}}>
                     <h2 className="font-headline text-3xl sm:text-4xl text-pink-400 mb-3">Essa é a vida que JÁ É SUA.</h2>
-                     <p className="text-purple-200/90 text-lg sm:text-xl mb-2 max-w-2xl mx-auto">Você está a um <span className="font-bold text-yellow-300">sim</span> da realidade que já é sua.</p>
-                    <p className="text-purple-300/80 text-md sm:text-lg mb-10 max-w-2xl mx-auto">
-                        Imagina abrir os olhos e saber que está exatamente onde deveria estar.<br/>
-                        Não por sorte. Não por acaso.<br/>
+                    <p className="text-purple-200/90 text-lg sm:text-xl mb-2 max-w-2xl mx-auto">Você está a um <span className="font-bold text-yellow-300">sim</span> da realidade que já é sua.</p>
+                    <p className="text-purple-300/80 text-md sm:text-lg mb-10 max-w-2xl mx-auto whitespace-pre-line">
+                        Imagina abrir os olhos e saber que está exatamente onde deveria estar.{'\n'}
+                        Não por sorte. Não por acaso.{'\n'}
                         Mas porque você <span className="font-bold text-accent">decidiu</span>.
                     </p>
-                    <p className="text-purple-200/90 text-lg sm:text-xl mb-10 max-w-2xl mx-auto">
-                        Essa vida com paz, energia, amor e propósito não é utopia.<br/>
+                    <p className="text-purple-200/90 text-lg sm:text-xl mb-10 max-w-2xl mx-auto whitespace-pre-line">
+                        Essa vida com paz, energia, amor e propósito não é utopia.{'\n'}
                         Ela já foi desenhada. Ela já tá vibrando dentro de você.
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-10">
@@ -685,8 +682,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             />
                         ))}
                     </div>
-                    <p className="text-yellow-300 text-lg sm:text-xl max-w-xl mx-auto">
-                        Você só precisa <span className="font-semibold text-pink-400">ativar o código.</span><br/>
+                    <p className="text-yellow-300 text-lg sm:text-xl max-w-xl mx-auto whitespace-pre-line">
+                        Você só precisa <span className="font-semibold text-pink-400">ativar o código.</span>{'\n'}
                         E aceitar o convite.
                     </p>
                 </section>
@@ -696,8 +693,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 {/* BLOCO 17 – SEM RISCO. SEM VOLTA. (Escudo Anti-Falha) */}
                 <section id="shield-section" ref={registerSectionRef('shield-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.8s'}}>
                     <h2 className="font-headline text-3xl sm:text-4xl goddess-text-gradient mb-3">Sem Risco. Sem Volta.</h2>
-                    <p className="text-purple-200/90 text-lg sm:text-xl mb-6 max-w-2xl mx-auto">
-                        Você já duvidou de tudo.<br/>
+                    <p className="text-purple-200/90 text-lg sm:text-xl mb-6 max-w-2xl mx-auto whitespace-pre-line">
+                        Você já duvidou de tudo.{'\n'}
                         Do mundo. Das pessoas. De si mesma.
                     </p>
                     <p className="text-purple-300/80 text-md sm:text-lg mb-10 max-w-xl mx-auto">
@@ -719,8 +716,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         <p className="text-xl sm:text-2xl text-yellow-300 font-semibold mb-2">💎 Um processo à prova de falhas.</p>
                         <p className="text-xl sm:text-2xl text-pink-400 font-semibold mb-2">🧬 Um código que já está em você.</p>
                         <p className="text-xl sm:text-2xl text-green-400 font-semibold mb-6">💰 Por menos do que você gasta em um lanche qualquer.</p>
-                        <p className="text-red-400 font-bold text-lg sm:text-xl animate-subtle-pulse">
-                            E sim…<br/>
+                        <p className="text-red-400 font-bold text-lg sm:text-xl animate-subtle-pulse whitespace-pre-line">
+                            E sim…{'\n'}
                             Se você ignorar isso agora, você vai se lembrar disso depois.
                         </p>
                     </div>
@@ -736,8 +733,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                   <p className="text-center text-muted-foreground mb-4 text-md sm:text-lg max-w-xl mx-auto">
                     “Eu nunca pensei que alguém pudesse me destravar assim…”
                   </p>
-                   <p className="text-center text-purple-200/90 mb-8 sm:mb-12 text-md sm:text-lg max-w-xl mx-auto">
-                    Essas vozes não são frases prontas.<br/>
+                   <p className="text-center text-purple-200/90 mb-8 sm:mb-12 text-md sm:text-lg max-w-xl mx-auto whitespace-pre-line">
+                    Essas vozes não são frases prontas.{'\n'}
                     São ecos de mulheres que passaram exatamente pelo que você está passando agora.
                   </p>
                   <div className="relative">
@@ -757,7 +754,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                       onClick={() => document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth' })} 
                       className="goddess-gradient text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float"
                     >
-                      <HeartHandshake className="mr-2 h-5 w-5 shrink-0" /> EU QUERO SENTIR ESSA TRANSFORMAÇÃO!
+                      <LucideSparkles className="mr-2 h-5 w-5 shrink-0" /> EU QUERO SENTIR ESSA TRANSFORMAÇÃO!
                     </Button>
                   </div>
                 </section>
@@ -768,15 +765,16 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 <section id="final-touch-section" ref={registerSectionRef('final-touch-section')} className="animate-fade-in py-10 md:py-16 text-center" style={{animationDelay: '1.2s'}}>
                     {!isCodeUnlocked && (
                         <>
-                            <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-yellow-300 mb-6">
-                                Você pode voltar pra sua vida.<br/>
+                            <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-yellow-300 mb-6 whitespace-pre-line">
+                                Você pode voltar pra sua vida.{'\n'}
                                 Ou tocar nesse botão e começar a viver a sua.
                             </h2>
-                            <p className="text-purple-200/90 text-lg sm:text-xl mb-6 max-w-xl mx-auto">
-                                A diferença entre sua realidade atual e a vida que te espera é um clique.
+                            <p className="text-purple-200/90 text-lg sm:text-xl mb-6 max-w-xl mx-auto whitespace-pre-line">
+                                A diferença entre sua realidade atual e a vida que te espera{'\n'}
+                                é um clique.
                             </p>
-                            <p className="text-pink-400 font-semibold text-lg sm:text-xl mb-10 max-w-xl mx-auto">
-                                Mas esse clique não é só um botão.<br/>
+                            <p className="text-pink-400 font-semibold text-lg sm:text-xl mb-10 max-w-xl mx-auto whitespace-pre-line">
+                                Mas esse clique não é só um botão.{'\n'}
                                 É a primeira decisão <span className="font-bold">real</span> que você toma por <span className="font-bold">você</span> em anos.
                             </p>
                             
@@ -799,16 +797,19 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
                     {isCodeUnlocked && (
                         <div id="final-cta-button-section" className="animate-pop-in space-y-6">
-                             <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-400">CÓDIGO DESBLOQUEADO!</p>
-                             <p className="text-purple-200/90 text-lg sm:text-xl">
-                                Sim ou não.<br/>
-                                Agora ou nunca.<br/>
+                             <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-400 whitespace-pre-line">CÓDIGO DESBLOQUEADO!</p>
+                             <p className="text-purple-200/90 text-lg sm:text-xl whitespace-pre-line">
+                                Sim ou não.{'\n'}
+                                Agora ou nunca.{'\n'}
                                 Acordar ou continuar dormindo.
                              </p>
-                             <p className="text-yellow-300 font-bold text-xl sm:text-2xl mt-2 mb-6">
+                             <p className="text-yellow-300 font-bold text-xl sm:text-2xl mt-2 mb-6 whitespace-pre-line">
                                 🔓 Você sabe o que precisa fazer.
                              </p>
                              
+                            <p className="text-center text-sm text-yellow-200/90 mb-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                                Essa oportunidade é sua, {displayName}!
+                            </p>
                             <Button
                                 asChild
                                 size="lg"
@@ -818,7 +819,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             >
                                 <a href="https://pay.kiwify.com.br/xxxxxxxx" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
                                     <ShoppingCart className="h-6 w-6 shrink-0" />
-                                    <span className="leading-tight break-words">{finalOfferTimeLeft > 0 ? `DESBLOQUEAR AGORA – POR R$${offerPriceFinal},00` : "OFERTA EXPIRADA"}</span>
+                                    <span className="leading-tight break-words">{finalOfferTimeLeft > 0 ? `DESBLOQUEAR AGORA – POR R$${offerPriceFinal.toFixed(2).replace('.',',')}` : "OFERTA EXPIRADA"}</span>
                                     <ExternalLink className="h-5 w-5 shrink-0" />
                                 </a>
                             </Button>
@@ -905,10 +906,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             </section>
         </main>
 
-        <div className="fixed bottom-0 left-0 right-0 md:hidden bg-black/80 backdrop-blur-sm p-3 border-t border-purple-700/50 z-50 shadow-2xl animate-fade-in" style={{animationDelay: '3s'}}>
+        <div className="fixed bottom-0 left-0 right-0 md:hidden bg-black/80 backdrop-blur-sm p-3 border-t border-purple-700/50 z-50 shadow-2xl animate-fade-in animate-subtle-vibration" style={{animationDelay: '3s'}}>
             <Button 
                 onClick={() => document.getElementById(isCodeUnlocked ? 'final-cta-button-section' : (isPriceRevealed ? 'final-touch-section' : 'price-anchor-section'))?.scrollIntoView({ behavior: 'smooth' })} 
-                className="w-full goddess-gradient text-primary-foreground font-bold text-md py-3 rounded-lg animate-subtle-glow animate-subtle-vibration"
+                className="w-full goddess-gradient text-primary-foreground font-bold text-md py-3 rounded-lg animate-subtle-glow"
                 >
                 <LucideSparkles className="mr-2 h-5 w-5 animate-ping absolute left-4 opacity-50 shrink-0" style={{animationDuration:'3s'}} />
                 {stickyMessages[stickyMessageIndex]}
@@ -927,5 +928,6 @@ const formatUserDreams = (dreams?: DreamOption[]): string => {
   const initialDreams = dreams.slice(0, -1).map(d => d.label.toLowerCase()).join(', ');
   return `${initialDreams} e ${lastDream}`;
 };
+
 
     
