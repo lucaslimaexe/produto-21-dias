@@ -19,7 +19,8 @@ interface QuestionnaireScreenProps {
   onAnswer: (answer: string) => void; 
   progress: number;
   isLastQuestion: boolean;
-  onComplete: () => void; 
+  onComplete: () => void;
+  currentAnswer?: string; // Adicionar prop para a resposta atual
 }
 
 export const questions: Question[] = [
@@ -51,7 +52,7 @@ export const questions: Question[] = [
     options: [
       "Sim, o tempo todo. Parece uma parede invisível que me impede de avançar.",
       "Às vezes. Sinto que quando estou quase lá, algo me puxa pra trás.",
-      "Não sei se é um bloqueio, mas sinto que não tenho a mesma 'sorte' que os outros.",
+      "Não sei if é um bloqueio, mas sinto que não tenho a mesma 'sorte' que os outros.",
       "Sim, e desconfio que os métodos que ensinam por aí são incompletos de propósito."
     ],
     feedback: "🔥 BINGO! AGORA ESTAMOS CHEGANDO NA RAIZ DO PROBLEMA. 🔥"
@@ -81,28 +82,36 @@ export const questions: Question[] = [
 ];
 
 
-export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ question, onAnswer, progress, isLastQuestion, onComplete }) => {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
+  question,
+  onAnswer,
+  progress,
+  isLastQuestion,
+  onComplete,
+  currentAnswer 
+}) => {
+  const [selectedOption, setSelectedOption] = useState<string | null>(currentAnswer || null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false); 
 
   useEffect(() => {
-    setSelectedOption(null);
+    // Atualiza a opção selecionada se a prop currentAnswer mudar (ex: ao navegar entre perguntas já respondidas)
+    setSelectedOption(currentAnswer || null);
     setShowFeedback(false);
     setIsProcessing(false);
-  }, [question.id]);
+  }, [question.id, currentAnswer]);
 
   const handleSelectOption = (option: string) => {
     if (isProcessing || showFeedback) return;
 
     setSelectedOption(option);
     onAnswer(option); 
-    playSound('answer_select.mp3'); // Som ao selecionar resposta
+    playSound('answer_select.mp3'); 
     setShowFeedback(true);
     setIsProcessing(true); 
 
     setTimeout(() => {
-      playSound('feedback_show.mp3'); // Som para feedback
+      playSound('feedback_show.mp3'); 
       onComplete(); 
     }, 2000); 
   };
@@ -161,3 +170,5 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ questi
     </div>
   );
 };
+
+    
