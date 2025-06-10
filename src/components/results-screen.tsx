@@ -4,14 +4,18 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { AlertTriangle, Clock, Zap, Eye, ExternalLink, XCircle, Sparkles, CheckCircle2, Unlock, Brain, HeartHandshake, TrendingUp, Quote, UserCircle, ShieldCheck, BarChartBig, Palette, Wand2 } from 'lucide-react';
+import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, BarChartBig, Brain, TrendingUp, Unlock, HeartHandshake, CheckCircle2, Palette, Quote, Target, Activity, ShieldOff, RouteOff } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Image from 'next/image';
+import { Progress } from "@/components/ui/progress";
+
 
 export interface BehavioralAnalysisData {
   archetype: string;
   summary: string;
   keywords: string[];
+  idealPercentage: number;
+  missingForIdeal: string;
 }
 
 interface ResultsScreenProps {
@@ -65,14 +69,14 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart, analysi
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!analysisError) {
+    if (analysisResult && !analysisError) {
       toast({
-        title: "🔥 Seu Diagnóstico Revelador Chegou!",
-        description: analysisResult ? "Veja sua análise personalizada e como o Código da Deusa pode te transformar." : "Descubra como o Código da Deusa pode ser a chave para sua transformação total.",
-        variant: "default",
+        title: "🔥 Seu Diagnóstico Comportamental Crítico Chegou!",
+        description: "Descubra os bloqueios brutais que te impedem e como o Código da Deusa pode ser sua única saída.",
+        variant: "destructive", 
         duration: 8000,
       });
-    } else {
+    } else if (analysisError) {
        toast({
         title: "⚠️ Erro na Análise",
         description: analysisError || "Não foi possível carregar sua análise. A página de resultados padrão será exibida.",
@@ -93,11 +97,17 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart, analysi
       setTimeLeft(prevTime => (prevTime > 0 ? prevTime - 1 : 0));
     }, 1000);
     
-    const blinkTimerId = setInterval(() => setIsBlinking(prev => !prev), 600);
+    if (timeLeft > 0 && timeLeft <= 60) { // Start blinking only in the last minute
+        const blinkTimerId = setInterval(() => setIsBlinking(prev => !prev), 500);
+        return () => {
+            clearInterval(timerId);
+            clearInterval(blinkTimerId);
+        };
+    }
+
 
     return () => {
       clearInterval(timerId);
-      clearInterval(blinkTimerId);
     };
   }, [timeLeft]);
 
@@ -107,38 +117,65 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart, analysi
     const remainingSeconds = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
+  
+  const getPercentageColor = (percentage: number) => {
+    if (percentage <= 25) return "bg-red-600";
+    if (percentage <= 50) return "bg-yellow-500";
+    if (percentage <= 75) return "bg-yellow-400";
+    return "bg-green-500"; // Should not happen with critical feedback
+  };
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center px-4 py-12 relative bg-gradient-to-br from-purple-950 via-black to-red-950 overflow-y-auto text-foreground">
       <div className="w-full max-w-5xl space-y-12 md:space-y-16">
         
-        {/* SEÇÃO 0: ANÁLISE COMPORTAMENTAL PERSONALIZADA (se disponível) */}
         {analysisResult && (
-          <section className="animate-fade-in bg-gradient-to-br from-purple-800/70 via-black to-indigo-900/70 rounded-3xl p-6 sm:p-8 lg:p-10 border-2 border-accent/60 shadow-2xl text-center" style={{animationDuration: '0.7s', animationDelay: '0s'}}>
-            <div className="flex justify-center items-center gap-3 mb-4">
-              <Wand2 className="h-10 w-10 text-accent" />
-              <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl font-bold goddess-text-gradient leading-tight">
-                Sua Análise Comportamental Personalizada
+          <section className="animate-fade-in bg-gradient-to-br from-red-900/80 via-black to-purple-900/80 rounded-3xl p-6 sm:p-8 lg:p-10 border-2 border-red-500/70 shadow-2xl text-center" style={{animationDuration: '0.7s', animationDelay: '0s'}}>
+            <div className="flex justify-center items-center gap-3 mb-6">
+              <AlertTriangle className="h-12 w-12 text-red-400" />
+              <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl font-bold text-red-300 leading-tight">
+                Seu Diagnóstico Comportamental CRÍTICO
               </h2>
-              <Wand2 className="h-10 w-10 text-accent transform scale-x-[-1]" />
+              <AlertTriangle className="h-12 w-12 text-red-400" />
             </div>
-            <p className="text-xl sm:text-2xl text-yellow-300 font-semibold mb-3">
-              Seu Arquétipo de Manifestação: <span className="text-pink-400">{analysisResult.archetype}</span>
+
+            <p className="text-xl sm:text-2xl text-yellow-300 font-semibold mb-2">
+              Seu Arquétipo Dominante (Problemático): <span className="text-pink-400">{analysisResult.archetype}</span>
             </p>
-            <p className="text-md sm:text-lg text-purple-200/90 leading-relaxed mb-4 max-w-3xl mx-auto">
+            <p className="text-md sm:text-lg text-red-200/90 leading-relaxed mb-6 max-w-3xl mx-auto">
               {analysisResult.summary}
             </p>
+
             <div className="mb-6">
-              <p className="text-purple-300/80 text-sm font-medium mb-2">Principais Desafios/Forças Identificados:</p>
+              <p className="text-red-300/80 text-sm font-medium mb-2">Principais Fraquezas e Bloqueios Identificados:</p>
               <div className="flex flex-wrap justify-center gap-2">
                 {analysisResult.keywords.map((keyword, index) => (
-                  <span key={index} className="bg-purple-700/50 text-yellow-300 text-xs font-semibold px-3 py-1 rounded-full border border-purple-500/70">
+                  <span key={index} className="bg-red-700/60 text-yellow-200 text-xs font-semibold px-3 py-1 rounded-full border border-red-500/80">
                     {keyword}
                   </span>
                 ))}
               </div>
             </div>
-            <p className="text-sm text-muted-foreground italic">Esta análise foi gerada por IA para te ajudar a entender melhor seus padrões e como o Código da Deusa pode te guiar.</p>
+            
+            <div className="bg-black/50 p-4 rounded-lg border border-yellow-500/50 mb-6">
+                <p className="text-lg sm:text-xl text-yellow-300 font-semibold mb-2">
+                    Nível de Alinhamento Atual com Seu Potencial Máximo: 
+                    <span className={`ml-2 text-2xl font-bold ${analysisResult.idealPercentage <= 30 ? 'text-red-400' : 'text-yellow-400'}`}>
+                        {analysisResult.idealPercentage}% (Estado Crítico)
+                    </span>
+                </p>
+                <Progress value={analysisResult.idealPercentage} className={`w-full h-4 border border-yellow-600/50 [&>div]:${getPercentageColor(analysisResult.idealPercentage)}`} />
+                {analysisResult.idealPercentage <= 30 && <p className="text-red-400 text-sm mt-1">Este nível é alarmantemente baixo e requer atenção imediata.</p>}
+            </div>
+
+            <div className="bg-purple-900/30 p-6 rounded-xl border border-purple-600">
+                <h3 className="text-xl sm:text-2xl text-pink-400 font-semibold mb-3 flex items-center justify-center">
+                    <RouteOff className="h-7 w-7 mr-2 text-pink-500"/> O Que te IMPEDE de Alcançar Seu Poder Total:
+                </h3>
+                <p className="text-md sm:text-lg text-purple-200/90 leading-relaxed max-w-3xl mx-auto">
+                    {analysisResult.missingForIdeal}
+                </p>
+            </div>
           </section>
         )}
         {analysisError && !analysisResult && (
@@ -158,7 +195,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart, analysi
         <hr className="border-purple-700/50 my-8 md:my-12" />
 
         {/* SEÇÃO 1: A DOR E A CONSPIRAÇÃO */}
-        <section className="animate-fade-in text-center md:text-left" style={{animationDuration: '0.7s', animationDelay: '0.2s'}}>
+        <section className="animate-fade-in text-center md:text-left" style={{animationDuration: '0.7s', animationDelay: '0.4s'}}>
           <div className="md:flex md:items-center md:gap-8">
             <div className="mb-6 md:mb-0 md:w-1/3 flex justify-center">
               <Image 
@@ -190,7 +227,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart, analysi
         <hr className="border-purple-700/50 my-8 md:my-12" />
 
         {/* SEÇÃO 2: A REVELAÇÃO: O CÓDIGO DA DEUSA */}
-        <section className="animate-fade-in text-center" style={{animationDuration: '0.7s', animationDelay: '0.8s'}}>
+        <section className="animate-fade-in text-center" style={{animationDuration: '0.7s', animationDelay: '1.0s'}}>
           <div className="mb-8 flex justify-center">
              <Image 
                 data-ai-hint="binary code transformation"
@@ -227,7 +264,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart, analysi
         <hr className="border-purple-700/50 my-8 md:my-12" />
 
         {/* SEÇÃO 3: AS PROVAS IRREFUTÁVEIS */}
-        <section className="animate-fade-in" style={{animationDuration: '0.7s', animationDelay: '1.4s'}}>
+        <section className="animate-fade-in" style={{animationDuration: '0.7s', animationDelay: '1.6s'}}>
           <h2 className="font-headline text-3xl sm:text-4xl text-center mb-10 goddess-text-gradient">Veja o que mulheres como você estão CONQUISTANDO com o CÓDIGO DA DEUSA™:</h2>
           <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
             {testimonials.map((testimonial, index) => (
@@ -260,7 +297,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart, analysi
         <hr className="border-purple-700/50 my-8 md:my-12" />
 
         {/* SEÇÃO 4: A OFERTA IRRECUSÁVEL */}
-        <section className="animate-fade-in bg-gradient-to-br from-red-800/80 via-black to-purple-900/80 rounded-3xl p-6 sm:p-8 lg:p-12 mb-6 sm:mb-8 border-4 border-yellow-500 shadow-2xl text-center" style={{animationDuration: '0.7s', animationDelay: '2.0s'}}>
+        <section className="animate-fade-in bg-gradient-to-br from-red-800/80 via-black to-purple-900/80 rounded-3xl p-6 sm:p-8 lg:p-12 mb-6 sm:mb-8 border-4 border-yellow-500 shadow-2xl text-center" style={{animationDuration: '0.7s', animationDelay: '2.2s'}}>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-yellow-200 mb-3 sm:mb-4 animate-pulse [animation-duration:1.2s]">
             Chega de ser feita de otária. Chega de ver seus sonhos no ralo enquanto outros vendem ilusão.
           </h2>
@@ -283,10 +320,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart, analysi
           <div className="mb-6 sm:mb-8">
             <div className={`flex items-center justify-center space-x-2 mb-2 sm:mb-3 ${timeLeft < 60 && timeLeft > 0 ? 'text-red-400' : 'text-yellow-200'}`}>
               <Clock className="h-7 w-7 sm:h-10 sm:w-10" />
-              <span className={`text-4xl sm:text-5xl md:text-7xl font-bold font-mono ${timeLeft === 0 ? 'text-red-600' : ''} ${isBlinking && timeLeft > 0 ? 'animate-ping':''}`}>
+              <span className={`text-4xl sm:text-5xl md:text-7xl font-bold font-mono ${timeLeft === 0 ? 'text-red-600' : ''} ${isBlinking && timeLeft > 0 ? 'animate-ping opacity-75':'opacity-100'}`}>
                 {formatTime(timeLeft)}
               </span>
-              <Zap className={`h-7 w-7 sm:h-10 sm:w-10 ${timeLeft < 300 && timeLeft > 0 ? 'animate-spin' : ''}`} />
+              <Zap className={`h-7 w-7 sm:h-10 sm:w-10 ${timeLeft < 300 && timeLeft > 0 && timeLeft % 2 === 0 ? 'animate-spin [animation-duration:0.5s]' : ''}`} />
             </div>
             <div className="w-full bg-black/60 rounded-full h-4 sm:h-5 border-2 border-yellow-600/70 overflow-hidden shadow-inner">
               <div 
@@ -305,7 +342,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart, analysi
             disabled={timeLeft === 0}
           >
             <a href="https://pay.kiwify.com.br/xxxxxxxx" target="_blank" rel="noopener noreferrer">
-              <Sparkles className="mr-2 h-6 w-6" />
+              <CheckCircle2 className="mr-2 h-6 w-6" />
               {timeLeft > 0 ? "QUERO COMANDAR MEU DESTINO AGORA!" : "OFERTA EXPIRADA"}
               <ExternalLink className="ml-2 h-6 w-6" />
             </a>
@@ -317,7 +354,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart, analysi
         </section>
         
         {/* SEÇÃO FINAL: A ESCOLHA É SUA */}
-        <section className="animate-fade-in text-center py-8 bg-black/80 rounded-xl border-2 border-purple-800/60" style={{animationDuration: '0.7s', animationDelay: '2.6s'}}>
+        <section className="animate-fade-in text-center py-8 bg-black/80 rounded-xl border-2 border-purple-800/60" style={{animationDuration: '0.7s', animationDelay: '2.8s'}}>
           <h2 className="font-headline text-2xl sm:text-3xl text-purple-300 mb-6">A escolha é sua.</h2>
           <p className="text-lg sm:text-xl text-yellow-200 mb-8">
             Prove para si mesma que você não é mais uma vítima. <br/>Prove que você é uma Deusa. <br/>Sua hora de virar o jogo é <span className="text-green-400 font-extrabold text-2xl underline">AGORA</span>.
