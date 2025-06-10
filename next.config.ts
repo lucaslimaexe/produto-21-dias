@@ -94,6 +94,12 @@ const nextConfig: NextConfig = {
         hostname: 'inspiracaomulher.com.br',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.freepik.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
