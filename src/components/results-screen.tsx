@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, BarChartBig, Brain, TrendingUp, Unlock, HeartHandshake, CheckCircle2, Palette, Quote, Target, Activity, ShieldOff, RouteOff } from 'lucide-react';
+import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, BarChartBig, Brain, TrendingUp, Unlock, HeartHandshake, CheckCircle2, Palette, Quote, Target, Activity, ShieldOff, RouteOff, MessageCircle, ShieldCheck } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Image from 'next/image';
 import { Progress } from "@/components/ui/progress";
