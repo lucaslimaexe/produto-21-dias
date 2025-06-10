@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { Progress } from './ui/progress';
-import { Sparkles, MessageCircle, Loader2 } from 'lucide-react';
+import { Sparkles, MessageCircle, Loader2, Clock } from 'lucide-react';
 import { playSound } from '@/lib/audioUtils';
 import { cn } from '@/lib/utils';
 
@@ -27,12 +27,13 @@ interface QuestionnaireScreenProps {
   isLastQuestion: boolean;
   onComplete: () => void;
   currentAnswer?: string;
+  userName?: string;
 }
 
 export const questions: Question[] = [
   {
     id: 1,
-    question: "Quando você pensa na vida que deseja, o que você sente com mais força?",
+    question: "{userName}, quando você pensa na vida que deseja, o que você sente com mais força?",
     options: [
       { text: "Uma pontada de esperança, mas logo em seguida a dúvida de que seja possível pra mim.", score: 3 },
       { text: "Frustração, porque eu já tentei de tudo e nada parece funcionar de verdade.", score: 4 },
@@ -43,7 +44,7 @@ export const questions: Question[] = [
   },
   {
     id: 2,
-    question: "Você se esforça, faz afirmação, visualiza... e no fim do dia, o que acontece?",
+    question: "{userName}, você se esforça, faz afirmação, visualiza... e no fim do dia, o que acontece?",
     options: [
       { text: "A vida continua exatamente a mesma, como se nada tivesse acontecido.", score: 4 },
       { text: "Eu me sinto bem por alguns minutos, mas depois a realidade bate e eu desanimo.", score: 3 },
@@ -54,7 +55,7 @@ export const questions: Question[] = [
   },
   {
     id: 3,
-    question: "Você já sentiu que existe algo 'bloqueando' seu sucesso, algo que você não consegue ver?",
+    question: "{userName}, você já sentiu que existe algo 'bloqueando' seu sucesso, algo que você não consegue ver?",
     options: [
       { text: "Sim, o tempo todo. Parece uma parede invisível que me impede de avançar.", score: 5 },
       { text: "Às vezes. Sinto que quando estou quase lá, algo me puxa pra trás.", score: 4 },
@@ -65,7 +66,7 @@ export const questions: Question[] = [
   },
   {
     id: 4,
-    question: "Seja honesta: No fundo, você se sente 100% merecedora de tudo que sonha?",
+    question: "Seja honesta, {userName}: No fundo, você se sente 100% merecedora de tudo que sonha?",
     options: [
       { text: "Honestamente? Não. Uma parte de mim acha que não é pra mim.", score: 5 },
       { text: "Eu tento acreditar que sim, mas a dúvida sempre aparece.", score: 4 },
@@ -76,7 +77,7 @@ export const questions: Question[] = [
   },
   {
     id: 5,
-    question: "Se existisse um MÉTODO REAL para destravar tudo isso em 21 dias, você teria a CORAGEM de usar?",
+    question: "{userName}, se existisse um MÉTODO REAL para destravar tudo isso em 21 dias, você teria a CORAGEM de usar?",
     options: [
       { text: "Sim, estou desesperada por uma solução que funcione de verdade.", score: 1 },
       { text: "Talvez... mas tenho medo de me frustrar mais uma vez.", score: 3 },
@@ -95,47 +96,74 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   progress,
   isLastQuestion,
   onComplete,
-  currentAnswer
+  currentAnswer,
+  userName,
 }) => {
   const [selectedOptionText, setSelectedOptionText] = useState<string | null>(null);
-  const [transitionState, setTransitionState] = useState<TransitionState>('entering'); // Start with entering animation
-  const prevQuestionIdRef = useRef<number | undefined>();
+  const [transitionState, setTransitionState] = useState<TransitionState>('entering');
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const componentName = "QuestionnaireScreen"; // Para os logs
+
+  console.log(`${componentName} (QID: ${question.id}): Component RENDER. transitionState: ${transitionState}, selectedOptionText: "${selectedOptionText}", currentAnswer prop: "${currentAnswer}"`);
+
+  // Timer useEffect
+  useEffect(() => {
+    console.log(`${componentName} (QID: ${question.id}): Timer useEffect MOUNT.`);
+    const intervalId = setInterval(() => {
+      setElapsedTime(prevTime => prevTime + 1);
+    }, 1000);
+    return () => {
+      console.log(`${componentName} (QID: ${question.id}): Timer useEffect UNMOUNT/CLEANUP.`);
+      clearInterval(intervalId);
+    };
+  }, []); // Roda apenas uma vez na montagem
 
   // Handle initial animation and reset for new questions
   useEffect(() => {
-    if (prevQuestionIdRef.current !== question.id) {
-      setSelectedOptionText(currentAnswer || null);
-      setTransitionState('entering'); // Trigger entering animation for new question
-      const timer = setTimeout(() => {
-        setTransitionState('idle');
-      }, 400); // Duration of slide-in-right animation
+    console.log(`${componentName} (QID: ${question.id}): Question Change/Mount useEffect RUN. currentAnswer prop: "${currentAnswer}"`);
+    
+    setSelectedOptionText(currentAnswer || null);
+    setTransitionState('entering'); 
+    console.log(`${componentName} (QID: ${question.id}): Set selectedOptionText to "${currentAnswer || null}", transitionState to 'entering'.`);
 
-      prevQuestionIdRef.current = question.id;
-      return () => clearTimeout(timer);
-    }
-  }, [question.id, currentAnswer]);
+    const timer = setTimeout(() => {
+      setTransitionState('idle');
+      console.log(`${componentName} (QID: ${question.id}): Transitioned to 'idle' after entering animation.`);
+    }, 400); // Duration of slide-in-right animation
+
+    return () => {
+      clearTimeout(timer);
+      console.log(`${componentName} (QID: ${question.id}): Question Change/Mount useEffect CLEANUP.`);
+    };
+  }, [question.id]); // SÓ depende de question.id
 
 
   const handleSelectOption = (option: QuestionOption) => {
-    if (transitionState !== 'idle') return; // Prevent action during transition
+    console.log(`${componentName} (QID: ${question.id}): handleSelectOption called. Current transitionState: ${transitionState}. Option: "${option.text}"`);
+    if (transitionState !== 'idle') {
+      console.warn(`${componentName} (QID: ${question.id}): Attempted to select option while not in 'idle' state.`);
+      return; 
+    }
 
     setSelectedOptionText(option.text);
     onAnswer(option.text);
     playSound('answer_select.mp3');
     setTransitionState('feedback');
+    console.log(`${componentName} (QID: ${question.id}): Set transitionState to 'feedback'.`);
     playSound('feedback_show.mp3');
 
     setTimeout(() => {
       setTransitionState('exiting');
+      console.log(`${componentName} (QID: ${question.id}): Set transitionState to 'exiting'.`);
       setTimeout(() => {
         onComplete(); 
-        // useEffect for question.id will handle 'entering' state for the new question
-      }, 400); // Duration of slide-out-left animation
-    }, 1500); // Time to display feedback
+        console.log(`${componentName} (QID: ${question.id}): onComplete called. Next question/results should load.`);
+      }, 400); 
+    }, 1500); 
   };
   
   const showQuestionContent = transitionState === 'idle' || transitionState === 'entering';
-  const showFeedbackContent = transitionState === 'feedback' || transitionState === 'exiting'; // Show feedback also during exit
+  const showFeedbackContent = transitionState === 'feedback' || transitionState === 'exiting'; 
 
   let animationClass = '';
   if (transitionState === 'entering') {
@@ -143,6 +171,15 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   } else if (transitionState === 'exiting') {
     animationClass = 'animate-slide-out-left';
   }
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const displayName = userName || "Deusa";
+  const currentQuestionText = question.question.replace(/{userName}/g, displayName);
 
 
   return (
@@ -153,16 +190,22 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
       </div>
       
       <div className="w-full max-w-2xl bg-black/70 backdrop-blur-md border-2 border-purple-500 shadow-2xl rounded-3xl p-6 sm:p-8 md:p-10">
-        <div className="mb-6">
+        <div className="mb-4">
+          <div className="flex items-center justify-center space-x-2 mb-2">
+            <Clock className="h-5 w-5 text-yellow-300" />
+            <span className="text-yellow-300 font-semibold text-lg tabular-nums">{formatTime(elapsedTime)}</span>
+          </div>
           <Progress value={progress} className="w-full h-3 bg-purple-700/50 border border-purple-500 [&>div]:bg-gradient-to-r [&>div]:from-yellow-400 [&>div]:to-pink-500" />
-          <p className="text-center text-sm text-yellow-300 mt-2">PERGUNTA {question.id} DE {questions.length}</p>
+          <p className="text-center text-sm text-yellow-300 mt-2">
+            {displayName}, PERGUNTA {question.id} DE {questions.length}
+          </p>
         </div>
 
         <div className={cn("bg-purple-900/30 p-6 rounded-xl border border-purple-700 mb-6 min-h-[300px] flex flex-col justify-center", animationClass)}>
           {showQuestionContent && (
             <>
               <h2 className="font-headline text-xl sm:text-2xl md:text-3xl font-semibold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-400 to-purple-300 leading-tight">
-                {question.question}
+                {currentQuestionText}
               </h2>
               <div className="space-y-3 sm:space-y-4">
                 {question.options.map((option, index) => (
@@ -200,4 +243,5 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   );
 };
 
+    
     
