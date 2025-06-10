@@ -45,9 +45,16 @@ export async function runBehavioralAnalysis(
     const result = await behavioralAnalysisFlow(input);
     console.log('Behavioral analysis successful with output:', JSON.stringify(result, null, 2));
     return result;
-  } catch (error) {
-    console.error('Error in runBehavioralAnalysis an external call:', error);
-    throw error; // Re-throw para ser pego pela página de análise
+  } catch (error: any) {
+    console.error('Error in runBehavioralAnalysis during external call to behavioralAnalysisFlow:', error);
+    // Log additional details if available from the error object
+    if (error.details) {
+      console.error('Error details:', error.details);
+    }
+    if (error.stack) {
+      console.error('Error stack:', error.stack);
+    }
+    throw new Error(`Behavioral analysis flow failed: ${error.message || 'Unknown error'}`);
   }
 }
 
@@ -74,6 +81,26 @@ const behavioralAnalysisPrompt = ai.definePrompt({
     Seja perspicaz e forneça uma análise que pareça genuinamente personalizada e reveladora para a usuária.
     O objetivo é que ela se sinta compreendida e curiosa sobre a solução que será apresentada (o "Código da Deusa").
   `,
+  config: { // Adicionando configurações de segurança
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+      {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+      {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+      {
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+    ],
+  },
 });
 
 const behavioralAnalysisFlow = ai.defineFlow(
@@ -99,7 +126,7 @@ const behavioralAnalysisFlow = ai.defineFlow(
           }
         });
       } else {
-        console.error('No candidates found in the response.');
+        console.error('No candidates found in the response. Full response object:', JSON.stringify(response, null, 2));
       }
       throw new Error('Behavioral analysis failed to produce a parsed output. Check server logs.');
     }
@@ -107,3 +134,4 @@ const behavioralAnalysisFlow = ai.defineFlow(
     return output;
   }
 );
+
