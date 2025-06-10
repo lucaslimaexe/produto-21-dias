@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Progress } from './ui/progress'; // Assuming you have this ShadCN component
-import { Sparkles, Send, MessageCircle, CheckCircle } from 'lucide-react'; // Added MessageCircle, CheckCircle
+import { Sparkles, Send, MessageCircle } from 'lucide-react'; // Added MessageCircle
 
 interface Question {
   id: number;
@@ -18,7 +18,7 @@ interface QuestionnaireScreenProps {
   onAnswer: (answer: string) => void;
   progress: number;
   isLastQuestion: boolean;
-  onComplete: () => void;
+  onComplete: () => void; // This is called to proceed: either to next question or to complete the quiz
 }
 
 export const questions: Question[] = [
@@ -86,7 +86,7 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ questi
 
   const handleSelectOption = (option: string) => {
     setSelectedOption(option);
-    setShowFeedback(false); // Reset feedback if re-selecting
+    setShowFeedback(false); 
   };
 
   const handleSubmitAnswer = () => {
@@ -99,12 +99,9 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ questi
   const handleNextOrComplete = () => {
     setShowFeedback(false);
     setSelectedOption(null);
-    if (isLastQuestion) {
-        onComplete();
-    } else {
-        // The parent component will advance the question
-        // Forcing a slight delay for feedback to be read if needed, then parent advances
-    }
+    // onComplete is the function passed from the parent (QuestionnairePage)
+    // which handles advancing the question index or navigating to analysis.
+    onComplete(); 
   };
 
 
