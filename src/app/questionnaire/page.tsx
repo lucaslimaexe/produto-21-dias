@@ -13,7 +13,6 @@ interface Answer {
   answer: string;
 }
 
-// REGRAS DE ANÁLISE LOCAL (COM FOCO CRÍTICO)
 const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
   const findAnswerText = (id: number): string | undefined => {
     return answers.find(a => a.questionId === id)?.answer;
@@ -25,7 +24,6 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
   const answer4 = findAnswerText(4);
   const answer5 = findAnswerText(5);
 
-  // REGRA 1: Cansaço + Dúvida de Merecimento (MUITO CRÍTICO)
   if (answer1 === "Cansaço. Estou exausta de lutar e não ver resultados." &&
       answer4 === "Honestamente? Não. Uma parte de mim acha que não é pra mim.") {
     return {
@@ -37,7 +35,6 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
     };
   }
 
-  // REGRA 2: Frustração + Inércia (CRÍTICO)
   if (answer1 === "Frustração, porque eu já tentei de tudo e nada parece funcionar de verdade." &&
       answer2 === "A vida continua exatamente a mesma, como se nada tivesse acontecido.") {
     return {
@@ -49,7 +46,6 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
     };
   }
 
-  // REGRA 3: Medo de Fracassar + Falta de Sorte Percebida (CRÍTICO MODERADO)
   if (answer5 === "Talvez... mas tenho medo de me frustrar mais uma vez." &&
       answer3 === "Não sei if é um bloqueio, mas sinto que não tenho a mesma 'sorte' que os outros.") {
     return {
@@ -61,7 +57,6 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
     };
   }
   
-  // REGRA 4: Inveja + Sentimento de Injustiça (MUITO CRÍTICO)
   if (answer1 === "Inveja (mesmo que eu não admita) de outras mulheres que parecem ter tudo." &&
       answer4 === "Sim, mas sinto que o mundo é injusto e não me dá o que eu mereço.") {
     return {
@@ -73,7 +68,6 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
     };
   }
 
-  // REGRA 5: Coragem Total + Impaciência para Resultados (CRÍTICO MODERADO)
    if (answer5 === "CORAGEM EU TENHO, SÓ PRECISO SABER SE FUNCIONA MESMO!" && 
        (answer1 === "Uma pontada de esperança, mas logo em seguida a dúvida de que seja possível pra mim." || answer2 === "Eu me sinto bem por alguns minutos, mas depois a realidade bate e eu desanimo.")) {
      return {
@@ -85,7 +79,6 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
      };
    }
 
-  // ARQUÉTIPO PADRÃO (Fallback - também crítico)
   return {
     archetype: "Exploradora Desorientada",
     summary: "Você está buscando respostas, mas parece não ter um direcionamento claro, o que dificulta qualquer progresso significativo. Suas respostas indicam uma falta de autoconhecimento profundo sobre seus reais bloqueios e potenciais, tornando sua jornada de manifestação confusa e pouco eficaz.",
@@ -104,18 +97,18 @@ function QuestionnaireContent() {
   const [preQuestionnaireData, setPreQuestionnaireData] = useState<any>(null);
 
   useEffect(() => {
-    // Captura dados do formulário de pré-questionário, se existirem
     const name = searchParams.get('name');
     const dob = searchParams.get('dob');
     const dreamsString = searchParams.get('dreams');
-    if (name && dob && dreamsString) {
+    const dreamsDate = searchParams.get('dreamsDate'); // Novo campo
+    if (name && dob && dreamsString && dreamsDate) {
       try {
         const dreams = JSON.parse(dreamsString);
-        setPreQuestionnaireData({ name, dob, dreams });
-        // Você pode usar esses dados como quiser, por exemplo, logá-los
-        console.log("Dados do formulário pré-questionário:", { name, dob, dreams });
+        const newPreQuestionnaireData = { name, dob, dreams, dreamsDate };
+        setPreQuestionnaireData(newPreQuestionnaireData);
+        console.log("Dados do formulário pré-questionário:", newPreQuestionnaireData);
       } catch (e) {
-        console.error("Erro ao parsear sonhos dos query params:", e);
+        console.error("Erro ao parsear dados dos query params:", e);
       }
     }
   }, [searchParams]);
@@ -134,14 +127,13 @@ function QuestionnaireContent() {
       setIsNavigating(true);
       const localAnalysisResult = generateLocalAnalysis(userAnswers);
       const analysisJsonString = JSON.stringify(localAnalysisResult);
-      const analysisQueryParam = encodeURIComponent(analysisJsonString);
       
-      // Mantém os dados do formulário de pré-questionário nos query params, se existirem
       const existingParams = new URLSearchParams(searchParams.toString());
-      existingParams.set('analysis', analysisQueryParam);
+      existingParams.set('analysis', analysisJsonString); // Não precisa encodeURIComponent aqui se o router.push faz
       
+      // O router.push lida com a codificação dos parâmetros
       const targetUrl = `/results?${existingParams.toString()}`;
-      console.log('Navigating to results:', targetUrl); 
+      console.log('Navigating to results (questionnaire):', targetUrl); 
       router.push(targetUrl);
     } else {
       setCurrentQuestionIndex(prevIndex => prevIndex + 1);
@@ -170,3 +162,5 @@ export default function QuestionnairePage() {
     </Suspense>
   );
 }
+
+    

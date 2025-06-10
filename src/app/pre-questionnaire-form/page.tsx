@@ -10,11 +10,11 @@ function PreQuestionnaireFormContent() {
   const router = useRouter();
 
   const handleFormComplete = (data: PreQuestionnaireFormData) => {
-    // Os dados já devem estar formatados corretamente pelo componente do formulário
     const queryParams = new URLSearchParams({
       name: data.fullName,
-      dob: data.dateOfBirth.toISOString().split('T')[0], // Formato YYYY-MM-DD
-      dreams: JSON.stringify(data.selectedDreams.map(d => d.id)) // Array de IDs dos sonhos
+      dob: data.dateOfBirth.toISOString().split('T')[0], 
+      dreams: JSON.stringify(data.selectedDreams.map(d => d.id)),
+      dreamsDate: data.dreamsAchievementDate.toISOString().split('T')[0], // Novo campo
     }).toString();
     router.push(`/questionnaire?${queryParams}`);
   };
@@ -30,3 +30,5 @@ export default function PreQuestionnaireFormPage() {
     </Suspense>
   );
 }
+
+    

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, DollarSign, Home, Plane, Car, Users, Briefcase, Brain, HeartHandshake, HelpCircle, Award, Sparkles, GripVertical } from 'lucide-react';
+import { CalendarIcon, DollarSign, Home, Plane, Car, Users, Briefcase, Brain, HeartHandshake, HelpCircle, Award, Sparkles, Target, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -22,10 +22,10 @@ const dreamOptions = [
   { id: 'new_car', label: 'Carro Novo', icon: Car },
   { id: 'soul_mate', label: 'Encontrar Alma Gêmea', icon: HeartHandshake },
   { id: 'successful_business', label: 'Negócio de Sucesso', icon: Briefcase },
-  { id: 'inner_peace', label: 'Paz Interior', icon: Brain }, // Usando Brain para representar paz mental/interior
-  { id: 'health_wellness', label: 'Saúde e Bem-estar', icon: Award }, // Usando Award para representar conquista de saúde
+  { id: 'inner_peace', label: 'Paz Interior', icon: Brain }, 
+  { id: 'health_wellness', label: 'Saúde e Bem-estar', icon: Award }, 
   { id: 'happy_family', label: 'Família Feliz', icon: Users },
-  { id: 'help_others', label: 'Ajudar o Mundo', icon: HelpCircle }, // HelpCircle para ajudar/impactar
+  { id: 'help_others', label: 'Ajudar o Mundo', icon: HelpCircle }, 
 ];
 
 export interface DreamOption {
@@ -38,6 +38,7 @@ export interface PreQuestionnaireFormData {
   fullName: string;
   dateOfBirth: Date;
   selectedDreams: DreamOption[];
+  dreamsAchievementDate: Date; 
 }
 
 const formSchema = z.object({
@@ -48,6 +49,7 @@ const formSchema = z.object({
     label: z.string(),
     icon: z.any(),
   })).length(3, { message: "Você deve selecionar exatamente 3 sonhos." }),
+  dreamsAchievementDate: z.date({ required_error: "Data para realizar os sonhos é obrigatória." }),
 });
 
 interface PreQuestionnaireFormScreenProps {
@@ -64,7 +66,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
       fullName: '',
       selectedDreams: [],
     },
-    mode: 'onChange', // Validate on change to enable/disable button
+    mode: 'onChange',
   });
 
   const watchedDreams = watch('selectedDreams');
@@ -73,7 +75,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     const currentIndex = selectedDreamsInternal.findIndex(d => d.id === dream.id);
     let newSelectedDreams: DreamOption[];
 
-    if (currentIndex === -1) { // Dream not selected, add it
+    if (currentIndex === -1) { 
       if (selectedDreamsInternal.length < 3) {
         newSelectedDreams = [...selectedDreamsInternal, dream];
       } else {
@@ -83,9 +85,9 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
           variant: "destructive",
           duration: 3000,
         });
-        return; // Do not add if already 3 selected
+        return; 
       }
-    } else { // Dream selected, remove it
+    } else { 
       newSelectedDreams = selectedDreamsInternal.filter(d => d.id !== dream.id);
     }
     setSelectedDreamsInternal(newSelectedDreams);
@@ -103,11 +105,10 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
         <div className="text-center mb-8">
           <Sparkles className="h-12 w-12 text-accent mx-auto mb-3" />
           <h1 className="font-headline text-3xl md:text-4xl font-bold goddess-text-gradient mb-2">Prepare Seu Caminho</h1>
-          <p className="text-muted-foreground text-lg">Para entendermos seus bloqueios, precisamos conhecer você e seus maiores desejos.</p>
+          <p className="text-muted-foreground text-lg">Para entendermos seus bloqueios, precisamos conhecer você, seus maiores desejos e quando você quer realizá-los.</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {/* Nome Completo */}
           <div>
             <label htmlFor="fullName" className="block text-sm font-medium text-foreground mb-1">Nome Completo</label>
             <Controller
@@ -118,7 +119,6 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
             {errors.fullName && <p className="text-destructive text-xs mt-1">{errors.fullName.message}</p>}
           </div>
 
-          {/* Data de Nascimento */}
           <div>
             <label htmlFor="dateOfBirth" className="block text-sm font-medium text-foreground mb-1">Data de Nascimento</label>
             <Controller
@@ -148,7 +148,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                       locale={ptBR}
                       captionLayout="dropdown-buttons"
                       fromYear={1920}
-                      toYear={new Date().getFullYear() - 10} // Pelo menos 10 anos de idade
+                      toYear={new Date().getFullYear() - 10} 
                     />
                   </PopoverContent>
                 </Popover>
@@ -156,8 +156,47 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
             />
             {errors.dateOfBirth && <p className="text-destructive text-xs mt-1">{errors.dateOfBirth.message}</p>}
           </div>
+          
+          <div>
+            <label htmlFor="dreamsAchievementDate" className="block text-sm font-medium text-foreground mb-1">Data Desejada para Realizar os Sonhos</label>
+            <Controller
+              name="dreamsAchievementDate"
+              control={control}
+              render={({ field }) => (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !field.value && "text-muted-foreground",
+                        errors.dreamsAchievementDate ? 'border-destructive' : ''
+                      )}
+                    >
+                      <Target className="mr-2 h-4 w-4 text-accent" />
+                      {field.value ? format(field.value, "PPP", { locale: ptBR }) : <span>Quando você quer alcançar?</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={(date) => field.onChange(date)}
+                      initialFocus
+                      locale={ptBR}
+                      captionLayout="dropdown-buttons"
+                      fromDate={new Date()} // Não pode selecionar datas passadas
+                      fromYear={new Date().getFullYear()}
+                      toYear={new Date().getFullYear() + 20} // Até 20 anos no futuro
+                    />
+                  </PopoverContent>
+                </Popover>
+              )}
+            />
+            {errors.dreamsAchievementDate && <p className="text-destructive text-xs mt-1">{errors.dreamsAchievementDate.message}</p>}
+          </div>
 
-          {/* Seleção de Sonhos */}
+
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">Selecione seus 3 Maiores Sonhos Atuais</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -210,3 +249,5 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     </div>
   );
 };
+
+    
