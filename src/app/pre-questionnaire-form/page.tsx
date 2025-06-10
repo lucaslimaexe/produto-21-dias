@@ -10,10 +10,13 @@ function PreQuestionnaireFormContent() {
   const router = useRouter();
 
   const handleFormComplete = (data: PreQuestionnaireFormData) => {
+    // Os sonhos já são um array de objetos, então podemos passar o array de IDs diretamente
+    const dreamIds = data.selectedDreams.map(d => d.id);
+    
     const queryParams = new URLSearchParams({
       name: data.fullName,
-      dreams: JSON.stringify(data.selectedDreams.map(d => d.id)),
-      dreamsDate: data.dreamsAchievementDate.toISOString().split('T')[0],
+      dreams: JSON.stringify(dreamIds), // Passa o array de IDs como string JSON
+      dreamsDate: data.dreamsAchievementDate, // Passa a string da opção de data selecionada
     }).toString();
     router.push(`/questionnaire?${queryParams}`);
   };
@@ -24,7 +27,7 @@ function PreQuestionnaireFormContent() {
 
 export default function PreQuestionnaireFormPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-black to-red-950"><Loader2 className="h-16 w-16 text-yellow-400 animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-950 to-rose-900"><Loader2 className="h-16 w-16 text-accent animate-spin" /></div>}>
       <PreQuestionnaireFormContent/>
     </Suspense>
   );

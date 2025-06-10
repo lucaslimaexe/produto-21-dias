@@ -13,6 +13,7 @@ interface Answer {
   answer: string;
 }
 
+// REGRAS DE ANÁLISE COMPORTAMENTAL LOCAL (FOCO CRÍTICO)
 const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
   const findAnswerText = (id: number): string | undefined => {
     return answers.find(a => a.questionId === id)?.answer;
@@ -24,6 +25,7 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
   const answer4 = findAnswerText(4);
   const answer5 = findAnswerText(5);
 
+  // Regra 1: Exaustão e Não Merecimento
   if (answer1 === "Cansaço. Estou exausta de lutar e não ver resultados." &&
       answer4 === "Honestamente? Não. Uma parte de mim acha que não é pra mim.") {
     return {
@@ -35,6 +37,7 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
     };
   }
 
+  // Regra 2: Frustração e Inércia
   if (answer1 === "Frustração, porque eu já tentei de tudo e nada parece funcionar de verdade." &&
       answer2 === "A vida continua exatamente a mesma, como se nada tivesse acontecido.") {
     return {
@@ -45,7 +48,8 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
       missingForIdeal: "Falta abandonar a mentalidade de vítima das circunstâncias e dos 'métodos que não funcionam'. É crucial identificar a raiz da sua resistência interna e se comprometer com uma única abordagem comprovada, superando a descrença alimentada por fracassos passados. A responsabilidade pela mudança é sua."
     };
   }
-
+  
+  // Regra 3: Medo e Comparação
   if (answer5 === "Talvez... mas tenho medo de me frustrar mais uma vez." &&
       answer3 === "Não sei if é um bloqueio, mas sinto que não tenho a mesma 'sorte' que os outros.") {
     return {
@@ -57,6 +61,7 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
     };
   }
   
+  // Regra 4: Inveja e Injustiça
   if (answer1 === "Inveja (mesmo que eu não admita) de outras mulheres que parecem ter tudo." &&
       answer4 === "Sim, mas sinto que o mundo é injusto e não me dá o que eu mereço.") {
     return {
@@ -68,6 +73,7 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
     };
   }
 
+  // Regra 5: Coragem com Impaciência e Instabilidade
    if (answer5 === "CORAGEM EU TENHO, SÓ PRECISO SABER SE FUNCIONA MESMO!" && 
        (answer1 === "Uma pontada de esperança, mas logo em seguida a dúvida de que seja possível pra mim." || answer2 === "Eu me sinto bem por alguns minutos, mas depois a realidade bate e eu desanimo.")) {
      return {
@@ -79,6 +85,7 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
      };
    }
 
+  // ARQUÉTIPO PADRÃO (Fallback - também crítico)
   return {
     archetype: "Exploradora Desorientada",
     summary: "Você está buscando respostas, mas parece não ter um direcionamento claro, o que dificulta qualquer progresso significativo. Suas respostas indicam uma falta de autoconhecimento profundo sobre seus reais bloqueios e potenciais, tornando sua jornada de manifestação confusa e pouco eficaz.",
@@ -98,17 +105,23 @@ function QuestionnaireContent() {
 
   useEffect(() => {
     const name = searchParams.get('name');
-    const dreamsString = searchParams.get('dreams');
-    const dreamsDate = searchParams.get('dreamsDate'); 
+    const dreamsString = searchParams.get('dreams'); // IDs dos sonhos como string JSON
+    const dreamsDate = searchParams.get('dreamsDate'); // String da opção de data (e.g., "next_year")
+    
     if (name && dreamsString && dreamsDate) {
       try {
-        const dreams = JSON.parse(dreamsString);
+        // 'dreams' já é uma string JSON de um array de IDs, então parseamos diretamente
+        const dreams = JSON.parse(dreamsString); 
         const newPreQuestionnaireData = { name, dreams, dreamsDate };
         setPreQuestionnaireData(newPreQuestionnaireData);
-        console.log("Dados do formulário pré-questionário:", newPreQuestionnaireData);
+        console.log("Dados do formulário pré-questionário recebidos:", newPreQuestionnaireData);
       } catch (e) {
-        console.error("Erro ao parsear dados dos query params:", e);
+        console.error("Erro ao parsear dados dos query params (questionnaire):", e);
+        // Considerar redirecionar para uma página de erro ou mostrar um toast
       }
+    } else {
+        console.warn("Dados do formulário pré-questionário não encontrados ou incompletos nos query params.");
+        // Poderia redirecionar para o início se os dados forem essenciais
     }
   }, [searchParams]);
 
@@ -127,11 +140,12 @@ function QuestionnaireContent() {
       const localAnalysisResult = generateLocalAnalysis(userAnswers);
       const analysisJsonString = JSON.stringify(localAnalysisResult);
       
-      const existingParams = new URLSearchParams(searchParams.toString());
-      existingParams.set('analysis', analysisJsonString); 
+      // Prepara os parâmetros para a página de resultados, incluindo os dados do pré-questionário
+      const existingParams = new URLSearchParams(searchParams.toString()); // Mantém name, dreams, dreamsDate
+      existingParams.set('analysis', analysisJsonString); // Adiciona a análise
       
       const targetUrl = `/results?${existingParams.toString()}`;
-      console.log('Navigating to results (questionnaire):', targetUrl); 
+      console.log('Navegando para a página de resultados com todos os dados:', targetUrl); 
       router.push(targetUrl);
     } else {
       setCurrentQuestionIndex(prevIndex => prevIndex + 1);
@@ -155,9 +169,10 @@ function QuestionnaireContent() {
 
 export default function QuestionnairePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-black to-red-950"><Loader2 className="h-16 w-16 text-yellow-400 animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-950 to-rose-900"><Loader2 className="h-16 w-16 text-accent animate-spin" /></div>}>
       <QuestionnaireContent />
     </Suspense>
   );
 }
+
     

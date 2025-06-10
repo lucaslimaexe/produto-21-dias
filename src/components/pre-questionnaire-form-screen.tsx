@@ -5,53 +5,55 @@ import React, { useState, useEffect } from 'react';
 import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, Gem, Castle, Plane, Car, Users, Briefcase, MountainSnow, Award, Sparkles, Target, User, Loader2, CheckCircle2, Palette, Lightbulb, HeartHandshake, HelpCircle } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Sparkles, User, Loader2, CheckCircle2, Target, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
 const dreamOptions = [
-  { id: 'financial_freedom', label: 'Liberdade Financeira', icon: Gem, iconColorClass: 'text-emerald-400' },
-  { id: 'dream_house', label: 'Casa dos Sonhos', icon: Castle, iconColorClass: 'text-sky-400' },
-  { id: 'travel_world', label: 'Viver Viajando', icon: Plane, iconColorClass: 'text-amber-400' },
-  { id: 'new_car', label: 'Carro Novo', icon: Car, iconColorClass: 'text-red-400' },
-  { id: 'soul_mate', label: 'Alma Gêmea', icon: HeartHandshake, iconColorClass: 'text-pink-400' },
-  { id: 'successful_business', label: 'Negócio de Sucesso', icon: Briefcase, iconColorClass: 'text-indigo-400' },
-  { id: 'inner_peace', label: 'Paz Interior', icon: MountainSnow, iconColorClass: 'text-cyan-400' },
-  { id: 'health_wellness', label: 'Saúde e Bem-Estar', icon: Award, iconColorClass: 'text-lime-400' },
-  { id: 'happy_family', label: 'Família Feliz', icon: Users, iconColorClass: 'text-orange-400' },
-  { id: 'help_others', label: 'Ajudar o Próximo', icon: HelpCircle, iconColorClass: 'text-rose-400' },
-  { id: 'creative_expression', label: 'Expressão Criativa', icon: Palette, iconColorClass: 'text-violet-400' },
-  { id: 'personal_growth', label: 'Crescimento Pessoal', icon: Lightbulb, iconColorClass: 'text-yellow-400' }
+  { id: 'financial_freedom', label: 'Liberdade Financeira', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Pilha de moedas e notas simbolizando riqueza", dataAiHint: "money success" },
+  { id: 'dream_house', label: 'Casa dos Sonhos', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Casa bonita com jardim", dataAiHint: "dream house" },
+  { id: 'travel_world', label: 'Viver Viajando', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Mapa mundi com aviões e malas", dataAiHint: "travel world" },
+  { id: 'new_car', label: 'Carro Novo', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Carro esportivo moderno", dataAiHint: "new car" },
+  { id: 'soul_mate', label: 'Alma Gêmea', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Casal feliz de mãos dadas", dataAiHint: "happy couple" },
+  { id: 'successful_business', label: 'Negócio de Sucesso', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Gráfico de crescimento e aperto de mãos", dataAiHint: "business achievement" },
+  { id: 'inner_peace', label: 'Paz Interior', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Pessoa meditando em paisagem serena", dataAiHint: "serenity peace" },
+  { id: 'health_wellness', label: 'Saúde e Bem-Estar', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Frutas frescas e pessoa se exercitando", dataAiHint: "health wellness" },
 ];
 
 export interface DreamOption {
   id: string;
   label: string;
-  icon: React.ElementType;
-  iconColorClass: string;
+  imageUrl: string;
+  imageAlt: string;
+  dataAiHint: string;
 }
 
 export interface PreQuestionnaireFormData {
   fullName: string;
   selectedDreams: DreamOption[];
-  dreamsAchievementDate: Date;
+  dreamsAchievementDate: string; // Vai armazenar "end_of_year", "next_year", "two_years"
 }
 
+const dateOptions = [
+    { id: 'end_of_year', label: 'Final deste ano' },
+    { id: 'next_year', label: 'Próximo ano' },
+    { id: 'two_years', label: 'Em 2 anos' },
+];
+
 const formSchema = z.object({
-  fullName: z.string().min(3, { message: "Seu nome completo, por favor." }),
+  fullName: z.string().min(3, { message: "Precisamos do seu nome completo." }),
   selectedDreams: z.array(z.object({
     id: z.string(),
     label: z.string(),
-    icon: z.any(),
-    iconColorClass: z.string(),
-  })).length(3, {message: "Selecione exatamente 3 sonhos." }),
-  dreamsAchievementDate: z.date({ required_error: "Quando você quer realizar seus sonhos?" }),
+    imageUrl: z.string(),
+    imageAlt: z.string(),
+    dataAiHint: z.string(),
+  })).length(3, {message: "Escolha exatamente 3 sonhos." }),
+  dreamsAchievementDate: z.string().min(1, { message: "Quando você quer realizar estes sonhos?" }),
 });
 
 interface PreQuestionnaireFormScreenProps {
@@ -68,8 +70,9 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     defaultValues: {
       fullName: '',
       selectedDreams: [],
+      dreamsAchievementDate: '',
     },
-    mode: 'onChange', // Valida em cada mudança para `isValid` ser atualizado
+    mode: 'onChange',
   });
 
   const watchedFullName = watch('fullName');
@@ -77,19 +80,25 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
   const watchedSelectedDreams = watch('selectedDreams');
 
   useEffect(() => {
-    const requiredFieldsTouched = touchedFields.fullName && touchedFields.dreamsAchievementDate;
-    if (watchedSelectedDreams.length === 3 && isValid && requiredFieldsTouched && !isProcessingSubmit) {
+    const allFieldsTouchedOrValid = 
+      touchedFields.fullName && 
+      touchedFields.dreamsAchievementDate &&
+      watchedSelectedDreams.length === 3 && // Garante que 3 sonhos estão selecionados
+      !errors.fullName && // Garante que não há erro no nome
+      !errors.dreamsAchievementDate; // Garante que não há erro na data
+
+    if (watchedSelectedDreams.length === 3 && allFieldsTouchedOrValid && !isProcessingSubmit) {
       setIsProcessingSubmit(true);
       toast({
-        title: "Preparando seu diagnóstico...",
-        description: "Você será redirecionada em instantes.",
+        title: "Quase lá!",
+        description: "Estamos preparando seu diagnóstico personalizado...",
         duration: 2000,
       });
       setTimeout(() => {
         onSubmitForm(getValues());
-      }, 1500); // Delay para o usuário ver a mensagem e a seleção final
+      }, 1500);
     }
-  }, [watchedSelectedDreams, isValid, touchedFields, onSubmitForm, getValues, toast, isProcessingSubmit, watchedFullName, watchedDreamsAchievementDate]);
+  }, [watchedSelectedDreams, watchedFullName, watchedDreamsAchievementDate, isValid, touchedFields, errors, onSubmitForm, getValues, toast, isProcessingSubmit]);
 
 
   const handleDreamSelection = (dream: DreamOption) => {
@@ -98,102 +107,99 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     const currentIndex = selectedDreamsInternal.findIndex(d => d.id === dream.id);
     let newSelectedDreams: DreamOption[];
 
-    if (currentIndex === -1) { // Se não está selecionado, tenta adicionar
+    if (currentIndex === -1) {
       if (selectedDreamsInternal.length < 3) {
         newSelectedDreams = [...selectedDreamsInternal, dream];
       } else {
-        // Se já tem 3, não faz nada ou substitui o mais antigo (aqui não faz nada)
         toast({
-          title: "Limite Atingido",
-          description: "Você já selecionou 3 sonhos. Desmarque um para escolher outro.",
+          title: "Limite de 3 Sonhos Atingido",
+          description: "Desmarque um sonho para escolher outro.",
           variant: "default",
           duration: 3000,
         });
         return;
       }
-    } else { // Se está selecionado, remove
+    } else {
       newSelectedDreams = selectedDreamsInternal.filter(d => d.id !== dream.id);
     }
     setSelectedDreamsInternal(newSelectedDreams);
-    setValue('selectedDreams', newSelectedDreams, { shouldValidate: true });
+    setValue('selectedDreams', newSelectedDreams, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
   };
 
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-background via-primary/20 to-background text-foreground font-body">
-      <div className="w-full max-w-md bg-card/90 backdrop-blur-xl border border-border/60 shadow-2xl shadow-primary/25 rounded-2xl p-6 sm:p-8 space-y-6 animate-fade-in">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-purple-900 via-indigo-950 to-rose-900 text-foreground font-body">
+      <div className="w-full max-w-lg bg-slate-900/60 backdrop-blur-2xl border border-purple-700/50 shadow-2xl shadow-primary/30 rounded-3xl p-6 sm:p-10 space-y-8 animate-fade-in">
 
-        <header className="text-center">
-          <Sparkles className="h-10 w-10 sm:h-12 sm:w-12 text-accent mx-auto mb-2 animate-float [animation-duration:3s]" />
-          <h1 className="font-headline text-2xl sm:text-3xl font-bold goddess-text-gradient">Comece Sua Jornada</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">Conte-nos um pouco sobre você e seus sonhos.</p>
+        <header className="text-center space-y-2">
+          <Sparkles className="h-12 w-12 sm:h-14 sm:w-14 text-accent mx-auto animate-float [animation-duration:3s]" />
+          <h1 className="font-headline text-3xl sm:text-4xl font-bold goddess-text-gradient">Sua Jornada Começa Agora</h1>
+          <p className="text-muted-foreground text-md sm:text-lg">Para onde seu coração te guia?</p>
         </header>
 
         <form className="space-y-6">
           <div className="space-y-1">
-            <label htmlFor="fullName" className="text-sm font-medium text-foreground/90 flex items-center">
-              <User className="h-4 w-4 mr-2 text-primary/80" /> Nome Completo
-            </label>
+            <Label htmlFor="fullName" className="text-sm font-medium text-foreground/90 flex items-center">
+              <User className="h-4 w-4 mr-2 text-primary/80" /> Seu Nome Completo
+            </Label>
             <Controller
               name="fullName"
               control={control}
               render={({ field }) => (
                 <Input
                   id="fullName"
-                  placeholder="Seu nome como na identidade"
+                  placeholder="Como podemos te chamar?"
                   {...field}
-                  className={cn("bg-input/70 border-border focus:border-primary focus:shadow-md focus:shadow-primary/30", errors.fullName ? 'border-destructive focus:border-destructive' : '')}
+                  className={cn("bg-slate-800/70 border-purple-600/70 focus:border-accent focus:shadow-md focus:shadow-accent/30 text-base", errors.fullName ? 'border-destructive focus:border-destructive' : '')}
                   disabled={isProcessingSubmit}
                 />
               )}
             />
             {errors.fullName && <p className="text-destructive text-xs pt-1">{errors.fullName.message}</p>}
           </div>
-
-          <div className="space-y-1">
-            <label htmlFor="dreamsAchievementDate" className="text-sm font-medium text-foreground/90 flex items-center">
-               <Target className="h-4 w-4 mr-2 text-primary/80" /> Quando seus sonhos se realizarão?
-            </label>
+          
+          <div className="space-y-2">
+             <Label className="text-sm font-medium text-foreground/90 flex items-center">
+               <CalendarDays className="h-4 w-4 mr-2 text-primary/80" /> Quando seus sonhos se realizarão?
+            </Label>
             <Controller
               name="dreamsAchievementDate"
               control={control}
               render={({ field }) => (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      disabled={isProcessingSubmit}
+                <RadioGroup
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    setValue('dreamsAchievementDate', value, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+                  }}
+                  defaultValue={field.value}
+                  className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+                  disabled={isProcessingSubmit}
+                >
+                  {dateOptions.map((option) => (
+                    <Label
+                      key={option.id}
+                      htmlFor={option.id}
                       className={cn(
-                        "w-full justify-start text-left font-normal bg-input/70 border-border hover:bg-muted/50 focus:border-primary focus:shadow-md focus:shadow-primary/30",
-                        !field.value && "text-muted-foreground",
-                        errors.dreamsAchievementDate ? 'border-destructive focus:border-destructive' : ''
+                        "flex items-center space-x-2 p-3 rounded-lg border-2 cursor-pointer transition-all",
+                        field.value === option.id 
+                          ? "border-accent bg-accent/20 text-accent-foreground shadow-lg" 
+                          : "border-purple-600/70 bg-slate-800/70 hover:border-purple-500",
+                        isProcessingSubmit ? "opacity-50 cursor-not-allowed" : ""
                       )}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4 text-accent" />
-                      {field.value ? format(field.value, "PPP", { locale: ptBR }) : <span>Escolha uma data</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 border-border bg-popover shadow-xl" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={(date) => field.onChange(date)}
-                      initialFocus
-                      locale={ptBR}
-                      captionLayout="dropdown-buttons"
-                      fromDate={new Date()} // Só permite datas futuras
-                      fromYear={new Date().getFullYear()}
-                      toYear={new Date().getFullYear() + 20}
-                    />
-                  </PopoverContent>
-                </Popover>
+                      <RadioGroupItem value={option.id} id={option.id} className={cn(field.value === option.id ? "border-accent text-accent" : "border-purple-500 text-purple-500")} />
+                      <span className="font-medium text-sm">{option.label}</span>
+                    </Label>
+                  ))}
+                </RadioGroup>
               )}
             />
-            {errors.dreamsAchievementDate && <p className="text-destructive text-xs pt-1">{errors.dreamsAchievementDate.message}</p>}
+            {errors.dreamsAchievementDate && <p className="text-destructive text-xs pt-1 text-center sm:text-left">{errors.dreamsAchievementDate.message}</p>}
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground/90 block text-center">Selecione 3 sonhos que mais pulsam em seu coração:</label>
+
+          <div className="space-y-3">
+            <Label className="text-sm font-medium text-foreground/90 block text-center">Selecione 3 sonhos que mais pulsam em seu coração:</Label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
               {dreamOptions.map((dream) => {
                 const isSelected = selectedDreamsInternal.some(d => d.id === dream.id);
@@ -204,17 +210,29 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                     onClick={() => handleDreamSelection(dream)}
                     disabled={isProcessingSubmit || (!isSelected && selectedDreamsInternal.length >= 3)}
                     className={cn(
-                      "relative flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 ease-in-out aspect-square focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-card focus:ring-accent hover:shadow-lg",
+                      "relative flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all duration-200 ease-in-out aspect-square focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-accent overflow-hidden group",
                       isSelected
                         ? 'border-accent bg-accent/20 shadow-xl shadow-accent/40 scale-105 animate-pulse-once hover:shadow-accent/50'
-                        : 'border-border bg-background/50 hover:border-primary/70 hover:bg-primary/10 hover:shadow-primary/30',
-                      !isSelected && selectedDreamsInternal.length >= 3 && 'opacity-50 cursor-not-allowed brightness-75'
+                        : 'border-purple-600/60 bg-slate-800/50 hover:border-accent/70 hover:bg-purple-700/20 hover:shadow-lg hover:shadow-accent/30',
+                      !isSelected && selectedDreamsInternal.length >= 3 && 'opacity-40 cursor-not-allowed brightness-75'
                     )}
                     aria-pressed={isSelected}
                   >
-                    {isSelected && <CheckCircle2 className="absolute top-1.5 right-1.5 h-5 w-5 text-accent animate-pop-in" />}
-                    <dream.icon className={cn("h-7 w-7 sm:h-8 sm:w-8 mb-1.5 animate-icon-subtle-float", dream.iconColorClass, isSelected ? "opacity-90" : "opacity-100")} />
-                    <span className={cn("text-xs sm:text-sm text-center leading-tight font-medium", isSelected ? "text-accent-foreground" : "text-foreground/80")}>{dream.label}</span>
+                    <Image 
+                        src={dream.imageUrl} 
+                        alt={dream.imageAlt} 
+                        width={100} 
+                        height={100}
+                        data-ai-hint={dream.dataAiHint}
+                        className={cn(
+                            "object-cover rounded-md w-full h-full transition-transform duration-300 group-hover:scale-105",
+                            isSelected ? "opacity-90" : "opacity-100"
+                        )}
+                    />
+                    {isSelected && <CheckCircle2 className="absolute top-1.5 right-1.5 h-5 w-5 text-green-400 bg-slate-900/50 rounded-full animate-pop-in" />}
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-1.5 text-center">
+                        <span className={cn("text-xs sm:text-sm font-medium leading-tight", isSelected ? "text-accent" : "text-foreground/80")}>{dream.label}</span>
+                    </div>
                   </button>
                 );
               })}
@@ -227,8 +245,9 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
 
           {isProcessingSubmit && (
             <div className="flex flex-col items-center justify-center pt-4">
-              <Loader2 className="h-8 w-8 text-primary animate-spin mb-2" />
-              <p className="text-sm text-primary">Aguarde, estamos preparando tudo...</p>
+              <Loader2 className="h-10 w-10 text-primary animate-spin mb-3" />
+              <p className="text-sm text-primary font-semibold">Conectando com o universo...</p>
+              <p className="text-xs text-muted-foreground">Sua jornada de transformação está começando!</p>
             </div>
           )}
         </form>
