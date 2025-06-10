@@ -1,3 +1,5 @@
-export default function Home() {
-  return <></>;
+import { AnalysisScreen } from '@/components/analysis-screen';
+
+export default function HomePage() {
+  return <AnalysisScreen />;
 }
