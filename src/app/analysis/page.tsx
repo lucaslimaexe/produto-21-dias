@@ -4,8 +4,9 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AnalysisScreen } from '@/components/analysis-screen';
-import { runBehavioralAnalysis, BehavioralAnalysisInput, BehavioralAnalysisOutput } from '@/ai/flows/behavioral-analysis-flow';
+import { runBehavioralAnalysis, type BehavioralAnalysisInput, type BehavioralAnalysisOutput } from '@/ai/flows/behavioral-analysis-flow';
 import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // Define Answer interface locally if not imported from questionnaire page or flow
 interface Answer {
@@ -18,22 +19,22 @@ function AnalysisContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<BehavioralAnalysisOutput | null>(null);
+  // const [analysisResult, setAnalysisResult] = useState<BehavioralAnalysisOutput | null>(null); // Not needed here, just pass through
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const answersString = searchParams.get('answers');
     if (answersString) {
       try {
-        const answers: Answer[] = JSON.parse(decodeURIComponent(answersString));
+        // searchParams.get() already decodes the string
+        const answers: Answer[] = JSON.parse(answersString);
         
         if (answers && answers.length > 0) {
           const analysisInput: BehavioralAnalysisInput = { answers };
-          
+          setIsLoading(true); // Explicitly set loading before async call
           runBehavioralAnalysis(analysisInput)
             .then(result => {
-              setAnalysisResult(result);
-              setIsLoading(false);
+              // setAnalysisResult(result); // Not strictly needed if navigating immediately
               const resultQueryParam = encodeURIComponent(JSON.stringify(result));
               router.replace(`/results?analysis=${resultQueryParam}`);
             })
@@ -41,8 +42,6 @@ function AnalysisContent() {
               console.error("Error running behavioral analysis:", err);
               setError("Desculpe, não foi possível concluir sua análise comportamental no momento. Por favor, tente novamente mais tarde.");
               setIsLoading(false);
-              // Optionally, navigate to an error page or back to questionnaire
-              // For now, we'll just show the error on the analysis screen or navigate to results with an error flag
               router.replace(`/results?error=${encodeURIComponent("Falha na análise comportamental.")}`);
             });
         } else {
@@ -51,20 +50,20 @@ function AnalysisContent() {
           router.replace(`/results?error=${encodeURIComponent("Nenhuma resposta para análise.")}`);
         }
       } catch (e) {
-        console.error("Error parsing answers:", e);
-        setError("Erro ao processar suas respostas.");
+        console.error("Error parsing answers or during analysis:", e);
+        setError("Erro ao processar suas respostas ou durante a análise.");
         setIsLoading(false);
         router.replace(`/results?error=${encodeURIComponent("Erro ao processar respostas.")}`);
       }
     } else {
       setError("Dados de respostas ausentes para análise.");
-      setIsLoading(false)
+      setIsLoading(false);
       router.replace(`/results?error=${encodeURIComponent("Dados de respostas ausentes.")}`);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, router]); // router is stable, searchParams triggers re-run
+  }, [searchParams]); // Removed router from deps as it's stable, only searchParams should trigger
 
-  if (error) {
+  if (error && !isLoading) { // Only show error if not actively loading analysis
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-4 bg-gradient-to-br from-purple-900 via-indigo-900 to-black">
         <h1 className="text-2xl font-bold text-red-400 mb-4">Erro na Análise</h1>
@@ -76,6 +75,8 @@ function AnalysisContent() {
 
   // The AnalysisScreen component itself is the loading UI.
   // We only navigate away once analysisResult is set (or an error occurs).
+  // If there's an error state set but isLoading is still true (e.g. analysis failed but we haven't rendered error yet),
+  // this will still show AnalysisScreen until isLoading becomes false.
   return <AnalysisScreen />;
 }
 

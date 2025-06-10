@@ -1,7 +1,7 @@
 
 "use client";
 
-import { ResultsScreen, BehavioralAnalysisData } from '@/components/results-screen';
+import { ResultsScreen, type BehavioralAnalysisData } from '@/components/results-screen';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
@@ -22,13 +22,15 @@ function ResultsContent() {
 
   if (analysisParam) {
     try {
-      analysisResult = JSON.parse(decodeURIComponent(analysisParam));
+      // searchParams.get() already decodes the string
+      analysisResult = JSON.parse(analysisParam);
     } catch (e) {
       console.error("Error parsing analysis result from query param:", e);
       analysisError = "Não foi possível carregar sua análise personalizada.";
     }
   } else if (errorParam) {
-     analysisError = decodeURIComponent(errorParam);
+     // searchParams.get() already decodes the string
+     analysisError = errorParam;
   }
 
 
