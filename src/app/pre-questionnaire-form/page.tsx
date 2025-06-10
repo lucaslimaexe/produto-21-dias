@@ -3,13 +3,14 @@
 
 import { useRouter } from "next/navigation";
 import { PreQuestionnaireFormScreen, type PreQuestionnaireFormData, type DreamOption, dateOptions } from "@/components/pre-questionnaire-form-screen";
-import { Suspense } from "react";
+import { Suspense, useCallback } from "react"; // Importar useCallback
 import { Loader2 } from "lucide-react";
 
 function PreQuestionnaireFormContent() {
   const router = useRouter();
 
-  const handleFormComplete = (data: PreQuestionnaireFormData) => {
+  // Envolver handleFormComplete com useCallback
+  const handleFormComplete = useCallback((data: PreQuestionnaireFormData) => {
     // data.selectedDreams já é um array de objetos DreamOption
     // data.dreamsAchievementDate é o ID da opção de data (string)
     
@@ -25,7 +26,7 @@ function PreQuestionnaireFormContent() {
       dreamsDateLabel: dreamsDateLabel, // Passa o label da opção de data
     }).toString();
     router.push(`/questionnaire?${queryParams}`);
-  };
+  }, [router]); // Adicionar router como dependência do useCallback
 
   return <PreQuestionnaireFormScreen onSubmitForm={handleFormComplete} />;
 }
