@@ -9,7 +9,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod'; // Corrected import path
+import { z } from 'zod';
 
 const AnswerSchema = z.object({
   questionId: z.number(),
@@ -17,12 +17,12 @@ const AnswerSchema = z.object({
   answer: z.string(),
 });
 
-export const BehavioralAnalysisInputSchema = z.object({
+const BehavioralAnalysisInputSchema = z.object({
   answers: z.array(AnswerSchema).describe("An array of questions and the user's answers to them."),
 });
 export type BehavioralAnalysisInput = z.infer<typeof BehavioralAnalysisInputSchema>;
 
-export const BehavioralAnalysisOutputSchema = z.object({
+const BehavioralAnalysisOutputSchema = z.object({
   archetype: z
     .string()
     .describe(
