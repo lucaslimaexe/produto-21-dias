@@ -4,12 +4,20 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { AlertTriangle, Clock, Zap, Eye, ExternalLink, XCircle, Sparkles, CheckCircle2, Unlock, Brain, HeartHandshake, TrendingUp, Quote, UserCircle, ShieldCheck, BarChartBig, Palette } from 'lucide-react';
+import { AlertTriangle, Clock, Zap, Eye, ExternalLink, XCircle, Sparkles, CheckCircle2, Unlock, Brain, HeartHandshake, TrendingUp, Quote, UserCircle, ShieldCheck, BarChartBig, Palette, Wand2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Image from 'next/image';
 
+export interface BehavioralAnalysisData {
+  archetype: string;
+  summary: string;
+  keywords: string[];
+}
+
 interface ResultsScreenProps {
   onRestart: () => void;
+  analysisResult?: BehavioralAnalysisData;
+  analysisError?: string;
 }
 
 const testimonials = [
@@ -50,21 +58,30 @@ const codeBenefits = [
 ];
 
 
-export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart }) => {
+export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart, analysisResult, analysisError }) => {
   const initialTime = 15 * 60; 
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [isBlinking, setIsBlinking] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    toast({
-      title: "🔥 Seu Diagnóstico Revelador Chegou!",
-      description: "Descubra como o Código da Deusa pode ser a chave para sua transformação total.",
-      variant: "default",
-      duration: 8000,
-    });
+    if (!analysisError) {
+      toast({
+        title: "🔥 Seu Diagnóstico Revelador Chegou!",
+        description: analysisResult ? "Veja sua análise personalizada e como o Código da Deusa pode te transformar." : "Descubra como o Código da Deusa pode ser a chave para sua transformação total.",
+        variant: "default",
+        duration: 8000,
+      });
+    } else {
+       toast({
+        title: "⚠️ Erro na Análise",
+        description: analysisError || "Não foi possível carregar sua análise. A página de resultados padrão será exibida.",
+        variant: "destructive",
+        duration: 8000,
+      });
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [analysisResult, analysisError]);
 
 
   useEffect(() => {
@@ -95,6 +112,51 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart }) => {
     <div className="min-h-screen w-full flex flex-col items-center justify-center px-4 py-12 relative bg-gradient-to-br from-purple-950 via-black to-red-950 overflow-y-auto text-foreground">
       <div className="w-full max-w-5xl space-y-12 md:space-y-16">
         
+        {/* SEÇÃO 0: ANÁLISE COMPORTAMENTAL PERSONALIZADA (se disponível) */}
+        {analysisResult && (
+          <section className="animate-fade-in bg-gradient-to-br from-purple-800/70 via-black to-indigo-900/70 rounded-3xl p-6 sm:p-8 lg:p-10 border-2 border-accent/60 shadow-2xl text-center" style={{animationDuration: '0.7s', animationDelay: '0s'}}>
+            <div className="flex justify-center items-center gap-3 mb-4">
+              <Wand2 className="h-10 w-10 text-accent" />
+              <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl font-bold goddess-text-gradient leading-tight">
+                Sua Análise Comportamental Personalizada
+              </h2>
+              <Wand2 className="h-10 w-10 text-accent transform scale-x-[-1]" />
+            </div>
+            <p className="text-xl sm:text-2xl text-yellow-300 font-semibold mb-3">
+              Seu Arquétipo de Manifestação: <span className="text-pink-400">{analysisResult.archetype}</span>
+            </p>
+            <p className="text-md sm:text-lg text-purple-200/90 leading-relaxed mb-4 max-w-3xl mx-auto">
+              {analysisResult.summary}
+            </p>
+            <div className="mb-6">
+              <p className="text-purple-300/80 text-sm font-medium mb-2">Principais Desafios/Forças Identificados:</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {analysisResult.keywords.map((keyword, index) => (
+                  <span key={index} className="bg-purple-700/50 text-yellow-300 text-xs font-semibold px-3 py-1 rounded-full border border-purple-500/70">
+                    {keyword}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground italic">Esta análise foi gerada por IA para te ajudar a entender melhor seus padrões e como o Código da Deusa pode te guiar.</p>
+          </section>
+        )}
+        {analysisError && !analysisResult && (
+           <section className="animate-fade-in bg-red-900/70 rounded-3xl p-6 sm:p-8 lg:p-10 border-2 border-red-500/60 shadow-2xl text-center" style={{animationDuration: '0.7s', animationDelay: '0s'}}>
+            <div className="flex justify-center items-center gap-3 mb-4">
+              <AlertTriangle className="h-10 w-10 text-yellow-300" />
+              <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-300 leading-tight">
+                Aviso sobre a Análise
+              </h2>
+            </div>
+            <p className="text-md sm:text-lg text-red-200/90 leading-relaxed mb-4 max-w-3xl mx-auto">
+              {analysisError} Mostraremos a página de resultados padrão.
+            </p>
+          </section>
+        )}
+
+        <hr className="border-purple-700/50 my-8 md:my-12" />
+
         {/* SEÇÃO 1: A DOR E A CONSPIRAÇÃO */}
         <section className="animate-fade-in text-center md:text-left" style={{animationDuration: '0.7s', animationDelay: '0.2s'}}>
           <div className="md:flex md:items-center md:gap-8">
@@ -224,7 +286,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart }) => {
               <span className={`text-4xl sm:text-5xl md:text-7xl font-bold font-mono ${timeLeft === 0 ? 'text-red-600' : ''} ${isBlinking && timeLeft > 0 ? 'animate-ping':''}`}>
                 {formatTime(timeLeft)}
               </span>
-              <Zap className={`h-7 w-7 sm:h-10 sm:w-10 ${timeLeft < 300 && timeLeft > 0 && timeLeft > 0 ? 'animate-spin' : ''}`} />
+              <Zap className={`h-7 w-7 sm:h-10 sm:w-10 ${timeLeft < 300 && timeLeft > 0 ? 'animate-spin' : ''}`} />
             </div>
             <div className="w-full bg-black/60 rounded-full h-4 sm:h-5 border-2 border-yellow-600/70 overflow-hidden shadow-inner">
               <div 
@@ -273,5 +335,3 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart }) => {
     </div>
   );
 };
-
-    

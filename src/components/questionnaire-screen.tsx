@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Progress } from './ui/progress';
 import { Sparkles, MessageCircle, Loader2 } from 'lucide-react';
 
-interface Question {
+export interface Question {
   id: number;
   question: string;
   options: string[];
@@ -15,10 +15,10 @@ interface Question {
 
 interface QuestionnaireScreenProps {
   question: Question;
-  onAnswer: (answer: string) => void; // For parent to log answer
+  onAnswer: (answer: string) => void; 
   progress: number;
   isLastQuestion: boolean;
-  onComplete: () => void; // Parent handles advancing or finishing quiz
+  onComplete: () => void; 
 }
 
 export const questions: Question[] = [
@@ -83,9 +83,8 @@ export const questions: Question[] = [
 export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ question, onAnswer, progress, isLastQuestion, onComplete }) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false); // Used to show loader and disable options
 
-  // Reset state when question changes
   useEffect(() => {
     setSelectedOption(null);
     setShowFeedback(false);
@@ -96,14 +95,15 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ questi
     if (isProcessing || showFeedback) return;
 
     setSelectedOption(option);
-    onAnswer(option); // Inform parent about the answer
+    onAnswer(option); 
     setShowFeedback(true);
-    setIsProcessing(true);
+    setIsProcessing(true); // Start "processing"
 
     setTimeout(() => {
-      onComplete(); // Parent will advance or finish
-      // State reset will be handled by useEffect when question.id changes
-    }, 2000); // Time to display feedback
+      // setShowFeedback(false); // Feedback will be hidden by question change
+      // setIsProcessing(false); // Processing also ends with question change
+      onComplete(); 
+    }, 2000); 
   };
 
   return (
@@ -152,7 +152,6 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ questi
             <div className="text-center animate-fade-in flex flex-col items-center justify-center">
               <MessageCircle className="h-10 w-10 text-yellow-400 mx-auto mb-4 animate-pulse" />
               <p className="text-yellow-300 font-semibold text-lg sm:text-xl mb-4">{question.feedback}</p>
-              {isProcessing && !showFeedback && <p className="text-purple-300 text-sm">Aguarde...</p>}
               {isProcessing && <Loader2 className="h-8 w-8 text-yellow-400 animate-spin mt-4" />}
             </div>
           )}
@@ -161,5 +160,3 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ questi
     </div>
   );
 };
-
-    
