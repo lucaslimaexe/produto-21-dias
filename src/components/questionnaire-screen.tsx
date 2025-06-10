@@ -3,8 +3,8 @@
 
 import React, { useState } from 'react';
 import { Button } from './ui/button';
-import { Progress } from './ui/progress'; // Assuming you have this ShadCN component
-import { Sparkles, Send, MessageCircle } from 'lucide-react'; // Added MessageCircle
+import { Progress } from './ui/progress';
+import { Sparkles, Send, MessageCircle } from 'lucide-react';
 
 interface Question {
   id: number;
@@ -15,10 +15,10 @@ interface Question {
 
 interface QuestionnaireScreenProps {
   question: Question;
-  onAnswer: (answer: string) => void;
+  onAnswer: (answer: string) => void; // This now implies proceeding after answer
   progress: number;
   isLastQuestion: boolean;
-  onComplete: () => void; // This is called to proceed: either to next question or to complete the quiz
+  onComplete: () => void; // Called by parent to advance or finish
 }
 
 export const questions: Question[] = [
@@ -81,29 +81,22 @@ export const questions: Question[] = [
 
 
 export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ question, onAnswer, progress, isLastQuestion, onComplete }) => {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [answeredOption, setAnsweredOption] = useState<string | null>(null);
 
   const handleSelectOption = (option: string) => {
-    setSelectedOption(option);
-    setShowFeedback(false); 
-  };
+    if (showFeedback) return; // Prevent re-answering while feedback is shown
 
-  const handleSubmitAnswer = () => {
-    if (selectedOption) {
-      onAnswer(selectedOption);
-      setShowFeedback(true);
-    }
+    setAnsweredOption(option);
+    onAnswer(option); // Send answer to parent
+    setShowFeedback(true); // Show feedback immediately
   };
   
-  const handleNextOrComplete = () => {
+  const handleProceed = () => {
     setShowFeedback(false);
-    setSelectedOption(null);
-    // onComplete is the function passed from the parent (QuestionnairePage)
-    // which handles advancing the question index or navigating to analysis.
-    onComplete(); 
+    setAnsweredOption(null);
+    onComplete(); // Parent handles advancing or completing quiz
   };
-
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 relative bg-gradient-to-br from-purple-900 via-indigo-900 to-black overflow-hidden">
@@ -118,7 +111,7 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ questi
           <p className="text-center text-sm text-yellow-300 mt-2">PERGUNTA {question.id} DE {questions.length}</p>
         </div>
 
-        <div className="bg-purple-900/30 p-6 rounded-xl border border-purple-700 mb-6">
+        <div className={`bg-purple-900/30 p-6 rounded-xl border border-purple-700 mb-6 ${showFeedback ? 'opacity-50 pointer-events-none' : ''}`}>
           <h2 className="font-headline text-xl sm:text-2xl md:text-3xl font-semibold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-400 to-purple-300 leading-tight">
             {question.question}
           </h2>
@@ -127,36 +120,27 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ questi
             {question.options.map((option, index) => (
               <Button
                 key={index}
-                variant={selectedOption === option ? "default" : "outline"}
+                variant={answeredOption === option ? "default" : "outline"}
                 onClick={() => handleSelectOption(option)}
-                className={`w-full text-left justify-start p-4 h-auto text-sm sm:text-base leading-normal whitespace-normal
-                  ${selectedOption === option 
-                    ? 'bg-gradient-to-r from-yellow-500 to-pink-600 text-white border-transparent ring-2 ring-yellow-300 shadow-lg' 
-                    : 'bg-purple-800/50 border-purple-600 hover:bg-purple-700/70 hover:border-purple-400 text-purple-200 hover:text-white'}`}
+                disabled={showFeedback}
+                className={`w-full text-left justify-start p-4 h-auto text-sm sm:text-base leading-normal whitespace-normal transition-all duration-300 ease-in-out
+                  ${answeredOption === option 
+                    ? 'bg-gradient-to-r from-yellow-500 to-pink-600 text-white border-transparent ring-2 ring-yellow-300 shadow-lg scale-105' 
+                    : 'bg-purple-800/50 border-purple-600 hover:bg-purple-700/70 hover:border-purple-400 text-purple-200 hover:text-white hover:scale-102'}`}
               >
-                <Sparkles className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${selectedOption === option ? 'text-yellow-300' : 'text-purple-400'}`} />
+                <Sparkles className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${answeredOption === option ? 'text-yellow-300' : 'text-purple-400'}`} />
                 {option}
               </Button>
             ))}
           </div>
         </div>
 
-        {!showFeedback && selectedOption && (
-          <Button
-            onClick={handleSubmitAnswer}
-            className="w-full font-headline text-lg sm:text-xl px-8 py-6 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-200"
-          >
-            <Send className="mr-2 h-5 w-5" />
-            CONFIRMAR RESPOSTA
-          </Button>
-        )}
-
         {showFeedback && (
           <div className="mt-6 p-4 bg-black/50 border-2 border-yellow-400 rounded-xl text-center animate-fade-in">
             <MessageCircle className="h-8 w-8 text-yellow-400 mx-auto mb-3 animate-pulse" />
             <p className="text-yellow-300 font-semibold text-lg sm:text-xl">{question.feedback}</p>
             <Button
-              onClick={handleNextOrComplete}
+              onClick={handleProceed}
               className="mt-4 font-headline px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg shadow-md transform hover:scale-105 transition-transform duration-200"
             >
               {isLastQuestion ? "VER MEU DIAGNÓSTICO" : "PRÓXIMA PERGUNTA"}
@@ -168,3 +152,5 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ questi
     </div>
   );
 };
+
+    
