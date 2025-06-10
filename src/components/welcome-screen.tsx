@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface WelcomeScreenProps {
   onStart: () => void;
@@ -39,7 +40,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       
       <div className="w-full text-center max-w-4xl relative z-10">
         {/* Main headline with typing effect */}
-        <h1 className="font-headline text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-8 goddess-text-gradient leading-tight break-words">
+        <h1 className={cn(
+          "font-headline font-bold mb-8 goddess-text-gradient leading-tight break-words",
+          "text-3xl sm:text-4xl md:text-6xl lg:text-7xl" // Tamanhos de fonte responsivos
+        )}>
           <span className="typing-effect">{displayedText}</span>
         </h1>
         
@@ -59,11 +63,22 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         <div className="animate-fade-in" style={{animationDelay: '4s', animationFillMode: 'forwards', opacity: 0}}>
           <Button 
             onClick={onStart}
-            className="goddess-gradient text-primary-foreground text-lg sm:text-xl md:text-2xl font-bold py-4 sm:py-5 md:py-6 px-6 sm:px-8 md:px-12 rounded-full pulse-goddess hover:scale-105 transition-all duration-300 shadow-2xl"
+            className={cn(
+              "goddess-gradient text-primary-foreground font-bold rounded-full pulse-goddess hover:scale-105 transition-all duration-300 shadow-2xl",
+              "text-base sm:text-lg md:text-xl", // Tamanho de fonte responsivo
+              "py-3 sm:py-4 md:py-5", // Padding vertical responsivo
+              "px-4 sm:px-6 md:px-10", // Padding horizontal responsivo
+              "flex items-center justify-center" // Para alinhar ícones e texto
+            )}
+            // Adicionado whitespace-normal para permitir quebra e text-center para alinhar
+            style={{ whiteSpace: 'normal', textAlign: 'center' }}
           >
-            <Sparkles className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" />
-            COMEÇAR O DIAGNÓSTICO AGORA!
-            <Sparkles className="ml-2 sm:ml-3 h-5 w-5 sm:h-6 sm:w-6" />
+            <Sparkles className="mr-1 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5 md:h-6 md:w-6" />
+            <div className="flex flex-col items-center leading-tight">
+              <span>COMEÇAR O DIAGNÓSTICO</span>
+              <span className="font-bold">AGORA!</span>
+            </div>
+            <Sparkles className="ml-1 h-4 w-4 sm:ml-2 sm:h-5 sm:w-5 md:h-6 md:w-6" />
           </Button>
         </div>
         
