@@ -116,7 +116,7 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
     }, 1000);
 
     return () => {
-      console.log(`[${COMPONENT_NAME}] Component unmounting. Clearing main interval.`);
+      console.log(`[${COMPONENT_NAME}] Component unmounting. Clearing main interval, and any pending animation timeouts.`);
       clearInterval(intervalId);
       if (enterTimeoutIdRef.current) clearTimeout(enterTimeoutIdRef.current);
       if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
@@ -128,7 +128,6 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   useEffect(() => {
     console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}] triggered. currentAnswer: "${currentAnswer}", current transitionState: "${transitionState}"`);
     
-    // Clear any pending timeouts from previous question transitions
     if (enterTimeoutIdRef.current) clearTimeout(enterTimeoutIdRef.current);
     if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
     if (exitTimeoutIdRef.current) clearTimeout(exitTimeoutIdRef.current);
@@ -140,15 +139,14 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
     enterTimeoutIdRef.current = setTimeout(() => {
       setTransitionState('idle');
       console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: ENTER_TIMEOUT - Transitioned to 'idle'.`);
-    }, 400); // Duration of slide-in animation
+    }, 400); 
 
-    // Cleanup for this specific effect instance
     return () => {
       console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Cleanup for question change. Clearing enterTimeoutId.`);
       if (enterTimeoutIdRef.current) clearTimeout(enterTimeoutIdRef.current);
     }
 
-  }, [question.id]); // Only re-run if the question ID changes
+  }, [question.id]);
 
 
   const handleSelectOption = (option: QuestionOption) => {
@@ -163,19 +161,19 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
     playSound('answer_select.mp3');
     setTransitionState('feedback');
     console.log(`[${COMPONENT_NAME}] handleSelectOption: Set state to 'feedback'.`);
-    playSound('feedback_show.mp3');
+    
 
     feedbackTimeoutIdRef.current = setTimeout(() => {
+      playSound('feedback_show.mp3'); // Play sound when feedback is about to show
       setTransitionState('exiting');
       console.log(`[${COMPONENT_NAME}] handleSelectOption: FEEDBACK_TIMEOUT - Set state to 'exiting'.`);
       
       exitTimeoutIdRef.current = setTimeout(() => {
         console.log(`[${COMPONENT_NAME}] handleSelectOption: EXIT_TIMEOUT - Calling onComplete().`);
         onComplete(); 
-        // The useEffect for question.id will handle the 'entering' state for the new question
-      }, 400); // Duration of slide-out animation
+      }, 400); 
 
-    }, 1500); // Time to show feedback
+    }, 1500); 
   };
   
   const showQuestionContent = transitionState === 'idle' || transitionState === 'entering';
@@ -226,17 +224,23 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
                 {question.options.map((option, index) => (
                   <Button
                     key={index}
-                    variant={selectedOptionText === option.text ? "default" : "outline"}
+                    variant="outline" // Base variant is always outline
                     onClick={() => handleSelectOption(option)}
                     disabled={transitionState !== 'idle'}
-                    className={`w-full text-left justify-start p-4 h-auto text-sm sm:text-base leading-normal whitespace-normal transition-all duration-300 ease-in-out
-                      ${selectedOptionText === option.text 
-                        ? 'bg-gradient-to-r from-yellow-500 to-pink-600 text-white border-transparent ring-2 ring-yellow-300 shadow-lg scale-105' 
-                        : 'bg-purple-800/50 border-purple-600 hover:bg-purple-700/70 hover:border-purple-400 text-purple-200 hover:text-white hover:scale-102'
-                      }
-                      ${transitionState !== 'idle' && selectedOptionText !== option.text ? 'opacity-50 cursor-not-allowed' : ''}
-                      ${transitionState !== 'idle' && selectedOptionText === option.text ? 'opacity-100' : ''} 
-                    `}
+                    className={cn(
+                      "w-full text-left justify-start p-4 h-auto text-sm sm:text-base leading-normal whitespace-normal transition-all duration-300 ease-in-out",
+                      selectedOptionText === option.text
+                        ? 'bg-gradient-to-r from-yellow-500 to-pink-600 text-white border-transparent ring-2 ring-yellow-300 shadow-lg scale-105' // Estilo selecionado
+                        : 'bg-purple-800/50 border-purple-600 hover:bg-purple-700/70 hover:border-purple-400 text-purple-200 hover:text-white hover:scale-102', // Estilo não selecionado
+                      
+                      // Controla a opacidade e interatividade durante as transições
+                      transitionState !== 'idle' && selectedOptionText !== option.text 
+                        ? 'opacity-50 cursor-not-allowed' 
+                        : '',
+                      transitionState !== 'idle' && selectedOptionText === option.text 
+                        ? 'opacity-100' // Mantém a opção selecionada totalmente visível
+                        : ''
+                    )}
                   >
                     <Sparkles className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${selectedOptionText === option.text ? 'text-yellow-300' : 'text-purple-400'}`} />
                     {option.text}
@@ -259,3 +263,5 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   );
 };
     
+
+      
