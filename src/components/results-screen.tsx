@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -10,6 +9,7 @@ import Image from 'next/image';
 import { Progress } from "@/components/ui/progress";
 import type { DreamOption } from './pre-questionnaire-form-screen';
 import { cn } from '@/lib/utils';
+import { playSound } from '@/lib/audioUtils';
 
 export interface BehavioralAnalysisData {
   archetype: string;
@@ -66,7 +66,8 @@ const goddessCodeModules = [
 ];
 
 const totalRealValue = goddessCodeModules.reduce((sum, item) => sum + item.value, 0);
-const offerPrice = 47;
+const offerPriceAnchor = 97;
+const offerPriceFinal = 47;
 
 
 const formatUserDreams = (dreams?: DreamOption[]): string => {
@@ -87,9 +88,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   userDreams,
   dreamsAchievementDateLabel
 }) => {
-  const initialTime = 15 * 60;
+  const initialTime = 2 * 60; // 2 minutos
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [isBlinking, setIsBlinking] = useState(false);
+  const [isPriceRevealed, setIsPriceRevealed] = useState(false);
   const { toast } = useToast();
 
   const displayName = userName || "Querida Deusa";
@@ -117,7 +119,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
 
   useEffect(() => {
-    if (timeLeft <= 0) {
+    if (!isPriceRevealed || timeLeft <= 0) {
        setIsBlinking(false);
        return;
     }
@@ -136,7 +138,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     return () => {
       clearInterval(timerId);
     };
-  }, [timeLeft]);
+  }, [timeLeft, isPriceRevealed]);
 
 
   const formatTime = (seconds: number) => {
@@ -147,9 +149,14 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
   const getPercentageColor = (percentage: number) => {
     if (percentage <= 25) return "bg-red-600";
-    if (percentage <= 50) return "bg-yellow-500";
+    if (percentage <= 50) return "bg-orange-500"; // Alterado de yellow para orange
     if (percentage <= 75) return "bg-yellow-400";
     return "bg-green-500";
+  };
+
+  const handleRevealPrice = () => {
+    setIsPriceRevealed(true);
+    playSound('dream_select.mp3'); // Usando som existente, idealmente 'magic_reveal.mp3'
   };
 
   return (
@@ -293,16 +300,16 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     <div className="flex-1">
                     <h4 className="text-md sm:text-lg font-semibold text-pink-300 mb-1 sm:mb-1.5 break-words">{item.name}</h4>
                     <p className="text-xs sm:text-sm text-purple-200/90 mb-1.5 leading-relaxed break-words">{item.promise}</p>
-                    <p className="text-xs text-yellow-300/80 font-medium">Valor real: <span className="line-through">R${item.value.toFixed(2).replace('.',',')}</span></p>
+                    <p className="text-xs text-yellow-400/90 font-medium">Valor real: <span className="line-through text-base sm:text-md">R${item.value.toFixed(2).replace('.',',')}</span></p>
                     </div>
                 </div>
                 ))}
             </div>
             <p className="text-center text-purple-200/90 mt-8 sm:mt-10 text-base sm:text-lg break-words">
-                {displayName}, se cada parte desse desafio fosse vendida separadamente, o valor total ultrapassaria <strong className="font-bold text-yellow-300 text-lg sm:text-xl md:text-2xl">R$ {totalRealValue.toFixed(2).replace('.',',')}</strong>.
+                {displayName}, se cada parte desse desafio fosse vendida separadamente, o valor total ultrapassaria <strong className="font-bold text-yellow-300 text-xl sm:text-2xl md:text-3xl line-through">R$ {totalRealValue.toFixed(2).replace('.',',')}</strong>.
             </p>
-            <p className="text-center text-white font-semibold mt-2 text-base sm:text-lg md:text-xl break-words">
-                Mas eu decidi reunir tudo em um método completo, prático, validado por centenas de mulheres — por apenas <span className="text-green-400 text-xl sm:text-2xl md:text-3xl font-bold">R$ {offerPrice.toFixed(2).replace('.',',')}</span>.
+            <p className="text-center text-white font-semibold mt-2 text-lg sm:text-xl md:text-2xl break-words">
+                Mas eu decidi reunir tudo em um método completo, prático, validado por centenas de mulheres — por apenas <span className="text-green-400 text-2xl sm:text-3xl md:text-4xl font-bold">R$ {offerPriceAnchor.toFixed(2).replace('.',',')}</span>.
             </p>
             <p className="text-center text-yellow-400 font-medium mt-1 text-sm sm:text-base break-words">
                 Porque transformação não precisa ser cara. Ela só precisa ser real.
@@ -355,48 +362,73 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             <p className="text-yellow-300 text-xs sm:text-sm md:text-base break-words">E quando elas acabarem, o preço vai subir. Não sabemos quando teremos outra oportunidade como essa para você realizar {dreamsText} {achievementDateText}.</p>
           </div>
 
-          <p className="text-purple-200/90 text-base sm:text-lg md:text-xl mb-1 sm:mb-2 break-words">O valor real deste conhecimento, que vai mudar sua vida para sempre, é de <span className="line-through text-red-500/80 text-lg sm:text-xl md:text-2xl">R$ {totalRealValue.toFixed(2).replace('.',',')}</span>.</p>
-          <p className="text-purple-200/90 text-sm sm:text-base md:text-lg mb-3 sm:mb-5 break-words">Mas, {displayName}, por um tempo <span className="text-yellow-300 font-bold">LIMITADÍSSIMO</span>, você pode ter acesso a todo o CÓDIGO DA DEUSA™ por um valor simbólico de apenas:</p>
-
-          <p className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-green-400 my-3 sm:my-4 md:my-6 glow">
-            R$ {offerPrice.toFixed(2).replace('.',',')}
+          <p className="text-purple-200/90 text-base sm:text-lg md:text-xl mb-1 sm:mb-2 break-words">
+            O valor real deste conhecimento, que vai mudar sua vida para sempre, é de <span className="line-through text-red-500/80 text-lg sm:text-xl md:text-2xl font-semibold">R$ {totalRealValue.toFixed(2).replace('.',',')}</span>.
+            Nem mesmo os <span className="line-through text-red-500/80 text-lg sm:text-xl md:text-2xl font-semibold">R$ {offerPriceAnchor.toFixed(2).replace('.',',')}</span> que seria o preço justo.
           </p>
-          <p className="text-yellow-300 font-bold text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 break-words">SIM, {displayName}! APENAS R$ {offerPrice.toFixed(2).replace('.',',')}! <br className="sm:hidden"/>É menos que um lanche na rua para você ter o poder de reescrever seu destino e manifestar {dreamsText}.</p>
+          <p className="text-purple-200/90 text-sm sm:text-base md:text-lg mb-3 sm:mb-5 break-words">
+            Mas, {displayName}, como uma oportunidade <span className="text-yellow-300 font-bold">ÚNICA E MÁGICA</span> por ter chegado até aqui, seu acesso a todo o CÓDIGO DA DEUSA™ será revelado agora:
+          </p>
 
-          <div className="mb-4 sm:mb-6 md:mb-8">
-            <div className={cn("flex items-center justify-center space-x-1 sm:space-x-2 mb-1 sm:mb-2 md:mb-3", timeLeft < 60 && timeLeft > 0 ? 'text-red-400' : 'text-yellow-200')}>
-              <Clock className="h-6 w-6 sm:h-7 md:h-10" />
-              <span className={cn("text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold font-mono", timeLeft === 0 ? 'text-red-600' : '', isBlinking && timeLeft > 0 ? 'animate-ping opacity-75':'opacity-100')}>
-                {formatTime(timeLeft)}
-              </span>
-              <Zap className={cn("h-6 w-6 sm:h-7 md:h-10", timeLeft < 300 && timeLeft > 0 && timeLeft % 2 === 0 ? 'animate-spin [animation-duration:0.5s]' : '')} />
-            </div>
-            <div className="w-full bg-black/60 rounded-full h-3 sm:h-4 md:h-5 border-2 border-yellow-600/70 overflow-hidden shadow-inner">
-              <div
-                className="bg-gradient-to-r from-red-500 via-yellow-400 to-orange-500 h-full rounded-full transition-all duration-1000 ease-linear shadow-md"
-                style={{ width: `${(timeLeft / initialTime) * 100}%` }}
-              ></div>
-            </div>
-             {timeLeft === 0 && <p className="text-red-500 font-bold mt-1 sm:mt-2 text-sm sm:text-base md:text-lg break-words">TEMPO ESGOTADO, {displayName}! OFERTA ENCERRADA.</p>}
-          </div>
+          {!isPriceRevealed ? (
+            <button
+              onClick={handleRevealPrice}
+              className="my-3 sm:my-4 md:my-6 p-4 sm:p-6 bg-purple-800/60 border-2 border-accent hover:border-yellow-300 rounded-2xl hover:bg-purple-700/70 transition-all duration-300 ease-in-out cursor-pointer group animate-pulse-goddess shadow-xl hover:shadow-accent/50 w-full max-w-md mx-auto"
+              aria-label="Toque para revelar sua oferta mágica"
+            >
+              <div className="flex flex-col items-center text-center">
+                <Wand2 className="h-10 w-10 sm:h-12 sm:w-12 text-yellow-300 mb-2 sm:mb-3 group-hover:animate-icon-subtle-float" />
+                <span className="text-xl sm:text-2xl md:text-3xl font-bold text-yellow-300 group-hover:text-yellow-200 leading-tight">
+                  Toque para Revelar Sua Oferta Mágica!
+                </span>
+                <span className="text-sm text-purple-200/80 mt-1.5 sm:mt-2">Sua co-criação especial espera por você...</span>
+              </div>
+            </button>
+          ) : (
+            <div className="animate-pop-in">
+              <p className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-green-400 my-3 sm:my-4 md:my-6 glow">
+                R$ {offerPriceFinal.toFixed(2).replace('.',',')}
+              </p>
+              <p className="text-yellow-300 font-bold text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 break-words">
+                SIM, {displayName}! APENAS R$ {offerPriceFinal.toFixed(2).replace('.',',')} HOJE! <br className="sm:hidden"/> Um presente especial para sua transformação!
+              </p>
 
-          <Button
-            asChild
-            size="lg"
-            className={cn(`w-full max-w-md mx-auto font-headline text-base sm:text-lg md:text-xl px-4 sm:px-6 md:px-10 py-4 sm:py-5 md:py-7 rounded-xl shadow-2xl transform hover:scale-105 transition-transform duration-200 pulse-goddess whitespace-normal text-center h-auto`,
-            timeLeft === 0 ? 'bg-gray-700 hover:bg-gray-800 cursor-not-allowed opacity-60' : 'bg-gradient-to-r from-green-500 via-emerald-600 to-green-700 hover:from-green-600 hover:via-emerald-700 hover:to-green-800 text-white')}
-            disabled={timeLeft === 0}
-          >
-            <a href="https://pay.kiwify.com.br/xxxxxxxx" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1 sm:gap-2">
-              <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" />
-              <span className="leading-tight break-words">{timeLeft > 0 ? `SIM, ${displayName.toUpperCase()}! QUERO O CÓDIGO AGORA!` : "OFERTA EXPIRADA"}</span>
-              <ExternalLink className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" />
-            </a>
-          </Button>
-           <p className="text-xs sm:text-sm text-yellow-200/80 mt-3 sm:mt-4 break-words">Acesso imediato após confirmação. Garantia Incondicional de 7 Dias.</p>
-           <p className="text-sm sm:text-base md:text-lg text-purple-200/90 mt-5 sm:mt-7 break-words">
-            {displayName}, não perca mais um segundo. A cada segundo que você hesita, você está escolhendo continuar na mesma estagnação. Você está escolhendo a mediocridade. <span className="font-bold text-yellow-300">Aja agora.</span> Ou continue sonhando pequeno enquanto outras mulheres estão usando este código para manifestar {dreamsText} {achievementDateText}.
-           </p>
+              <div className="mb-4 sm:mb-6 md:mb-8">
+                <div className={cn("flex items-center justify-center space-x-1 sm:space-x-2 mb-1 sm:mb-2 md:mb-3", timeLeft < 60 && timeLeft > 0 ? 'text-red-400' : 'text-yellow-200')}>
+                  <Clock className="h-6 w-6 sm:h-7 md:h-10 shrink-0" />
+                  <span className={cn("text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold font-mono", timeLeft === 0 ? 'text-red-600' : '', isBlinking && timeLeft > 0 ? 'animate-ping opacity-75':'opacity-100')}>
+                    {formatTime(timeLeft)}
+                  </span>
+                  <Zap className={cn("h-6 w-6 sm:h-7 md:h-10 shrink-0", timeLeft < 300 && timeLeft > 0 && timeLeft % 2 === 0 ? 'animate-spin [animation-duration:0.5s]' : '')} />
+                </div>
+                <div className="w-full bg-black/60 rounded-full h-3 sm:h-4 md:h-5 border-2 border-yellow-600/70 overflow-hidden shadow-inner">
+                  <div
+                    className="bg-gradient-to-r from-red-500 via-yellow-400 to-orange-500 h-full rounded-full transition-all duration-1000 ease-linear shadow-md"
+                    style={{ width: `${(timeLeft / initialTime) * 100}%` }}
+                  ></div>
+                </div>
+                {timeLeft === 0 && <p className="text-red-500 font-bold mt-1 sm:mt-2 text-sm sm:text-base md:text-lg break-words">TEMPO ESGOTADO, {displayName}! OFERTA ENCERRADA.</p>}
+              </div>
+
+              <Button
+                asChild
+                size="lg"
+                className={cn(`w-full max-w-md mx-auto font-headline text-base sm:text-lg md:text-xl px-4 sm:px-6 md:px-10 py-4 sm:py-5 md:py-7 rounded-xl shadow-2xl transform hover:scale-105 transition-transform duration-200 pulse-goddess whitespace-normal text-center h-auto`,
+                timeLeft === 0 ? 'bg-gray-700 hover:bg-gray-800 cursor-not-allowed opacity-60' : 'bg-gradient-to-r from-green-500 via-emerald-600 to-green-700 hover:from-green-600 hover:via-emerald-700 hover:to-green-800 text-white')}
+                disabled={timeLeft === 0}
+              >
+                <a href="https://pay.kiwify.com.br/xxxxxxxx" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1 sm:gap-2">
+                  <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" />
+                  <span className="leading-tight break-words">{timeLeft > 0 ? `SIM, ${displayName.toUpperCase()}! QUERO O CÓDIGO AGORA!` : "OFERTA EXPIRADA"}</span>
+                  <ExternalLink className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" />
+                </a>
+              </Button>
+              <p className="text-xs sm:text-sm text-yellow-200/80 mt-3 sm:mt-4 break-words">Acesso imediato após confirmação. Garantia Incondicional de 7 Dias.</p>
+              <p className="text-sm sm:text-base md:text-lg text-purple-200/90 mt-5 sm:mt-7 break-words">
+                {displayName}, não perca mais um segundo. A cada segundo que você hesita, você está escolhendo continuar na mesma estagnação. Você está escolhendo a mediocridade. <span className="font-bold text-yellow-300">Aja agora.</span> Ou continue sonhando pequeno enquanto outras mulheres estão usando este código para manifestar {dreamsText} {achievementDateText}.
+              </p>
+            </div>
+          )}
         </section>
 
         <section className="animate-fade-in text-center py-6 sm:py-8 bg-black/80 rounded-xl border-2 border-purple-800/60" style={{animationDuration: '0.7s', animationDelay: '2.8s'}}>
