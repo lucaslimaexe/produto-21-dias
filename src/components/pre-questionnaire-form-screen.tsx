@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Sparkles, User, Loader2, CheckCircle2, CalendarDays, Gem, Castle, Plane, Car, Heart, Briefcase, Brain, Leaf, Palette, TrendingUpIcon, MountainSnow, Lightbulb } from 'lucide-react';
+import { Sparkles, User, Loader2, CheckCircle2, CalendarDays, Gem, Castle, Plane, Car, Heart, Briefcase, Brain, Leaf, Palette, TrendingUpIcon, MountainSnow, Lightbulb, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
@@ -16,15 +16,15 @@ import Image from 'next/image';
 // Opções de sonhos com URLs de placeholder e data-ai-hint
 const dreamOptions = [
   { id: 'financial_freedom', label: 'Liberdade Financeira', imageUrl: 'https://www.infomoney.com.br/wp-content/uploads/2019/06/casal-de-sucesso.jpg?fit=900%2C647&quality=50&strip=all', imageAlt: "Casal celebrando sucesso financeiro", dataAiHint: "money success", icon: Gem, iconColorClass: "text-emerald-400" },
-  { id: 'dream_house', label: 'Casa dos Sonhos', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Casa bonita com jardim", dataAiHint: "dream house", icon: Castle, iconColorClass: "text-blue-400" },
-  { id: 'travel_world', label: 'Viver Viajando', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Mapa mundi com aviões e malas", dataAiHint: "travel world", icon: Plane, iconColorClass: "text-sky-400" },
-  { id: 'new_car', label: 'Carro Novo', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Carro esportivo moderno", dataAiHint: "new car", icon: Car, iconColorClass: "text-red-400" },
-  { id: 'soul_mate', label: 'Alma Gêmea', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Casal feliz de mãos dadas", dataAiHint: "happy couple", icon: Heart, iconColorClass: "text-pink-400" },
-  { id: 'successful_business', label: 'Negócio de Sucesso', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Gráfico de crescimento e aperto de mãos", dataAiHint: "business achievement", icon: Briefcase, iconColorClass: "text-amber-500" },
-  { id: 'inner_peace', label: 'Paz Interior', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Pessoa meditando em paisagem serena", dataAiHint: "serenity peace", icon: Brain, iconColorClass: "text-purple-400" },
-  { id: 'health_wellness', label: 'Saúde e Bem-Estar', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Frutas frescas e pessoa se exercitando", dataAiHint: "health wellness", icon: Leaf, iconColorClass: "text-green-400" },
-  { id: 'creative_expression', label: 'Expressão Criativa', imageUrl: 'https://placehold.co/150x150.png', imageAlt: 'Paleta de tintas e pincel', dataAiHint: "art creativity", icon: Palette, iconColorClass: "text-orange-400"},
-  { id: 'personal_growth', label: 'Crescimento Pessoal', imageUrl: 'https://placehold.co/150x150.png', imageAlt: 'Pessoa subindo uma montanha metafórica', dataAiHint: "self improvement", icon: TrendingUpIcon, iconColorClass: "text-teal-400"},
+  { id: 'dream_house', label: 'Casa dos Sonhos', imageUrl: 'https://construcaoereforma.com.br/uploads/casa-dos-sonhos.jpg', imageAlt: "Casa bonita com jardim", dataAiHint: "dream house", icon: Castle, iconColorClass: "text-blue-400" },
+  { id: 'travel_world', label: 'Viver Viajando', imageUrl: 'https://socialturismo.com.br/wp-content/uploads/elementor/thumbs/paris-1-qqtnmehczrnxv1kkqcmpm0w1075c3i0g2pufjojbfk.png', imageAlt: "Mapa mundi com aviões e malas", dataAiHint: "travel world", icon: Plane, iconColorClass: "text-sky-400" },
+  { id: 'new_car', label: 'Carro Novo', imageUrl: 'https://conteudo.imguol.com.br/c/entretenimento/e8/2021/10/18/carla-diaz-com-bmw-x1-1634577959384_v2_4x3.jpg', imageAlt: "Carro esportivo moderno", dataAiHint: "new car", icon: Car, iconColorClass: "text-red-400" },
+  { id: 'soul_mate', label: 'Alma Gêmea', imageUrl: 'https://pixelnerd.com.br/wp-content/uploads/2023/04/cinquenta-tons-de-cinza-anastasia-christian-1-1.jpg', imageAlt: "Casal feliz de mãos dadas", dataAiHint: "happy couple", icon: Heart, iconColorClass: "text-pink-400" },
+  { id: 'successful_business', label: 'Negócio de Sucesso', imageUrl: 'https://s2-oglobo.glbimg.com/37aAHq6iJ3gXS-aMmoKHJj9IeSk=/0x0:1500x1502/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_da025474c0c44edd99332dddb09cabe8/internal_photos/bs/2024/9/4/VgmzajTjAVltegWsJkPQ/whatsapp-image-2024-07-16-at-16.43.15.jpg', imageAlt: "Gráfico de crescimento e aperto de mãos", dataAiHint: "business achievement", icon: Briefcase, iconColorClass: "text-amber-500" },
+  { id: 'inner_peace', label: 'Paz Interior', imageUrl: 'https://p2.trrsf.com/image/fget/cf/774/0/images.terra.com/2020/12/26/salmos-para-paz-interior.jpg', imageAlt: "Pessoa meditando em paisagem serena", dataAiHint: "serenity peace", icon: Brain, iconColorClass: "text-purple-400" },
+  { id: 'health_wellness', label: 'Saúde e Bem-Estar', imageUrl: 'https://s2.glbimg.com/N2xt8vv37XTHNex50Ua-jGPmllA=/top/smart/e.glbimg.com/og/ed/f/original/2022/02/12/virginia-insta.jpg', imageAlt: "Frutas frescas e pessoa se exercitando", dataAiHint: "health wellness", icon: Leaf, iconColorClass: "text-green-400" },
+  { id: 'creative_expression', label: 'Expressão Criativa', imageUrl: 'https://blog.delrio.com.br/wp-content/uploads/2025/03/hobbie_feminino_fotografia.png', imageAlt: 'Paleta de tintas e pincel', dataAiHint: "art creativity", icon: Palette, iconColorClass: "text-orange-400"},
+  { id: 'personal_growth', label: 'Crescimento Pessoal', imageUrl: 'https://inspiracaomulher.com.br/wp-content/uploads/2024/04/IMAGEM-PADRAO-POSTS-DO-BLOG-1200-x-800-px-38.png', imageAlt: 'Pessoa subindo uma montanha metafórica', dataAiHint: "self improvement", icon: TrendingUpIcon, iconColorClass: "text-teal-400"},
 ];
 
 export interface DreamOption {
@@ -68,11 +68,10 @@ interface PreQuestionnaireFormScreenProps {
 }
 
 export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProps> = ({ onSubmitForm }) => {
-  const [selectedDreamsInternal, setSelectedDreamsInternal] = useState<DreamOption[]>([]);
   const { toast } = useToast();
   const [isProcessingSubmit, setIsProcessingSubmit] = useState(false);
 
-  const { control, handleSubmit, setValue, watch, formState: { errors, isValid, touchedFields }, getValues, trigger } = useForm<PreQuestionnaireFormData>({
+  const { control, handleSubmit, setValue, watch, formState: { errors, touchedFields }, getValues, trigger } = useForm<PreQuestionnaireFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: '',
@@ -117,12 +116,13 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
   const handleDreamSelection = (dream: DreamOption) => {
     if (isProcessingSubmit) return;
 
-    const currentIndex = selectedDreamsInternal.findIndex(d => d.id === dream.id);
+    const currentSelected = getValues('selectedDreams');
+    const currentIndex = currentSelected.findIndex(d => d.id === dream.id);
     let newSelectedDreams: DreamOption[];
 
     if (currentIndex === -1) { 
-      if (selectedDreamsInternal.length < 3) {
-        newSelectedDreams = [...selectedDreamsInternal, dream];
+      if (currentSelected.length < 3) {
+        newSelectedDreams = [...currentSelected, dream];
       } else {
         toast({
           title: "Limite de 3 Sonhos Atingido",
@@ -133,9 +133,8 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
         return; 
       }
     } else { 
-      newSelectedDreams = selectedDreamsInternal.filter(d => d.id !== dream.id);
+      newSelectedDreams = currentSelected.filter(d => d.id !== dream.id);
     }
-    setSelectedDreamsInternal(newSelectedDreams);
     setValue('selectedDreams', newSelectedDreams, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
   };
 
@@ -176,7 +175,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
           
           <div className="space-y-2">
              <Label className="text-sm font-semibold text-foreground/90 flex items-center">
-               <CalendarDays className="h-4 w-4 mr-2 text-primary/80" /> Quando seus sonhos se realizarão?
+               <Target className="h-4 w-4 mr-2 text-primary/80" /> Quando seus sonhos se realizarão?
             </Label>
             <Controller
               name="dreamsAchievementDate"
@@ -224,19 +223,19 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
             <Label className="text-sm font-semibold text-foreground/90 block text-center">Selecione 3 sonhos que mais pulsam em seu coração:</Label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
               {dreamOptions.map((dream) => {
-                const isSelected = selectedDreamsInternal.some(d => d.id === dream.id);
+                const isSelected = watchedSelectedDreams.some(d => d.id === dream.id);
                 return (
                   <button
                     key={dream.id}
                     type="button"
                     onClick={() => handleDreamSelection(dream)}
-                    disabled={isProcessingSubmit || (!isSelected && selectedDreamsInternal.length >= 3)}
+                    disabled={isProcessingSubmit || (!isSelected && watchedSelectedDreams.length >= 3)}
                     className={cn(
                       "relative flex flex-col items-center justify-center p-1 rounded-xl border-2 transition-all duration-200 ease-in-out aspect-square focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-accent overflow-hidden group",
                       isSelected
                         ? 'border-accent bg-accent/20 shadow-xl shadow-accent/40 scale-105 animate-pulse-once hover:shadow-accent/50'
                         : 'border-purple-600/60 bg-slate-800/50 hover:border-accent/70 hover:bg-purple-700/20 hover:shadow-lg hover:shadow-accent/30',
-                      !isSelected && selectedDreamsInternal.length >= 3 && 'opacity-40 cursor-not-allowed brightness-75'
+                      !isSelected && watchedSelectedDreams.length >= 3 && 'opacity-40 cursor-not-allowed brightness-75'
                     )}
                     aria-pressed={isSelected}
                   >
@@ -261,7 +260,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
             </div>
             {errors.selectedDreams && <p className="text-destructive text-xs pt-2 text-center">{errors.selectedDreams.message}</p>}
             <p className="text-muted-foreground text-xs pt-1 text-center">
-              Selecionados: {selectedDreamsInternal.length} de 3.
+              Selecionados: {watchedSelectedDreams.length} de 3.
             </p>
           </div>
 
@@ -277,5 +276,3 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     </div>
   );
 };
-
-    
