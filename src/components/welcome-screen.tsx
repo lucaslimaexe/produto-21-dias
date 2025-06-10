@@ -37,7 +37,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-primary/80 rounded-full float opacity-80" style={{animationDelay: '1s'}}></div>
       <div className="absolute bottom-1/3 left-1/3 w-3 h-3 bg-pink-400/40 rounded-full float opacity-40" style={{animationDelay: '2s'}}></div>
       
-      <div className="w-full text-center max-w-4xl relative z-10"> {/* Adicionado w-full aqui */}
+      <div className="w-full text-center max-w-4xl relative z-10">
         {/* Main headline with typing effect */}
         <h1 className="font-headline text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-8 goddess-text-gradient leading-tight break-words">
           <span className="typing-effect">{displayedText}</span>
@@ -59,11 +59,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         <div className="animate-fade-in" style={{animationDelay: '4s', animationFillMode: 'forwards', opacity: 0}}>
           <Button 
             onClick={onStart}
-            className="goddess-gradient text-primary-foreground text-xl md:text-2xl font-bold py-6 px-12 rounded-full pulse-goddess hover:scale-105 transition-all duration-300 shadow-2xl"
+            className="goddess-gradient text-primary-foreground text-lg sm:text-xl md:text-2xl font-bold py-4 sm:py-5 md:py-6 px-6 sm:px-8 md:px-12 rounded-full pulse-goddess hover:scale-105 transition-all duration-300 shadow-2xl"
           >
-            <Sparkles className="mr-3 h-6 w-6" />
+            <Sparkles className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" />
             COMEÇAR O DIAGNÓSTICO AGORA!
-            <Sparkles className="ml-3 h-6 w-6" />
+            <Sparkles className="ml-2 sm:ml-3 h-5 w-5 sm:h-6 sm:w-6" />
           </Button>
         </div>
         
