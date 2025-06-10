@@ -8,7 +8,7 @@ export default function HomePage() {
   const router = useRouter();
 
   const handleStart = () => {
-    router.push("/questionnaire");
+    router.push("/pre-analysis"); // Changed to pre-analysis
   };
 
   return <WelcomeScreen onStart={handleStart} />;

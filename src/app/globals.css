@@ -17,10 +17,10 @@ body {
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+  50% { transform: translateY(-10px); } /* Adjusted for a gentler float */
 }
 .float {
-  animation: float 4s ease-in-out infinite;
+  animation: float 3s ease-in-out infinite; /* Adjusted duration */
 }
 
 @keyframes fadeIn {
@@ -29,8 +29,8 @@ body {
 }
 .animate-fade-in {
   animation-name: fadeIn;
-  animation-duration: 0.8s; /* Duration can be adjusted or overridden */
-  /* animation-fill-mode and opacity are set inline in the component */
+  animation-duration: 0.8s; 
+  animation-fill-mode: forwards; /* Ensure end state is kept */
 }
 
 @keyframes pulse-goddess {
@@ -63,6 +63,18 @@ body {
 }
 .glow {
   animation: glow-effect 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes progress-color-animation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-progress-bar > div { /* Targets ProgressPrimitive.Indicator */
+  background: linear-gradient(270deg, hsl(var(--accent)), hsl(var(--primary)), hsl(var(--accent)));
+  background-size: 200% 100%;
+  animation: progress-color-animation 2.5s linear infinite;
 }
 
 
