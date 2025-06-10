@@ -108,7 +108,6 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   const feedbackTimeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const exitTimeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Timer useEffect
   useEffect(() => {
     console.log(`[${COMPONENT_NAME}] Component mounted. Initial question ID: ${question.id}`);
     const intervalId = setInterval(() => {
@@ -124,10 +123,10 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
     };
   }, []); 
 
-  // Handle animation and state for new questions
   useEffect(() => {
     console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}] triggered. currentAnswer: "${currentAnswer}", current transitionState: "${transitionState}"`);
     
+    // Clear any pending timeouts from previous question transitions
     if (enterTimeoutIdRef.current) clearTimeout(enterTimeoutIdRef.current);
     if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
     if (exitTimeoutIdRef.current) clearTimeout(exitTimeoutIdRef.current);
@@ -145,7 +144,7 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
       console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Cleanup for question change. Clearing enterTimeoutId.`);
       if (enterTimeoutIdRef.current) clearTimeout(enterTimeoutIdRef.current);
     }
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question.id]);
 
 
@@ -162,12 +161,13 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
     setTransitionState('feedback');
     console.log(`[${COMPONENT_NAME}] handleSelectOption: Set state to 'feedback'.`);
     
-
+    if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
     feedbackTimeoutIdRef.current = setTimeout(() => {
-      playSound('feedback_show.mp3'); // Play sound when feedback is about to show
+      playSound('feedback_show.mp3'); 
       setTransitionState('exiting');
       console.log(`[${COMPONENT_NAME}] handleSelectOption: FEEDBACK_TIMEOUT - Set state to 'exiting'.`);
       
+      if (exitTimeoutIdRef.current) clearTimeout(exitTimeoutIdRef.current);
       exitTimeoutIdRef.current = setTimeout(() => {
         console.log(`[${COMPONENT_NAME}] handleSelectOption: EXIT_TIMEOUT - Calling onComplete().`);
         onComplete(); 
@@ -224,22 +224,16 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
                 {question.options.map((option, index) => (
                   <Button
                     key={index}
-                    variant="outline" // Base variant is always outline
                     onClick={() => handleSelectOption(option)}
                     disabled={transitionState !== 'idle'}
                     className={cn(
-                      "w-full text-left justify-start p-4 h-auto text-sm sm:text-base leading-normal whitespace-normal transition-all duration-300 ease-in-out",
+                      "w-full text-left justify-start p-4 h-auto text-sm sm:text-base leading-normal whitespace-normal transition-all duration-300 ease-in-out rounded-md", // Base classes
                       selectedOptionText === option.text
                         ? 'bg-gradient-to-r from-yellow-500 to-pink-600 text-white border-transparent ring-2 ring-yellow-300 shadow-lg scale-105' // Estilo selecionado
-                        : 'bg-purple-800/50 border-purple-600 hover:bg-purple-700/70 hover:border-purple-400 text-purple-200 hover:text-white hover:scale-102', // Estilo não selecionado
+                        : 'bg-purple-800/50 border border-purple-600 text-purple-200 hover:bg-purple-700/70 hover:border-purple-400 hover:text-white hover:scale-102', // Estilo não selecionado
                       
-                      // Controla a opacidade e interatividade durante as transições
-                      transitionState !== 'idle' && selectedOptionText !== option.text 
-                        ? 'opacity-50 cursor-not-allowed' 
-                        : '',
-                      transitionState !== 'idle' && selectedOptionText === option.text 
-                        ? 'opacity-100' // Mantém a opção selecionada totalmente visível
-                        : ''
+                      // Controle de opacidade e interatividade durante transições para opções NÃO selecionadas
+                      (transitionState !== 'idle' && selectedOptionText !== option.text) && 'opacity-50 cursor-not-allowed'
                     )}
                   >
                     <Sparkles className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${selectedOptionText === option.text ? 'text-yellow-300' : 'text-purple-400'}`} />
@@ -263,5 +257,3 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   );
 };
     
-
-      
