@@ -22,15 +22,20 @@ function ResultsContent() {
 
   if (analysisParam) {
     try {
-      // searchParams.get() already decodes the string
-      analysisResult = JSON.parse(analysisParam);
+      // The analysisParam from the URL is URL-encoded, so it needs to be decoded before parsing.
+      analysisResult = JSON.parse(decodeURIComponent(analysisParam));
     } catch (e) {
       console.error("Error parsing analysis result from query param:", e);
       analysisError = "Não foi possível carregar sua análise personalizada.";
     }
   } else if (errorParam) {
-     // searchParams.get() already decodes the string
-     analysisError = errorParam;
+     // For errorParam, if it was encoded, decode it. Otherwise, use as is.
+     // Assuming simple error strings might not always be encoded.
+     try {
+        analysisError = decodeURIComponent(errorParam);
+     } catch (e) {
+        analysisError = errorParam; // Fallback if decoding fails (e.g., not actually encoded)
+     }
   }
 
 
