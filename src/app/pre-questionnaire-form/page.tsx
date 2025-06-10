@@ -12,9 +12,8 @@ function PreQuestionnaireFormContent() {
   const handleFormComplete = (data: PreQuestionnaireFormData) => {
     const queryParams = new URLSearchParams({
       name: data.fullName,
-      dob: data.dateOfBirth.toISOString().split('T')[0], 
       dreams: JSON.stringify(data.selectedDreams.map(d => d.id)),
-      dreamsDate: data.dreamsAchievementDate.toISOString().split('T')[0], // Novo campo
+      dreamsDate: data.dreamsAchievementDate.toISOString().split('T')[0],
     }).toString();
     router.push(`/questionnaire?${queryParams}`);
   };

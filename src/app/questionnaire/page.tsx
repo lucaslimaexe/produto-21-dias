@@ -98,13 +98,12 @@ function QuestionnaireContent() {
 
   useEffect(() => {
     const name = searchParams.get('name');
-    const dob = searchParams.get('dob');
     const dreamsString = searchParams.get('dreams');
-    const dreamsDate = searchParams.get('dreamsDate'); // Novo campo
-    if (name && dob && dreamsString && dreamsDate) {
+    const dreamsDate = searchParams.get('dreamsDate'); 
+    if (name && dreamsString && dreamsDate) {
       try {
         const dreams = JSON.parse(dreamsString);
-        const newPreQuestionnaireData = { name, dob, dreams, dreamsDate };
+        const newPreQuestionnaireData = { name, dreams, dreamsDate };
         setPreQuestionnaireData(newPreQuestionnaireData);
         console.log("Dados do formulário pré-questionário:", newPreQuestionnaireData);
       } catch (e) {
@@ -129,9 +128,8 @@ function QuestionnaireContent() {
       const analysisJsonString = JSON.stringify(localAnalysisResult);
       
       const existingParams = new URLSearchParams(searchParams.toString());
-      existingParams.set('analysis', analysisJsonString); // Não precisa encodeURIComponent aqui se o router.push faz
+      existingParams.set('analysis', analysisJsonString); 
       
-      // O router.push lida com a codificação dos parâmetros
       const targetUrl = `/results?${existingParams.toString()}`;
       console.log('Navigating to results (questionnaire):', targetUrl); 
       router.push(targetUrl);
@@ -162,5 +160,4 @@ export default function QuestionnairePage() {
     </Suspense>
   );
 }
-
     

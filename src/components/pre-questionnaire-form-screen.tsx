@@ -36,14 +36,12 @@ export interface DreamOption {
 
 export interface PreQuestionnaireFormData {
   fullName: string;
-  dateOfBirth: Date;
   selectedDreams: DreamOption[];
   dreamsAchievementDate: Date; 
 }
 
 const formSchema = z.object({
   fullName: z.string().min(3, { message: "Nome completo deve ter pelo menos 3 caracteres." }),
-  dateOfBirth: z.date({ required_error: "Data de nascimento é obrigatória." }),
   selectedDreams: z.array(z.object({
     id: z.string(),
     label: z.string(),
@@ -118,47 +116,9 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
             />
             {errors.fullName && <p className="text-destructive text-xs mt-1">{errors.fullName.message}</p>}
           </div>
-
-          <div>
-            <label htmlFor="dateOfBirth" className="block text-sm font-medium text-foreground mb-1">Data de Nascimento</label>
-            <Controller
-              name="dateOfBirth"
-              control={control}
-              render={({ field }) => (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !field.value && "text-muted-foreground",
-                        errors.dateOfBirth ? 'border-destructive' : ''
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {field.value ? format(field.value, "PPP", { locale: ptBR }) : <span>Escolha uma data</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={(date) => field.onChange(date)}
-                      initialFocus
-                      locale={ptBR}
-                      captionLayout="dropdown-buttons"
-                      fromYear={1920}
-                      toYear={new Date().getFullYear() - 10} 
-                    />
-                  </PopoverContent>
-                </Popover>
-              )}
-            />
-            {errors.dateOfBirth && <p className="text-destructive text-xs mt-1">{errors.dateOfBirth.message}</p>}
-          </div>
           
           <div>
-            <label htmlFor="dreamsAchievementDate" className="block text-sm font-medium text-foreground mb-1">Data Desejada para Realizar os Sonhos</label>
+            <label htmlFor="dreamsAchievementDate" className="block text-sm font-medium text-foreground mb-1">Quando você gostaria de manifestar estes sonhos?</label>
             <Controller
               name="dreamsAchievementDate"
               control={control}
@@ -174,7 +134,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                       )}
                     >
                       <Target className="mr-2 h-4 w-4 text-accent" />
-                      {field.value ? format(field.value, "PPP", { locale: ptBR }) : <span>Quando você quer alcançar?</span>}
+                      {field.value ? format(field.value, "PPP", { locale: ptBR }) : <span>Escolha a data alvo</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -185,9 +145,9 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                       initialFocus
                       locale={ptBR}
                       captionLayout="dropdown-buttons"
-                      fromDate={new Date()} // Não pode selecionar datas passadas
+                      fromDate={new Date()} 
                       fromYear={new Date().getFullYear()}
-                      toYear={new Date().getFullYear() + 20} // Até 20 anos no futuro
+                      toYear={new Date().getFullYear() + 20} 
                     />
                   </PopoverContent>
                 </Popover>
@@ -249,5 +209,4 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     </div>
   );
 };
-
     
