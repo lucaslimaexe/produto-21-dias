@@ -57,7 +57,7 @@ const formSchema = z.object({
     imageUrl: z.string(),
     imageAlt: z.string(),
     dataAiHint: z.string(),
-    icon: z.any(),
+    icon: z.any(), // Manter como z.any() para simplicidade se o ícone não for parte dos dados do formulário
     iconColorClass: z.string(),
   })).length(3, {message: "Escolha exatamente 3 sonhos." }),
   dreamsAchievementDate: z.string().min(1, { message: "Quando você quer realizar estes sonhos?" }),
@@ -72,7 +72,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
   const { toast } = useToast();
   const [isProcessingSubmit, setIsProcessingSubmit] = useState(false);
 
-  const { control, handleSubmit, setValue, watch, formState: { errors, isValid, touchedFields }, getValues } = useForm<PreQuestionnaireFormData>({
+  const { control, handleSubmit, setValue, watch, formState: { errors, isValid, touchedFields }, getValues, trigger } = useForm<PreQuestionnaireFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: '',
@@ -82,26 +82,48 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     mode: 'onChange', 
   });
 
-  const watchedFullName = watch('fullName');
-  const watchedDreamsAchievementDate = watch('dreamsAchievementDate');
   const watchedSelectedDreams = watch('selectedDreams');
 
   useEffect(() => {
-    const allRequiredFieldsTouched = touchedFields.fullName && touchedFields.dreamsAchievementDate;
-    const dreamsSelected = watchedSelectedDreams.length === 3;
+    // Auto-submit logic
+    if (watchedSelectedDreams.length === 3 && !isProcessingSubmit) {
+      // Trigger validation for all fields to ensure errors object is up-to-date
+      trigger().then(isFormValid => {
+        if (isFormValid) {
+          // Check specific fields again before submitting, as isValid might be true
+          // but we want to show toasts for missing fields if user tries to submit via dream selection
+          const currentValues = getValues();
+          if (!currentValues.fullName || errors.fullName) {
+            toast({ title: "Nome Pendente", description: "Por favor, preencha seu nome completo para continuar.", variant: "destructive", duration: 3000 });
+            return;
+          }
+          if (!currentValues.dreamsAchievementDate || errors.dreamsAchievementDate) {
+            toast({ title: "Data Pendente", description: "Defina quando seus sonhos se realizarão para continuar.", variant: "destructive", duration: 3000 });
+            return;
+          }
 
-    if (dreamsSelected && allRequiredFieldsTouched && isValid && !isProcessingSubmit) {
-      setIsProcessingSubmit(true);
-      toast({
-        title: "Quase lá!",
-        description: "Estamos preparando seu diagnóstico personalizado...",
-        duration: 2000,
+          setIsProcessingSubmit(true);
+          toast({
+            title: "Quase lá!",
+            description: "Estamos preparando seu diagnóstico personalizado...",
+            duration: 2000,
+          });
+          setTimeout(() => {
+            onSubmitForm(currentValues);
+          }, 1500);
+
+        } else { // isFormValid is false, check for specific missing fields to guide user
+          const currentValues = getValues();
+           if (!currentValues.fullName || errors.fullName) {
+            toast({ title: "Nome Pendente", description: "Por favor, preencha seu nome completo para continuar.", variant: "destructive", duration: 3000 });
+          } else if (!currentValues.dreamsAchievementDate || errors.dreamsAchievementDate) {
+            toast({ title: "Data Pendente", description: "Defina quando seus sonhos se realizarão para continuar.", variant: "destructive", duration: 3000 });
+          }
+        }
       });
-      setTimeout(() => {
-        onSubmitForm(getValues());
-      }, 1500);
     }
-  }, [watchedSelectedDreams, watchedFullName, watchedDreamsAchievementDate, isValid, touchedFields, errors, onSubmitForm, getValues, toast, isProcessingSubmit]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedSelectedDreams, isProcessingSubmit, errors, onSubmitForm, getValues, toast, trigger]);
 
 
   const handleDreamSelection = (dream: DreamOption) => {
@@ -126,6 +148,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
       newSelectedDreams = selectedDreamsInternal.filter(d => d.id !== dream.id);
     }
     setSelectedDreamsInternal(newSelectedDreams);
+    // Pass the actual DreamOption objects, not just IDs
     setValue('selectedDreams', newSelectedDreams, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
   };
 
@@ -137,7 +160,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
         <header className="text-center space-y-2">
           <Sparkles className="h-12 w-12 sm:h-14 sm:w-14 text-accent mx-auto animate-float [animation-duration:3s]" />
           <h1 className="font-headline text-3xl sm:text-4xl font-extrabold goddess-text-gradient">Sua Jornada Começa Agora</h1>
-          <p className="text-muted-foreground text-md sm:text-lg">Para onde seu coração te guia?</p>
+          <p className="text-muted-foreground text-md sm:text-lg">Conte-nos um pouco sobre você e seus sonhos.</p>
         </header>
 
         <form className="space-y-6">
@@ -179,7 +202,8 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                   }}
                   defaultValue={field.value}
                   className="grid grid-cols-1 sm:grid-cols-3 gap-3"
-                  disabled={isProcessingSubmit}
+                  // disabled attribute removed from RadioGroup to allow interaction
+                  // Individual items will be effectively disabled by the form-level isProcessingSubmit
                 >
                   {dateOptions.map((option) => (
                     <Label
@@ -198,7 +222,8 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                         id={option.id} 
                         className={cn(
                           field.value === option.id ? "border-accent text-accent" : "border-purple-500 text-purple-500"
-                        )} 
+                        )}
+                        disabled={isProcessingSubmit} 
                       />
                       <span className="font-semibold text-sm">{option.label}</span>
                     </Label>
@@ -267,5 +292,3 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     </div>
   );
 };
-
-    
