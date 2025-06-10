@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,8 +8,63 @@ body {
 }
 
 .goddess-gradient {
-  background-image: linear-gradient(to right, hsl(var(--accent)), hsl(var(--primary)));
+  background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
 }
+
+.goddess-text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+.float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation-name: fadeIn;
+  animation-duration: 0.8s; /* Duration can be adjusted or overridden */
+  /* animation-fill-mode and opacity are set inline in the component */
+}
+
+@keyframes pulse-goddess {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 0 0 5px hsl(var(--accent) / 0.5), 0 0 10px hsl(var(--primary) / 0.3);
+  }
+  50% { 
+    transform: scale(1.03);
+    box-shadow: 0 0 15px hsl(var(--accent) / 0.7), 0 0 25px hsl(var(--primary) / 0.5);
+  }
+}
+.pulse-goddess {
+  animation: pulse-goddess 2.5s infinite ease-in-out;
+}
+
+@keyframes glow-effect {
+  from { 
+    text-shadow: 0 0 3px hsl(var(--accent) / 0.7), 
+                 0 0 6px hsl(var(--accent) / 0.5), 
+                 0 0 9px hsl(var(--primary) / 0.3), 
+                 0 0 12px hsl(var(--primary) / 0.2);
+  }
+  to { 
+    text-shadow: 0 0 6px hsl(var(--accent) / 0.7), 
+                 0 0 12px hsl(var(--accent) / 0.5), 
+                 0 0 18px hsl(var(--primary) / 0.3), 
+                 0 0 24px hsl(var(--primary) / 0.2);
+  }
+}
+.glow {
+  animation: glow-effect 2.5s ease-in-out infinite alternate;
+}
+
 
 @layer base {
   :root {
@@ -87,6 +143,9 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body; /* Added font-body */
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline; /* Ensure headlines use Poppins */
   }
 }
