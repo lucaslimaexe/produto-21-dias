@@ -5,22 +5,27 @@ import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Progress } from './ui/progress';
 import { Sparkles, MessageCircle, Loader2 } from 'lucide-react';
-import { playSound } from '@/lib/audioUtils'; // Importar playSound
+import { playSound } from '@/lib/audioUtils';
+
+export interface QuestionOption {
+  text: string;
+  score: number;
+}
 
 export interface Question {
   id: number;
   question: string;
-  options: string[];
+  options: QuestionOption[];
   feedback: string;
 }
 
 interface QuestionnaireScreenProps {
   question: Question;
-  onAnswer: (answer: string) => void; 
+  onAnswer: (answerText: string) => void; // Envia o texto da resposta
   progress: number;
   isLastQuestion: boolean;
   onComplete: () => void;
-  currentAnswer?: string; // Adicionar prop para a resposta atual
+  currentAnswer?: string; 
 }
 
 export const questions: Question[] = [
@@ -28,10 +33,10 @@ export const questions: Question[] = [
     id: 1,
     question: "Quando você pensa na vida que deseja, o que você sente com mais força?",
     options: [
-      "Uma pontada de esperança, mas logo em seguida a dúvida de que seja possível pra mim.",
-      "Frustração, porque eu já tentei de tudo e nada parece funcionar de verdade.",
-      "Inveja (mesmo que eu não admita) de outras mulheres que parecem ter tudo.",
-      "Cansaço. Estou exausta de lutar e não ver resultados."
+      { text: "Uma pontada de esperança, mas logo em seguida a dúvida de que seja possível pra mim.", score: 3 },
+      { text: "Frustração, porque eu já tentei de tudo e nada parece funcionar de verdade.", score: 4 },
+      { text: "Inveja (mesmo que eu não admita) de outras mulheres que parecem ter tudo.", score: 5 },
+      { text: "Cansaço. Estou exausta de lutar e não ver resultados.", score: 5 }
     ],
     feedback: "✨ INTERESSANTE... SUA HONESTIDADE É O PRIMEIRO PASSO. ✨"
   },
@@ -39,10 +44,10 @@ export const questions: Question[] = [
     id: 2,
     question: "Você se esforça, faz afirmação, visualiza... e no fim do dia, o que acontece?",
     options: [
-      "A vida continua exatamente a mesma, como se nada tivesse acontecido.",
-      "Eu me sinto bem por alguns minutos, mas depois a realidade bate e eu desanimo.",
-      "Às vezes até piora, como se o universo estivesse rindo da minha cara.",
-      "Eu esqueço de fazer a maior parte do tempo, a rotina me engole."
+      { text: "A vida continua exatamente a mesma, como se nada tivesse acontecido.", score: 4 },
+      { text: "Eu me sinto bem por alguns minutos, mas depois a realidade bate e eu desanimo.", score: 3 },
+      { text: "Às vezes até piora, como se o universo estivesse rindo da minha cara.", score: 5 },
+      { text: "Eu esqueço de fazer a maior parte do tempo, a rotina me engole.", score: 2 }
     ],
     feedback: "🎯 OK, ESTOU COMEÇANDO A VER UM PADRÃO AQUI. 🎯"
   },
@@ -50,10 +55,10 @@ export const questions: Question[] = [
     id: 3,
     question: "Você já sentiu que existe algo 'bloqueando' seu sucesso, algo que você não consegue ver?",
     options: [
-      "Sim, o tempo todo. Parece uma parede invisível que me impede de avançar.",
-      "Às vezes. Sinto que quando estou quase lá, algo me puxa pra trás.",
-      "Não sei if é um bloqueio, mas sinto que não tenho a mesma 'sorte' que os outros.",
-      "Sim, e desconfio que os métodos que ensinam por aí são incompletos de propósito."
+      { text: "Sim, o tempo todo. Parece uma parede invisível que me impede de avançar.", score: 5 },
+      { text: "Às vezes. Sinto que quando estou quase lá, algo me puxa pra trás.", score: 4 },
+      { text: "Não sei if é um bloqueio, mas sinto que não tenho a mesma 'sorte' que os outros.", score: 3 },
+      { text: "Sim, e desconfio que os métodos que ensinam por aí são incompletos de propósito.", score: 2 }
     ],
     feedback: "🔥 BINGO! AGORA ESTAMOS CHEGANDO NA RAIZ DO PROBLEMA. 🔥"
   },
@@ -61,10 +66,10 @@ export const questions: Question[] = [
     id: 4,
     question: "Seja honesta: No fundo, você se sente 100% merecedora de tudo que sonha?",
     options: [
-      "Honestamente? Não. Uma parte de mim acha que não é pra mim.",
-      "Eu tento acreditar que sim, mas a dúvida sempre aparece.",
-      "Eu me sinto merecedora, mas acho que não sou capaz de conseguir.",
-      "Sim, mas sinto que o mundo é injusto e não me dá o que eu mereço."
+      { text: "Honestamente? Não. Uma parte de mim acha que não é pra mim.", score: 5 },
+      { text: "Eu tento acreditar que sim, mas a dúvida sempre aparece.", score: 4 },
+      { text: "Eu me sinto merecedora, mas acho que não sou capaz de conseguir.", score: 3 },
+      { text: "Sim, mas sinto que o mundo é injusto e não me dá o que eu mereço.", score: 2 }
     ],
     feedback: "💎 A VERDADE DÓI, MAS LIBERTA. ESTA É A CHAVE. 💎"
   },
@@ -72,10 +77,10 @@ export const questions: Question[] = [
     id: 5,
     question: "Se existisse um MÉTODO REAL para destravar tudo isso em 21 dias, você teria a CORAGEM de usar?",
     options: [
-      "Sim, estou desesperada por uma solução que funcione de verdade.",
-      "Talvez... mas tenho medo de me frustrar mais uma vez.",
-      "Não sei, já gastei tanto dinheiro com promessas vazias...",
-      "CORAGEM EU TENHO, SÓ PRECISO SABER SE FUNCIONA MESMO!"
+      { text: "Sim, estou desesperada por uma solução que funcione de verdade.", score: 1 },
+      { text: "Talvez... mas tenho medo de me frustrar mais uma vez.", score: 3 },
+      { text: "Não sei, já gastei tanto dinheiro com promessas vazias...", score: 4 },
+      { text: "CORAGEM EU TENHO, SÓ PRECISO SABER SE FUNCIONA MESMO!", score: 2 }
     ],
     feedback: "🔑 SUA DECISÃO FINAL REVELARÁ MUITO... PREPARE-SE! 🔑"
   }
@@ -90,22 +95,21 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   onComplete,
   currentAnswer 
 }) => {
-  const [selectedOption, setSelectedOption] = useState<string | null>(currentAnswer || null);
+  const [selectedOptionText, setSelectedOptionText] = useState<string | null>(currentAnswer || null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false); 
 
   useEffect(() => {
-    // Atualiza a opção selecionada se a prop currentAnswer mudar (ex: ao navegar entre perguntas já respondidas)
-    setSelectedOption(currentAnswer || null);
+    setSelectedOptionText(currentAnswer || null);
     setShowFeedback(false);
     setIsProcessing(false);
   }, [question.id, currentAnswer]);
 
-  const handleSelectOption = (option: string) => {
+  const handleSelectOption = (option: QuestionOption) => {
     if (isProcessing || showFeedback) return;
 
-    setSelectedOption(option);
-    onAnswer(option); 
+    setSelectedOptionText(option.text);
+    onAnswer(option.text); 
     playSound('answer_select.mp3'); 
     setShowFeedback(true);
     setIsProcessing(true); 
@@ -139,19 +143,19 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
                 {question.options.map((option, index) => (
                   <Button
                     key={index}
-                    variant={selectedOption === option ? "default" : "outline"}
+                    variant={selectedOptionText === option.text ? "default" : "outline"}
                     onClick={() => handleSelectOption(option)}
                     disabled={isProcessing || showFeedback}
                     className={`w-full text-left justify-start p-4 h-auto text-sm sm:text-base leading-normal whitespace-normal transition-all duration-300 ease-in-out
-                      ${selectedOption === option 
+                      ${selectedOptionText === option.text 
                         ? 'bg-gradient-to-r from-yellow-500 to-pink-600 text-white border-transparent ring-2 ring-yellow-300 shadow-lg scale-105' 
                         : 'bg-purple-800/50 border-purple-600 hover:bg-purple-700/70 hover:border-purple-400 text-purple-200 hover:text-white hover:scale-102'
                       }
-                      ${(isProcessing || showFeedback) && selectedOption !== option ? 'opacity-50 cursor-not-allowed' : ''}
+                      ${(isProcessing || showFeedback) && selectedOptionText !== option.text ? 'opacity-50 cursor-not-allowed' : ''}
                     `}
                   >
-                    <Sparkles className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${selectedOption === option ? 'text-yellow-300' : 'text-purple-400'}`} />
-                    {option}
+                    <Sparkles className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${selectedOptionText === option.text ? 'text-yellow-300' : 'text-purple-400'}`} />
+                    {option.text}
                   </Button>
                 ))}
               </div>
@@ -170,5 +174,3 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
     </div>
   );
 };
-
-    
