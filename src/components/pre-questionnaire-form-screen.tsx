@@ -8,14 +8,14 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Sparkles, User, Loader2, CheckCircle2, CalendarDays, Gem, Castle, Plane, Car, Heart, Briefcase, Brain, Leaf, Palette, TrendingUpIcon } from 'lucide-react';
+import { Sparkles, User, Loader2, CheckCircle2, CalendarDays, Gem, Castle, Plane, Car, Heart, Briefcase, Brain, Leaf, Palette, TrendingUpIcon, MountainSnow, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 
 // Opções de sonhos com URLs de placeholder e data-ai-hint
 const dreamOptions = [
-  { id: 'financial_freedom', label: 'Liberdade Financeira', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Pilha de moedas e notas simbolizando riqueza", dataAiHint: "money success", icon: Gem, iconColorClass: "text-emerald-400" },
+  { id: 'financial_freedom', label: 'Liberdade Financeira', imageUrl: 'https://www.infomoney.com.br/wp-content/uploads/2019/06/casal-de-sucesso.jpg?fit=900%2C647&quality=50&strip=all', imageAlt: "Casal celebrando sucesso financeiro", dataAiHint: "money success", icon: Gem, iconColorClass: "text-emerald-400" },
   { id: 'dream_house', label: 'Casa dos Sonhos', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Casa bonita com jardim", dataAiHint: "dream house", icon: Castle, iconColorClass: "text-blue-400" },
   { id: 'travel_world', label: 'Viver Viajando', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Mapa mundi com aviões e malas", dataAiHint: "travel world", icon: Plane, iconColorClass: "text-sky-400" },
   { id: 'new_car', label: 'Carro Novo', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Carro esportivo moderno", dataAiHint: "new car", icon: Car, iconColorClass: "text-red-400" },
@@ -54,10 +54,10 @@ const formSchema = z.object({
   selectedDreams: z.array(z.object({
     id: z.string(),
     label: z.string(),
-    imageUrl: z.string(),
+    imageUrl: z.string().url({ message: "URL da imagem inválida."}),
     imageAlt: z.string(),
     dataAiHint: z.string(),
-    icon: z.any(), // Manter como z.any() para simplicidade se o ícone não for parte dos dados do formulário
+    icon: z.any(),
     iconColorClass: z.string(),
   })).length(3, {message: "Escolha exatamente 3 sonhos." }),
   dreamsAchievementDate: z.string().min(1, { message: "Quando você quer realizar estes sonhos?" }),
@@ -85,23 +85,19 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
   const watchedSelectedDreams = watch('selectedDreams');
 
   useEffect(() => {
-    // Auto-submit logic
     if (watchedSelectedDreams.length === 3 && !isProcessingSubmit) {
-      // Trigger validation for all fields to ensure errors object is up-to-date
       trigger().then(isFormValid => {
-        if (isFormValid) {
-          // Check specific fields again before submitting, as isValid might be true
-          // but we want to show toasts for missing fields if user tries to submit via dream selection
-          const currentValues = getValues();
-          if (!currentValues.fullName || errors.fullName) {
-            toast({ title: "Nome Pendente", description: "Por favor, preencha seu nome completo para continuar.", variant: "destructive", duration: 3000 });
-            return;
-          }
-          if (!currentValues.dreamsAchievementDate || errors.dreamsAchievementDate) {
-            toast({ title: "Data Pendente", description: "Defina quando seus sonhos se realizarão para continuar.", variant: "destructive", duration: 3000 });
-            return;
-          }
+        const currentValues = getValues();
+        if (!currentValues.fullName || errors.fullName) {
+          toast({ title: "Nome Pendente", description: "Por favor, preencha seu nome completo para continuar.", variant: "destructive", duration: 3000 });
+          return;
+        }
+        if (!currentValues.dreamsAchievementDate || errors.dreamsAchievementDate) {
+          toast({ title: "Data Pendente", description: "Defina quando seus sonhos se realizarão para continuar.", variant: "destructive", duration: 3000 });
+          return;
+        }
 
+        if (isFormValid) {
           setIsProcessingSubmit(true);
           toast({
             title: "Quase lá!",
@@ -111,14 +107,6 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
           setTimeout(() => {
             onSubmitForm(currentValues);
           }, 1500);
-
-        } else { // isFormValid is false, check for specific missing fields to guide user
-          const currentValues = getValues();
-           if (!currentValues.fullName || errors.fullName) {
-            toast({ title: "Nome Pendente", description: "Por favor, preencha seu nome completo para continuar.", variant: "destructive", duration: 3000 });
-          } else if (!currentValues.dreamsAchievementDate || errors.dreamsAchievementDate) {
-            toast({ title: "Data Pendente", description: "Defina quando seus sonhos se realizarão para continuar.", variant: "destructive", duration: 3000 });
-          }
         }
       });
     }
@@ -148,7 +136,6 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
       newSelectedDreams = selectedDreamsInternal.filter(d => d.id !== dream.id);
     }
     setSelectedDreamsInternal(newSelectedDreams);
-    // Pass the actual DreamOption objects, not just IDs
     setValue('selectedDreams', newSelectedDreams, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
   };
 
@@ -202,8 +189,6 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                   }}
                   defaultValue={field.value}
                   className="grid grid-cols-1 sm:grid-cols-3 gap-3"
-                  // disabled attribute removed from RadioGroup to allow interaction
-                  // Individual items will be effectively disabled by the form-level isProcessingSubmit
                 >
                   {dateOptions.map((option) => (
                     <Label
@@ -247,7 +232,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                     onClick={() => handleDreamSelection(dream)}
                     disabled={isProcessingSubmit || (!isSelected && selectedDreamsInternal.length >= 3)}
                     className={cn(
-                      "relative flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all duration-200 ease-in-out aspect-square focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-accent overflow-hidden group",
+                      "relative flex flex-col items-center justify-center p-1 rounded-xl border-2 transition-all duration-200 ease-in-out aspect-square focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-accent overflow-hidden group",
                       isSelected
                         ? 'border-accent bg-accent/20 shadow-xl shadow-accent/40 scale-105 animate-pulse-once hover:shadow-accent/50'
                         : 'border-purple-600/60 bg-slate-800/50 hover:border-accent/70 hover:bg-purple-700/20 hover:shadow-lg hover:shadow-accent/30',
@@ -258,8 +243,8 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                     <Image 
                         src={dream.imageUrl} 
                         alt={dream.imageAlt} 
-                        width={100} 
-                        height={100}
+                        width={150} 
+                        height={150}
                         data-ai-hint={dream.dataAiHint} 
                         className={cn(
                             "object-cover rounded-md w-full h-full transition-transform duration-300 group-hover:scale-105",
@@ -292,3 +277,5 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     </div>
   );
 };
+
+    
