@@ -42,7 +42,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         {/* Main headline with typing effect */}
         <h1 className={cn(
           "font-headline font-bold mb-8 goddess-text-gradient leading-tight break-words",
-          "text-3xl sm:text-4xl md:text-6xl lg:text-7xl" // Tamanhos de fonte responsivos
+          "text-3xl sm:text-4xl md:text-6xl lg:text-7xl" 
         )}>
           <span className="typing-effect">{displayedText}</span>
         </h1>
@@ -60,18 +60,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         </div>
         
         {/* CTA Button */}
-        <div className="animate-fade-in" style={{animationDelay: '4s', animationFillMode: 'forwards', opacity: 0}}>
+        <div className="animate-fade-in text-center" style={{animationDelay: '4s', animationFillMode: 'forwards', opacity: 0}}>
           <Button 
             onClick={onStart}
             className={cn(
               "goddess-gradient text-primary-foreground font-bold rounded-full pulse-goddess hover:scale-105 transition-all duration-300 shadow-2xl",
-              "text-base sm:text-lg md:text-xl", // Tamanho de fonte responsivo
-              "py-3 sm:py-4 md:py-5", // Padding vertical responsivo
-              "px-4 sm:px-6 md:px-10", // Padding horizontal responsivo
-              "flex items-center justify-center" // Para alinhar ícones e texto
+              "text-base sm:text-lg md:text-xl", 
+              "py-3 sm:py-4 md:py-5", 
+              "px-4 sm:px-6 md:px-10", 
+              "flex items-center justify-center mx-auto" // mx-auto for block/flex items, text-center for inline-block
             )}
-            // Adicionado whitespace-normal para permitir quebra e text-center para alinhar
-            style={{ whiteSpace: 'normal', textAlign: 'center' }}
+            style={{ whiteSpace: 'normal' }} // text-align: center is handled by parent if button is inline-block
           >
             <Sparkles className="mr-1 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5 md:h-6 md:w-6" />
             <div className="flex flex-col items-center leading-tight">
