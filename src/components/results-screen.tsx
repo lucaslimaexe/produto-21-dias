@@ -52,12 +52,11 @@ const testimonialsData = [
   { id: 4, name: "Juliana M.", age: 33, quote: "Finalmente entendi meus bloqueios e como superá-los. Gratidão!", stars: 5, image: "https://placehold.co/100x100.png", dataAiHint: "woman thoughtful" },
 ];
 
-// Copy Bloco 18
 const storyTestimonialsData = [
   { id: 1, name: "Ana V.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman profile", message: "“Elas me quebraram.\nEsse ritual me montou de novo, peça por peça.”" },
   { id: 2, name: "Julia R.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman smiling", message: "“Eu não renasci.\nEu me permiti nascer pela primeira vez.”" },
   { id: 3, name: "Sofia M.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman confident", message: "“Não sei o que você tá sentindo agora, mas eu sei o que vai sentir no dia 4…”" },
-  { id: 4, name: "Laura B.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman happy", message: "“Eu nunca pensei que alguém pudesse me destravar assim…”" }, // Mantive um, mas pode variar
+  { id: 4, name: "Laura B.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman happy", message: "“Eu nunca pensei que alguém pudesse me destravar assim…”" },
 ];
 
 
@@ -254,11 +253,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         Object.entries(sectionRefs.current).forEach(([id, element]) => {
           if (element) {
             const rect = element.getBoundingClientRect();
-            // Considera uma seção ativa se seu centro estiver mais próximo do centro da viewport
             const elementCenterY = rect.top + rect.height / 2;
             const distanceToCenter = Math.abs(elementCenterY - viewportCenterY);
-
-            // Adicionalmente, a seção deve estar minimamente visível
             const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
 
             if (isVisible && distanceToCenter < minDistance) {
@@ -268,7 +264,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           }
         });
         setCurrentHeaderText(sectionHeaderMessages[activeSectionId] || "MANIFESTE SEU PODER AGORA!");
-      }, 150); // Aumentado o debounce para 150ms
+      }, 150); 
     };
     
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -280,7 +276,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       if (unlockingTimeoutRef.current) clearTimeout(unlockingTimeoutRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sectionHeaderMessages]); 
+  }, []); 
   
   useEffect(() => {
     if (priceCardTimeLeft <= 0) return;
@@ -557,10 +553,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         <p className="text-purple-200/90 text-sm sm:text-base md:text-lg mb-3 sm:mb-5 break-words max-w-xl mx-auto">
                             Mas, {displayName}, por um tempo <span className="text-yellow-300 font-bold">LIMITADÍSSIMO</span>, e como uma oportunidade única por ter chegado até aqui, seu acesso a todo o CÓDIGO DA DEUSA™ não será R$ {totalRealValue.toFixed(2).replace('.',',')}, nem mesmo R$ {offerPriceAnchor.toFixed(2).replace('.',',')}. Será por um valor simbólico de apenas:
                         </p>
-                        <p className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-green-400 my-4 md:my-6 glow">
+                        <p className="text-[2.75rem] leading-tight sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-green-400 my-4 md:my-6 glow">
                             R$ {offerPriceFinal.toFixed(2).replace('.',',')}
                         </p>
-                        <p className="text-yellow-300 font-bold text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 break-words">
+                        <p className="text-lg sm:text-xl md:text-2xl font-bold text-yellow-300 mb-4 sm:mb-6 break-words">
                             SIM, {displayName}! APENAS R$ {offerPriceFinal.toFixed(2).replace('.',',')} HOJE! <br className="sm:hidden"/> Um desconto inacreditável sobre o valor já especial de R$ {offerPriceAnchor.toFixed(2).replace('.',',')}!
                         </p>
 
@@ -574,22 +570,16 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             <Progress value={(finalOfferTimeLeft / finalOfferTimerInitial) * 100} className="w-full h-2.5 sm:h-3 bg-yellow-600/30 border border-yellow-600/50 [&>div]:bg-gradient-to-r [&>div]:from-red-500 [&>div]:via-yellow-400 [&>div]:to-orange-500" />
                             {finalOfferTimeLeft === 0 && <p className="text-red-500 font-bold mt-2 text-sm sm:text-base">TEMPO ESGOTADO! OFERTA ENCERRADA.</p>}
                         </div>
-                         {/* O botão de CTA direto para R$47 foi movido para o Bloco 19 (após o handleUnlockCode) e esta seção agora leva aos blocos de construção de valor */}
-                         <Button 
-                            onClick={() => document.getElementById('map-section')?.scrollIntoView({ behavior: 'smooth' })} 
-                            className="bg-gradient-to-r from-pink-500 via-purple-600 to-accent text-white font-semibold text-md sm:text-lg py-3 px-6 rounded-lg shadow-lg hover:scale-105 transition-transform"
-                         >
-                            <Eye className="mr-2 h-5 w-5" /> Ver Como Essa Mágica Acontece...
-                        </Button>
+                        
+                        {/* Botão removido daqui para o fluxo dos blocos 14-19 */}
                     </div>
                 )}
             </section>
 
-            {/* Novos Blocos com Copy Blackhat e Gamificação - Inseridos APÓS a revelação do preço de R$47 */}
+            {/* Novos Blocos Blackhat Inseridos AQUI se isPriceRevealed */}
             {isPriceRevealed && (
               <>
-                <hr className="border-purple-700/30 my-10 md:my-14" />
-                {/* BLOCO 14 – MAPA DE DESBLOQUEIO (Cronograma em Fases) */}
+                {/* BLOCO 14 – MAPA DE DESBLOQUEIO (CRONOGRAMA) */}
                 <section id="map-section" ref={registerSectionRef('map-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.2s'}}>
                     <h2 className="font-headline text-3xl sm:text-4xl text-yellow-300 mb-3">⚡ Sua Jornada de 21 Dias</h2>
                     <p className="text-purple-200/90 text-lg sm:text-xl mb-2 max-w-2xl mx-auto whitespace-pre-line">
@@ -613,6 +603,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         Você pode continuar adiando…{'\n'}
                         Ou se dar a chance de descobrir quem você teria sido se ninguém tivesse te quebrado.
                     </p>
+                     <div className="text-center mt-10">
+                        <Button onClick={() => document.getElementById('before-after-section')?.scrollIntoView({ behavior: 'smooth' })} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float">
+                            <Eye className="mr-2 h-5 w-5" /> VER O ANTES E DEPOIS
+                        </Button>
+                    </div>
                 </section>
 
                 <hr className="border-purple-700/30 my-10 md:my-14" />
@@ -653,6 +648,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         Essa escolha tá na sua mão agora.{'\n'}
                         E o tempo tá olhando.
                     </p>
+                    <div className="text-center mt-10">
+                        <Button onClick={() => document.getElementById('vision-section')?.scrollIntoView({ behavior: 'smooth' })} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float">
+                           <LucideSparkles className="mr-2 h-5 w-5" /> ATIVAR MINHA VISÃO DE VIDA
+                        </Button>
+                    </div>
                 </section>
 
                 <hr className="border-purple-700/30 my-10 md:my-14" />
@@ -688,6 +688,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         Você só precisa <span className="font-semibold text-pink-400">ativar o código.</span>{'\n'}
                         E aceitar o convite.
                     </p>
+                    <div className="text-center mt-10">
+                        <Button onClick={() => document.getElementById('shield-section')?.scrollIntoView({ behavior: 'smooth' })} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float">
+                           <ShieldCheck className="mr-2 h-5 w-5" /> VER MINHA GARANTIA TOTAL
+                        </Button>
+                    </div>
                 </section>
 
                 <hr className="border-purple-700/30 my-10 md:my-14" />
@@ -722,6 +727,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             E sim…{'\n'}
                             Se você ignorar isso agora, você vai se lembrar disso depois.
                         </p>
+                    </div>
+                     <div className="text-center mt-10">
+                        <Button onClick={() => document.getElementById('moving-testimonials-section')?.scrollIntoView({ behavior: 'smooth' })} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float">
+                           <MessageCircle className="mr-2 h-5 w-5" /> OUVIR QUEM JÁ VIVEU ISSO
+                        </Button>
                     </div>
                 </section>
                 
@@ -926,3 +936,4 @@ const formatUserDreams = (dreams?: DreamOption[]): string => {
   return `${initialDreams} e ${lastDream}`;
 };
 
+    
