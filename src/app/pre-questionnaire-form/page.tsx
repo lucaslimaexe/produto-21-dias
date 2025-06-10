@@ -2,7 +2,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { PreQuestionnaireFormScreen, type PreQuestionnaireFormData } from "@/components/pre-questionnaire-form-screen";
+import { PreQuestionnaireFormScreen, type PreQuestionnaireFormData, type DreamOption, dateOptions } from "@/components/pre-questionnaire-form-screen";
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -10,13 +10,19 @@ function PreQuestionnaireFormContent() {
   const router = useRouter();
 
   const handleFormComplete = (data: PreQuestionnaireFormData) => {
-    // Os sonhos já são um array de objetos, então podemos passar o array de IDs diretamente
-    const dreamIds = data.selectedDreams.map(d => d.id);
+    // data.selectedDreams já é um array de objetos DreamOption
+    // data.dreamsAchievementDate é o ID da opção de data (string)
     
+    // Para a página de resultados, queremos o label da data, não o ID
+    const selectedDateObject = dateOptions.find(option => option.id === data.dreamsAchievementDate);
+    const dreamsDateLabel = selectedDateObject ? selectedDateObject.label : data.dreamsAchievementDate;
+
     const queryParams = new URLSearchParams({
       name: data.fullName,
-      dreams: JSON.stringify(dreamIds), // Passa o array de IDs como string JSON
-      dreamsDate: data.dreamsAchievementDate, // Passa a string da opção de data selecionada
+      // Passa os objetos de sonho completos como string JSON
+      selectedDreamsData: JSON.stringify(data.selectedDreams), 
+      dreamsDate: data.dreamsAchievementDate, // Passa o ID da opção de data selecionada
+      dreamsDateLabel: dreamsDateLabel, // Passa o label da opção de data
     }).toString();
     router.push(`/questionnaire?${queryParams}`);
   };

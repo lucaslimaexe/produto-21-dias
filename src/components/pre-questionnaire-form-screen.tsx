@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 
 // Opções de sonhos com URLs de placeholder e data-ai-hint
-const dreamOptions = [
+export const dreamOptions = [
   { id: 'financial_freedom', label: 'Liberdade Financeira', imageUrl: 'https://www.infomoney.com.br/wp-content/uploads/2019/06/casal-de-sucesso.jpg?fit=900%2C647&quality=50&strip=all', imageAlt: "Casal celebrando sucesso financeiro", dataAiHint: "money success", icon: Gem, iconColorClass: "text-emerald-400" },
   { id: 'dream_house', label: 'Casa dos Sonhos', imageUrl: 'https://construcaoereforma.com.br/uploads/casa-dos-sonhos.jpg', imageAlt: "Casa bonita com jardim", dataAiHint: "dream house", icon: Castle, iconColorClass: "text-blue-400" },
   { id: 'travel_world', label: 'Viver Viajando', imageUrl: 'https://socialturismo.com.br/wp-content/uploads/elementor/thumbs/paris-1-qqtnmehczrnxv1kkqcmpm0w1075c3i0g2pufjojbfk.png', imageAlt: "Mapa mundi com aviões e malas", dataAiHint: "travel world", icon: Plane, iconColorClass: "text-sky-400" },
@@ -39,11 +39,11 @@ export interface DreamOption {
 
 export interface PreQuestionnaireFormData {
   fullName: string;
-  selectedDreams: DreamOption[];
-  dreamsAchievementDate: string;
+  selectedDreams: DreamOption[]; // Armazena os objetos completos
+  dreamsAchievementDate: string; // Armazena o ID da opção de data
 }
 
-const dateOptions = [
+export const dateOptions = [
     { id: 'end_of_year', label: 'Final deste ano' },
     { id: 'next_year', label: 'Próximo ano' },
     { id: 'two_years', label: 'Em 2 anos' },
@@ -51,15 +51,7 @@ const dateOptions = [
 
 const formSchema = z.object({
   fullName: z.string().min(3, { message: "Precisamos do seu nome completo." }).max(100, { message: "O nome parece muito longo."}),
-  selectedDreams: z.array(z.object({
-    id: z.string(),
-    label: z.string(),
-    imageUrl: z.string().url({ message: "URL da imagem inválida."}),
-    imageAlt: z.string(),
-    dataAiHint: z.string(),
-    icon: z.any(),
-    iconColorClass: z.string(),
-  })).length(3, {message: "Escolha exatamente 3 sonhos." }),
+  selectedDreams: z.array(z.custom<DreamOption>()).length(3, {message: "Escolha exatamente 3 sonhos." }),
   dreamsAchievementDate: z.string().min(1, { message: "Quando você quer realizar estes sonhos?" }),
 });
 
@@ -78,10 +70,12 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
       selectedDreams: [],
       dreamsAchievementDate: '',
     },
-    mode: 'onChange',
+    mode: 'onChange', // Importante para a validação dinâmica
   });
 
   const watchedSelectedDreams = watch('selectedDreams');
+  const watchedFullName = watch('fullName');
+  const watchedDreamsAchievementDate = watch('dreamsAchievementDate');
 
   useEffect(() => {
     if (watchedSelectedDreams.length === 3 && !isProcessingSubmit) {
@@ -96,6 +90,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
           return;
         }
 
+        // Este if garante que o formulário completo é válido antes de submeter
         if (isFormValid) {
           setIsProcessingSubmit(true);
           toast({
@@ -104,13 +99,13 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
             duration: 2000,
           });
           setTimeout(() => {
-            onSubmitForm(currentValues);
+            onSubmitForm(currentValues); // currentValues já contém os objetos DreamOption completos
           }, 1500);
         }
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watchedSelectedDreams, isProcessingSubmit, errors, onSubmitForm, getValues, toast, trigger]);
+  }, [watchedSelectedDreams, watchedFullName, watchedDreamsAchievementDate, isProcessingSubmit, errors, onSubmitForm, getValues, toast, trigger]);
 
 
   const handleDreamSelection = (dream: DreamOption) => {
@@ -196,7 +191,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                       className={cn(
                         "flex items-center space-x-2 p-3 rounded-lg border-2 cursor-pointer transition-all",
                         field.value === option.id
-                          ? "border-accent bg-accent/20 text-primary-foreground shadow-lg"
+                          ? "border-accent bg-accent/20 text-primary-foreground shadow-lg" // Cor de texto ajustada aqui
                           : "border-purple-600/70 bg-slate-800/70 hover:border-purple-500 text-foreground/80",
                         isProcessingSubmit ? "opacity-50 cursor-not-allowed" : ""
                       )}
@@ -239,6 +234,8 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                     )}
                     aria-pressed={isSelected}
                   >
+                     {/* Ícone da Lucide como fallback ou decoração, sobreposto pela imagem */}
+                    <dream.icon className={cn("absolute h-1/2 w-1/2 z-0 opacity-10 group-hover:opacity-20 transition-opacity", dream.iconColorClass, isSelected ? 'opacity-5' : '')} />
                     <Image
                         src={dream.imageUrl}
                         alt={dream.imageAlt}
@@ -246,12 +243,12 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                         height={150}
                         data-ai-hint={dream.dataAiHint}
                         className={cn(
-                            "object-cover rounded-md w-full h-full transition-transform duration-300 group-hover:scale-105",
+                            "object-cover rounded-md w-full h-full transition-transform duration-300 group-hover:scale-105 z-10", // z-10 para imagem ficar sobre o ícone
                             isSelected ? "opacity-90" : "opacity-100"
                         )}
                     />
-                    {isSelected && <CheckCircle2 className="absolute top-1.5 right-1.5 h-5 w-5 text-green-400 bg-slate-900/50 rounded-full animate-pop-in" />}
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-1.5 text-center">
+                    {isSelected && <CheckCircle2 className="absolute top-1.5 right-1.5 h-5 w-5 text-green-400 bg-slate-900/50 rounded-full animate-pop-in z-20" />}
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-1.5 text-center z-20">
                         <span className={cn("text-xs sm:text-sm font-semibold leading-tight", isSelected ? "text-accent" : "text-foreground/80")}>{dream.label}</span>
                     </div>
                   </button>
@@ -276,3 +273,5 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     </div>
   );
 };
+
+    

@@ -5,6 +5,13 @@ import { ResultsScreen, type BehavioralAnalysisData } from '@/components/results
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
+import type { DreamOption } from '@/components/pre-questionnaire-form-screen'; // Import DreamOption
+
+interface ResultsPageData extends BehavioralAnalysisData {
+  userName?: string;
+  userDreams?: DreamOption[];
+  dreamsAchievementDateLabel?: string; // Label da data, ex: "Final deste ano"
+}
 
 function ResultsContent() {
   const router = useRouter();
@@ -14,32 +21,52 @@ function ResultsContent() {
     router.push('/'); 
   };
 
-  let analysisResult: BehavioralAnalysisData | undefined = undefined;
+  let analysisResult: ResultsPageData | undefined = undefined;
   let analysisError: string | undefined = undefined;
 
   const analysisParam = searchParams.get('analysis');
   const errorParam = searchParams.get('error');
+  
+  const userName = searchParams.get('name');
+  const selectedDreamsDataString = searchParams.get('selectedDreamsData');
+  const dreamsAchievementDateLabel = searchParams.get('dreamsDateLabel');
 
   if (analysisParam) {
     try {
-      // The analysisParam from the URL is URL-encoded, so it needs to be decoded before parsing.
-      analysisResult = JSON.parse(decodeURIComponent(analysisParam));
+      const parsedAnalysis: BehavioralAnalysisData = JSON.parse(decodeURIComponent(analysisParam));
+      analysisResult = { ...parsedAnalysis };
+
+      if (userName) {
+        analysisResult.userName = decodeURIComponent(userName);
+      }
+      if (selectedDreamsDataString) {
+        analysisResult.userDreams = JSON.parse(decodeURIComponent(selectedDreamsDataString));
+      }
+      if (dreamsAchievementDateLabel) {
+        analysisResult.dreamsAchievementDateLabel = decodeURIComponent(dreamsAchievementDateLabel);
+      }
+
     } catch (e) {
-      console.error("Error parsing analysis result from query param:", e);
-      analysisError = "Não foi possível carregar sua análise personalizada.";
+      console.error("Error parsing analysis result or user data from query param:", e);
+      analysisError = "Não foi possível carregar sua análise personalizada e dados.";
     }
   } else if (errorParam) {
-     // For errorParam, if it was encoded, decode it. Otherwise, use as is.
-     // Assuming simple error strings might not always be encoded.
      try {
         analysisError = decodeURIComponent(errorParam);
      } catch (e) {
-        analysisError = errorParam; // Fallback if decoding fails (e.g., not actually encoded)
+        analysisError = errorParam; 
      }
   }
 
 
-  return <ResultsScreen onRestart={handleRestartQuiz} analysisResult={analysisResult} analysisError={analysisError} />;
+  return <ResultsScreen 
+            onRestart={handleRestartQuiz} 
+            analysisResult={analysisResult} 
+            analysisError={analysisError} 
+            userName={analysisResult?.userName}
+            userDreams={analysisResult?.userDreams}
+            dreamsAchievementDateLabel={analysisResult?.dreamsAchievementDateLabel}
+          />;
 }
 
 export default function ResultsPage() {
@@ -49,3 +76,5 @@ export default function ResultsPage() {
     </Suspense>
   );
 }
+
+    

@@ -6,11 +6,19 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { QuestionnaireScreen, questions, type Question } from '@/components/questionnaire-screen';
 import type { BehavioralAnalysisOutput } from '@/ai/flows/behavioral-analysis-flow';
 import { Loader2 } from 'lucide-react';
+import type { DreamOption } from '@/components/pre-questionnaire-form-screen'; // Import DreamOption
 
 interface Answer {
   questionId: number;
   questionText: string;
   answer: string;
+}
+
+interface PreQuestionnaireState {
+  name: string;
+  selectedDreams: DreamOption[]; // Array de objetos de sonho
+  dreamsDate: string; // ID da opção de data
+  dreamsDateLabel: string; // Label da opção de data
 }
 
 // REGRAS DE ANÁLISE COMPORTAMENTAL LOCAL (FOCO CRÍTICO)
@@ -101,27 +109,25 @@ function QuestionnaireContent() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Answer[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [preQuestionnaireData, setPreQuestionnaireData] = useState<any>(null);
+  const [preQuestionnaireData, setPreQuestionnaireData] = useState<PreQuestionnaireState | null>(null);
 
   useEffect(() => {
     const name = searchParams.get('name');
-    const dreamsString = searchParams.get('dreams'); // IDs dos sonhos como string JSON
-    const dreamsDate = searchParams.get('dreamsDate'); // String da opção de data (e.g., "next_year")
+    const selectedDreamsDataString = searchParams.get('selectedDreamsData'); // Objetos DreamOption como string JSON
+    const dreamsDate = searchParams.get('dreamsDate'); // ID da opção de data
+    const dreamsDateLabel = searchParams.get('dreamsDateLabel'); // Label da opção de data
     
-    if (name && dreamsString && dreamsDate) {
+    if (name && selectedDreamsDataString && dreamsDate && dreamsDateLabel) {
       try {
-        // 'dreams' já é uma string JSON de um array de IDs, então parseamos diretamente
-        const dreams = JSON.parse(dreamsString); 
-        const newPreQuestionnaireData = { name, dreams, dreamsDate };
+        const selectedDreams: DreamOption[] = JSON.parse(selectedDreamsDataString); 
+        const newPreQuestionnaireData: PreQuestionnaireState = { name, selectedDreams, dreamsDate, dreamsDateLabel };
         setPreQuestionnaireData(newPreQuestionnaireData);
         console.log("Dados do formulário pré-questionário recebidos:", newPreQuestionnaireData);
       } catch (e) {
         console.error("Erro ao parsear dados dos query params (questionnaire):", e);
-        // Considerar redirecionar para uma página de erro ou mostrar um toast
       }
     } else {
         console.warn("Dados do formulário pré-questionário não encontrados ou incompletos nos query params.");
-        // Poderia redirecionar para o início se os dados forem essenciais
     }
   }, [searchParams]);
 
@@ -140,11 +146,16 @@ function QuestionnaireContent() {
       const localAnalysisResult = generateLocalAnalysis(userAnswers);
       const analysisJsonString = JSON.stringify(localAnalysisResult);
       
-      // Prepara os parâmetros para a página de resultados, incluindo os dados do pré-questionário
-      const existingParams = new URLSearchParams(searchParams.toString()); // Mantém name, dreams, dreamsDate
-      existingParams.set('analysis', analysisJsonString); // Adiciona a análise
+      const queryParams = new URLSearchParams();
+      if (preQuestionnaireData) {
+        queryParams.set('name', preQuestionnaireData.name);
+        queryParams.set('selectedDreamsData', JSON.stringify(preQuestionnaireData.selectedDreams));
+        queryParams.set('dreamsDate', preQuestionnaireData.dreamsDate); // ID da data
+        queryParams.set('dreamsDateLabel', preQuestionnaireData.dreamsDateLabel); // Label da data
+      }
+      queryParams.set('analysis', analysisJsonString); 
       
-      const targetUrl = `/results?${existingParams.toString()}`;
+      const targetUrl = `/results?${queryParams.toString()}`;
       console.log('Navegando para a página de resultados com todos os dados:', targetUrl); 
       router.push(targetUrl);
     } else {
