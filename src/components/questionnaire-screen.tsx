@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Progress } from './ui/progress';
 import { Sparkles, MessageCircle, Loader2 } from 'lucide-react';
+import { playSound } from '@/lib/audioUtils'; // Importar playSound
 
 export interface Question {
   id: number;
@@ -83,7 +84,7 @@ export const questions: Question[] = [
 export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ question, onAnswer, progress, isLastQuestion, onComplete }) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false); // Used to show loader and disable options
+  const [isProcessing, setIsProcessing] = useState(false); 
 
   useEffect(() => {
     setSelectedOption(null);
@@ -96,12 +97,12 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ questi
 
     setSelectedOption(option);
     onAnswer(option); 
+    playSound('answer_select.mp3'); // Som ao selecionar resposta
     setShowFeedback(true);
-    setIsProcessing(true); // Start "processing"
+    setIsProcessing(true); 
 
     setTimeout(() => {
-      // setShowFeedback(false); // Feedback will be hidden by question change
-      // setIsProcessing(false); // Processing also ends with question change
+      playSound('feedback_show.mp3'); // Som para feedback
       onComplete(); 
     }, 2000); 
   };

@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { playSound } from '@/lib/audioUtils'; // Importar playSound
 
 interface WelcomeScreenProps {
   onStart: () => void;
@@ -28,6 +29,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
     return () => clearInterval(timer);
   }, [fullText]);
 
+  const handleStartClick = () => {
+    playSound('start_quiz.mp3'); // Tocar som ao clicar
+    onStart();
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden">
       {/* Background effects */}
@@ -38,7 +44,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-primary/80 rounded-full float opacity-80" style={{animationDelay: '1s'}}></div>
       <div className="absolute bottom-1/3 left-1/3 w-3 h-3 bg-pink-400/40 rounded-full float opacity-40" style={{animationDelay: '2s'}}></div>
       
-      <div className="w-full text-center max-w-4xl relative z-10">
+      <div className={cn(
+        "w-full text-center max-w-4xl relative z-10",
+        "lg:px-0 md:px-8 sm:px-6 px-4" // Adiciona padding responsivo ao container do conteúdo
+      )}>
         {/* Main headline with typing effect */}
         <h1 className={cn(
           "font-headline font-bold mb-8 goddess-text-gradient leading-tight break-words",
@@ -62,15 +71,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         {/* CTA Button */}
         <div className="animate-fade-in text-center" style={{animationDelay: '4s', animationFillMode: 'forwards', opacity: 0}}>
           <Button 
-            onClick={onStart}
+            onClick={handleStartClick} // Usar o novo handler
             className={cn(
               "goddess-gradient text-primary-foreground font-bold rounded-full pulse-goddess hover:scale-105 transition-all duration-300 shadow-2xl",
               "text-base sm:text-lg md:text-xl", 
               "py-3 sm:py-4 md:py-5", 
               "px-4 sm:px-6 md:px-10", 
-              "flex items-center justify-center mx-auto" // mx-auto for block/flex items, text-center for inline-block
+              "flex items-center justify-center mx-auto"
             )}
-            style={{ whiteSpace: 'normal' }} // text-align: center is handled by parent if button is inline-block
+            style={{ whiteSpace: 'normal', textAlign: 'center' }}
           >
             <Sparkles className="mr-1 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5 md:h-6 md:w-6" />
             <div className="flex flex-col items-center leading-tight">

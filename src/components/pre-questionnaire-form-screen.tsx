@@ -12,6 +12,7 @@ import { Sparkles, User, Loader2, CheckCircle2, CalendarDays, Gem, Castle, Plane
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
+import { playSound } from '@/lib/audioUtils'; // Importar playSound
 
 // Opções de sonhos com URLs de placeholder e data-ai-hint
 export const dreamOptions = [
@@ -70,7 +71,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
       selectedDreams: [],
       dreamsAchievementDate: '',
     },
-    mode: 'onChange', // Importante para a validação dinâmica
+    mode: 'onChange', 
   });
 
   const watchedSelectedDreams = watch('selectedDreams');
@@ -83,23 +84,25 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
         const currentValues = getValues();
         if (!currentValues.fullName || errors.fullName) {
           toast({ title: "Nome Pendente", description: "Por favor, preencha seu nome completo para continuar.", variant: "destructive", duration: 3000 });
+          playSound('form_error.mp3');
           return;
         }
         if (!currentValues.dreamsAchievementDate || errors.dreamsAchievementDate) {
           toast({ title: "Data Pendente", description: "Defina quando seus sonhos se realizarão para continuar.", variant: "destructive", duration: 3000 });
+          playSound('form_error.mp3');
           return;
         }
 
-        // Este if garante que o formulário completo é válido antes de submeter
         if (isFormValid) {
           setIsProcessingSubmit(true);
+          playSound('form_complete.mp3');
           toast({
             title: "Quase lá!",
             description: "Estamos preparando seu diagnóstico personalizado...",
             duration: 2000,
           });
           setTimeout(() => {
-            onSubmitForm(currentValues); // currentValues já contém os objetos DreamOption completos
+            onSubmitForm(currentValues); 
           }, 1500);
         }
       });
@@ -118,6 +121,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     if (currentIndex === -1) {
       if (currentSelected.length < 3) {
         newSelectedDreams = [...currentSelected, dream];
+        playSound('dream_select.mp3');
       } else {
         toast({
           title: "Limite de 3 Sonhos Atingido",
@@ -125,13 +129,20 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
           variant: "default",
           duration: 3000,
         });
+        playSound('limit_reached.mp3');
         return;
       }
     } else {
       newSelectedDreams = currentSelected.filter(d => d.id !== dream.id);
+      playSound('dream_deselect.mp3');
     }
     setValue('selectedDreams', newSelectedDreams, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
   };
+
+  const handleDateSelection = (value: string) => {
+    setValue('dreamsAchievementDate', value, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+    playSound('date_select.mp3');
+  }
 
 
   return (
@@ -179,7 +190,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                 <RadioGroup
                   onValueChange={(value) => {
                     field.onChange(value);
-                    setValue('dreamsAchievementDate', value, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+                    handleDateSelection(value); // Usar o novo handler com som
                   }}
                   defaultValue={field.value}
                   className="grid grid-cols-1 sm:grid-cols-3 gap-3"
@@ -191,7 +202,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                       className={cn(
                         "flex items-center space-x-2 p-3 rounded-lg border-2 cursor-pointer transition-all",
                         field.value === option.id
-                          ? "border-accent bg-accent/20 text-primary-foreground shadow-lg" // Cor de texto ajustada aqui
+                          ? "border-accent bg-accent/20 text-primary-foreground shadow-lg" 
                           : "border-purple-600/70 bg-slate-800/70 hover:border-purple-500 text-foreground/80",
                         isProcessingSubmit ? "opacity-50 cursor-not-allowed" : ""
                       )}
@@ -229,12 +240,11 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                       "relative flex flex-col items-center justify-center p-1 rounded-xl border-2 transition-all duration-200 ease-in-out aspect-square focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-accent overflow-hidden group",
                       isSelected
                         ? 'border-accent bg-accent/20 shadow-xl shadow-accent/40 scale-105 animate-pulse-once hover:shadow-accent/50'
-                        : 'border-purple-600/60 bg-slate-800/50 hover:border-accent/70 hover:bg-purple-700/20 hover:shadow-lg hover:shadow-accent/30',
+                        : 'border-purple-600/60 bg-slate-800/50 hover:border-accent hover:bg-purple-700/30 hover:shadow-xl hover:shadow-accent/50', // Efeito de hover mais "LED"
                       !isSelected && watchedSelectedDreams.length >= 3 && 'opacity-40 cursor-not-allowed brightness-75'
                     )}
                     aria-pressed={isSelected}
                   >
-                     {/* Ícone da Lucide como fallback ou decoração, sobreposto pela imagem */}
                     <dream.icon className={cn("absolute h-1/2 w-1/2 z-0 opacity-10 group-hover:opacity-20 transition-opacity", dream.iconColorClass, isSelected ? 'opacity-5' : '')} />
                     <Image
                         src={dream.imageUrl}
@@ -243,7 +253,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                         height={150}
                         data-ai-hint={dream.dataAiHint}
                         className={cn(
-                            "object-cover rounded-md w-full h-full transition-transform duration-300 group-hover:scale-105 z-10", // z-10 para imagem ficar sobre o ícone
+                            "object-cover rounded-md w-full h-full transition-transform duration-300 group-hover:scale-105 z-10", 
                             isSelected ? "opacity-90" : "opacity-100"
                         )}
                     />
@@ -273,5 +283,3 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     </div>
   );
 };
-
-    
