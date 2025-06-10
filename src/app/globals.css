@@ -106,7 +106,6 @@ body {
   animation: progress-color-animation 2.5s linear infinite;
 }
 
-
 @layer base {
   :root {
     --background: 266 20% 8%; /* #14111a - Very dark desaturated purple */
@@ -192,3 +191,23 @@ body {
     @apply font-headline;
   }
 }
+
+@layer utilities {
+  @keyframes slide-out-left {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(-60%); opacity: 0; } /* Desliza para a esquerda e some */
+  }
+  .animate-slide-out-left {
+    animation: slide-out-left 0.4s ease-in forwards;
+  }
+
+  @keyframes slide-in-right {
+    from { transform: translateX(60%); opacity: 0; } /* Começa da direita e some */
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .animate-slide-in-right {
+    animation: slide-in-right 0.4s ease-out forwards;
+  }
+}
+
+    

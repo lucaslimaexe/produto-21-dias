@@ -1,11 +1,12 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { Progress } from './ui/progress';
 import { Sparkles, MessageCircle, Loader2 } from 'lucide-react';
 import { playSound } from '@/lib/audioUtils';
+import { cn } from '@/lib/utils';
 
 export interface QuestionOption {
   text: string;
@@ -21,11 +22,11 @@ export interface Question {
 
 interface QuestionnaireScreenProps {
   question: Question;
-  onAnswer: (answerText: string) => void; // Envia o texto da resposta
+  onAnswer: (answerText: string) => void;
   progress: number;
   isLastQuestion: boolean;
   onComplete: () => void;
-  currentAnswer?: string; 
+  currentAnswer?: string;
 }
 
 export const questions: Question[] = [
@@ -86,6 +87,7 @@ export const questions: Question[] = [
   }
 ];
 
+type TransitionState = 'idle' | 'feedback' | 'exiting' | 'entering';
 
 export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   question,
@@ -93,32 +95,55 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   progress,
   isLastQuestion,
   onComplete,
-  currentAnswer 
+  currentAnswer
 }) => {
-  const [selectedOptionText, setSelectedOptionText] = useState<string | null>(currentAnswer || null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false); 
+  const [selectedOptionText, setSelectedOptionText] = useState<string | null>(null);
+  const [transitionState, setTransitionState] = useState<TransitionState>('entering'); // Start with entering animation
+  const prevQuestionIdRef = useRef<number | undefined>();
 
+  // Handle initial animation and reset for new questions
   useEffect(() => {
-    setSelectedOptionText(currentAnswer || null);
-    setShowFeedback(false);
-    setIsProcessing(false);
+    if (prevQuestionIdRef.current !== question.id) {
+      setSelectedOptionText(currentAnswer || null);
+      setTransitionState('entering'); // Trigger entering animation for new question
+      const timer = setTimeout(() => {
+        setTransitionState('idle');
+      }, 400); // Duration of slide-in-right animation
+
+      prevQuestionIdRef.current = question.id;
+      return () => clearTimeout(timer);
+    }
   }, [question.id, currentAnswer]);
 
+
   const handleSelectOption = (option: QuestionOption) => {
-    if (isProcessing || showFeedback) return;
+    if (transitionState !== 'idle') return; // Prevent action during transition
 
     setSelectedOptionText(option.text);
-    onAnswer(option.text); 
-    playSound('answer_select.mp3'); 
-    setShowFeedback(true);
-    setIsProcessing(true); 
+    onAnswer(option.text);
+    playSound('answer_select.mp3');
+    setTransitionState('feedback');
+    playSound('feedback_show.mp3');
 
     setTimeout(() => {
-      playSound('feedback_show.mp3'); 
-      onComplete(); 
-    }, 2000); 
+      setTransitionState('exiting');
+      setTimeout(() => {
+        onComplete(); 
+        // useEffect for question.id will handle 'entering' state for the new question
+      }, 400); // Duration of slide-out-left animation
+    }, 1500); // Time to display feedback
   };
+  
+  const showQuestionContent = transitionState === 'idle' || transitionState === 'entering';
+  const showFeedbackContent = transitionState === 'feedback' || transitionState === 'exiting'; // Show feedback also during exit
+
+  let animationClass = '';
+  if (transitionState === 'entering') {
+    animationClass = 'animate-slide-in-right';
+  } else if (transitionState === 'exiting') {
+    animationClass = 'animate-slide-out-left';
+  }
+
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 relative bg-gradient-to-br from-purple-900 via-indigo-900 to-black overflow-hidden">
@@ -133,8 +158,8 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
           <p className="text-center text-sm text-yellow-300 mt-2">PERGUNTA {question.id} DE {questions.length}</p>
         </div>
 
-        <div className="bg-purple-900/30 p-6 rounded-xl border border-purple-700 mb-6 min-h-[300px] flex flex-col justify-center">
-          {!showFeedback && !isProcessing && (
+        <div className={cn("bg-purple-900/30 p-6 rounded-xl border border-purple-700 mb-6 min-h-[300px] flex flex-col justify-center", animationClass)}>
+          {showQuestionContent && (
             <>
               <h2 className="font-headline text-xl sm:text-2xl md:text-3xl font-semibold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-400 to-purple-300 leading-tight">
                 {question.question}
@@ -145,13 +170,13 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
                     key={index}
                     variant={selectedOptionText === option.text ? "default" : "outline"}
                     onClick={() => handleSelectOption(option)}
-                    disabled={isProcessing || showFeedback}
+                    disabled={transitionState !== 'idle'}
                     className={`w-full text-left justify-start p-4 h-auto text-sm sm:text-base leading-normal whitespace-normal transition-all duration-300 ease-in-out
                       ${selectedOptionText === option.text 
                         ? 'bg-gradient-to-r from-yellow-500 to-pink-600 text-white border-transparent ring-2 ring-yellow-300 shadow-lg scale-105' 
                         : 'bg-purple-800/50 border-purple-600 hover:bg-purple-700/70 hover:border-purple-400 text-purple-200 hover:text-white hover:scale-102'
                       }
-                      ${(isProcessing || showFeedback) && selectedOptionText !== option.text ? 'opacity-50 cursor-not-allowed' : ''}
+                      ${transitionState !== 'idle' && selectedOptionText !== option.text ? 'opacity-50 cursor-not-allowed' : ''}
                     `}
                   >
                     <Sparkles className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${selectedOptionText === option.text ? 'text-yellow-300' : 'text-purple-400'}`} />
@@ -162,11 +187,11 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
             </>
           )}
 
-          {(showFeedback || isProcessing) && (
+          {showFeedbackContent && (
             <div className="text-center animate-fade-in flex flex-col items-center justify-center">
               <MessageCircle className="h-10 w-10 text-yellow-400 mx-auto mb-4 animate-pulse" />
               <p className="text-yellow-300 font-semibold text-lg sm:text-xl mb-4">{question.feedback}</p>
-              {isProcessing && <Loader2 className="h-8 w-8 text-yellow-400 animate-spin mt-4" />}
+              {transitionState === 'feedback' && <Loader2 className="h-8 w-8 text-yellow-400 animate-spin mt-4" />}
             </div>
           )}
         </div>
@@ -174,3 +199,5 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
     </div>
   );
 };
+
+    
