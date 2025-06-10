@@ -24,14 +24,13 @@ export const AnalysisScreen: React.FC = () => {
         if (prev < analysisSteps.length - 1) {
           return prev + 1;
         }
-        // clearInterval(stepTimer); // Interval cleared in return statement
         return prev;
       });
-    }, 1000); // New interval from diff
+    }, 1000);
 
     const progressTimer = setInterval(() => {
       setProgress(prev => {
-        const newProgress = prev + 2; // New increment logic from diff
+        const newProgress = prev + 2;
         if (newProgress >= 100) {
           clearInterval(progressTimer);
           router.push('/results');
@@ -39,7 +38,7 @@ export const AnalysisScreen: React.FC = () => {
         }
         return newProgress;
       });
-    }, 100); // New interval from diff
+    }, 100);
 
     return () => {
       clearInterval(stepTimer);

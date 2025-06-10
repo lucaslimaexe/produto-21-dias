@@ -3,33 +3,56 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
-import { AlertTriangle, Clock, Zap, Eye, ExternalLink, XCircle } from 'lucide-react'; // Added icons
+import { AlertTriangle, Clock, Zap, Eye, ExternalLink, XCircle, Sparkles } from 'lucide-react'; // Added Sparkles
 
 interface ResultsScreenProps {
   onRestart: () => void;
 }
 
 export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart }) => {
-  const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes in seconds
+  const initialTime = 15 * 60; // 15 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(initialTime);
   const [isBlinking, setIsBlinking] = useState(false);
 
+  // Effect for countdown timer
   useEffect(() => {
-    if (timeLeft <= 0) return; // Stop timer if it reaches zero
+    if (timeLeft <= 0) {
+      return; // Timer already expired or not started
+    }
 
-    const timer = setInterval(() => {
-      setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
+    const timerId = setInterval(() => {
+      setTimeLeft(prevTime => {
+        if (prevTime <= 1) {
+          clearInterval(timerId);
+          return 0;
+        }
+        return prevTime - 1;
+      });
     }, 1000);
 
-    // Blinking effect for urgency
-    const blinkTimer = setInterval(() => {
-      setIsBlinking(prev => !prev);
-    }, 700); // Faster blink
+    return () => {
+      clearInterval(timerId);
+    };
+  }, []); // Empty dependency array: run once on mount
+
+  // Effect for blinking urgency indicator
+  useEffect(() => {
+    let blinkTimerId: NodeJS.Timeout | undefined = undefined;
+    if (timeLeft > 0) {
+      blinkTimerId = setInterval(() => {
+        setIsBlinking(prev => !prev);
+      }, 700); // Blinking interval
+    } else {
+      setIsBlinking(false); // Ensure blinking stops when time is up
+    }
 
     return () => {
-      clearInterval(timer);
-      clearInterval(blinkTimer);
+      if (blinkTimerId) {
+        clearInterval(blinkTimerId);
+      }
+      setIsBlinking(false); // Clean up blinking state on unmount
     };
-  }, [timeLeft]); // Re-run effect if timeLeft changes (e.g. reset)
+  }, [timeLeft]); // Re-run this effect when timeLeft changes
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -40,7 +63,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart }) => {
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center px-4 py-8 relative bg-gradient-to-br from-red-950 via-purple-950 to-black overflow-y-auto">
       <div className="w-full max-w-3xl">
-        <div className={`flex items-center justify-center space-x-3 bg-red-700/80 border-2 border-yellow-400 rounded-full px-6 py-3 sm:px-8 sm:py-4 mb-6 sm:mb-8 shadow-xl ${isBlinking ? 'animate-pulse ring-4 ring-yellow-500/70' : ''}`}>
+        <div className={`flex items-center justify-center space-x-3 bg-red-700/80 border-2 border-yellow-400 rounded-full px-6 py-3 sm:px-8 sm:py-4 mb-6 sm:mb-8 shadow-xl ${isBlinking && timeLeft > 0 ? 'animate-pulse ring-4 ring-yellow-500/70' : ''}`}>
           <AlertTriangle className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-300 animate-bounce" />
           <span className="text-yellow-100 font-bold text-md sm:text-lg tracking-wider">🚨 RESULTADO URGENTE 🚨</span>
           <Eye className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-300 animate-pulse" />
@@ -107,17 +130,17 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({ onRestart }) => {
           </h2>
           
           <div className="mb-4 sm:mb-6">
-            <div className={`flex items-center justify-center space-x-2 mb-2 sm:mb-4 ${timeLeft < 60 ? 'text-red-400 animate-ping' : 'text-yellow-200'}`}>
+            <div className={`flex items-center justify-center space-x-2 mb-2 sm:mb-4 ${timeLeft < 60 && timeLeft > 0 ? 'text-red-400 animate-ping' : 'text-yellow-200'}`}>
               <Clock className="h-6 w-6 sm:h-8 sm:w-8" />
               <span className={`text-3xl sm:text-4xl md:text-6xl font-bold font-mono ${timeLeft === 0 ? 'text-red-600' : ''}`}>
                 {formatTime(timeLeft)}
               </span>
-              <Zap className={`h-6 w-6 sm:h-8 sm:w-8 ${timeLeft < 300 ? 'animate-spin' : ''}`} />
+              <Zap className={`h-6 w-6 sm:h-8 sm:w-8 ${timeLeft < 300 && timeLeft > 0 ? 'animate-spin' : ''}`} />
             </div>
             <div className="w-full bg-black/50 rounded-full h-3 sm:h-4 border border-yellow-600 overflow-hidden">
               <div 
                 className="bg-gradient-to-r from-red-500 via-yellow-400 to-orange-500 h-full rounded-full transition-all duration-1000 ease-linear"
-                style={{ width: `${(timeLeft / (15 * 60)) * 100}%` }}
+                style={{ width: `${(timeLeft / initialTime) * 100}%` }}
               ></div>
             </div>
              {timeLeft === 0 && <p className="text-red-400 font-bold mt-2 text-sm sm:text-md">TEMPO ESGOTADO!</p>}
