@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, Lightbulb, BookOpen, Users, Map, GitCompareArrows, Heart, Bolt, Sun, Loader2, Sparkles as LucideSparkles, ThumbsDown, ThumbsUp, Lock, CircleDollarSign, ShoppingCart, Star, ChevronLeft, ChevronRight, Eye, Group, Key, Unlock, Brain, TrendingUp, Target, ShieldOff, ShieldCheck, MessageCircle, Rocket, Gift, Palette, Activity, RouteOff, MountainSnow, TrendingUpIcon, Plane, Car, Castle, Briefcase, Gem, TimerIcon as LucideTimerIcon } from 'lucide-react';
+import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, Lightbulb, BookOpen, Users, Map, GitCompareArrows, Heart, Bolt, Sun, Loader2, Sparkles as LucideSparkles, ThumbsDown, ThumbsUp, Lock, CircleDollarSign, ShoppingCart, Star, ChevronLeft, ChevronRight, Eye, Group, Key, Unlock, Brain, TrendingUp, Target, ShieldOff, ShieldCheck, MessageCircle, Rocket, Gift, Palette, Activity, CheckCircle2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Image from 'next/image';
 import { Progress } from "@/components/ui/progress";
@@ -52,12 +52,14 @@ const testimonialsData = [
   { id: 4, name: "Juliana M.", age: 33, quote: "Finalmente entendi meus bloqueios e como superá-los. Gratidão!", stars: 5, image: "https://placehold.co/100x100.png", dataAiHint: "woman thoughtful" },
 ];
 
+// Copy Bloco 18
 const storyTestimonialsData = [
-  { id: 1, name: "Ana V.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman profile", message: "“Eu nunca pensei que alguém pudesse me destravar assim…”" },
-  { id: 2, name: "Julia R.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman smiling", message: "“Elas me quebraram.\nEsse ritual me montou de novo, peça por peça.”" },
-  { id: 3, name: "Sofia M.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman confident", message: "“Eu não renasci.\nEu me permiti nascer pela primeira vez.”" },
-  { id: 4, name: "Laura B.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman happy", message: "“Não sei o que você tá sentindo agora, mas eu sei o que vai sentir no dia 4…”" },
+  { id: 1, name: "Ana V.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman profile", message: "“Elas me quebraram.\nEsse ritual me montou de novo, peça por peça.”" },
+  { id: 2, name: "Julia R.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman smiling", message: "“Eu não renasci.\nEu me permiti nascer pela primeira vez.”" },
+  { id: 3, name: "Sofia M.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman confident", message: "“Não sei o que você tá sentindo agora, mas eu sei o que vai sentir no dia 4…”" },
+  { id: 4, name: "Laura B.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman happy", message: "“Eu nunca pensei que alguém pudesse me destravar assim…”" }, // Mantive um, mas pode variar
 ];
+
 
 const analysisCardsData = (analysisResult?: BehavioralAnalysisData) => {
     if (!analysisResult) return [];
@@ -134,7 +136,7 @@ const PhaseCard: React.FC<{ phase: string, title: string, description: string | 
             </div>
             <p className="text-xs text-yellow-300 font-semibold mb-1">{phase}</p>
             <h4 className="text-lg font-semibold text-pink-400 mb-2">{title}</h4>
-            {typeof description === 'string' ? <p className="text-sm text-purple-200/90 leading-relaxed">{description}</p> : description}
+            {typeof description === 'string' ? <p className="text-sm text-purple-200/90 leading-relaxed whitespace-pre-line">{description}</p> : description}
         </div>
     </Card>
 );
@@ -146,7 +148,7 @@ const BeforeAfterCard: React.FC<{ title: string, items: string[], bgColor: strin
             <CardTitle className={cn("text-xl sm:text-2xl", textColor)}>{title}</CardTitle>
         </CardHeader>
         <CardContent className="p-0 flex-grow">
-            <ul className={cn("space-y-2 text-sm sm:text-base", textColor === "text-red-300" ? "text-red-200/90" : "text-green-200/90")}>
+            <ul className={cn("space-y-2 text-sm sm:text-base whitespace-pre-line", textColor === "text-red-300" ? "text-red-200/90" : "text-green-200/90")}>
                 {items.map((item, index) => (
                     <li key={index} className="flex items-start">
                         {textColor === "text-red-300" ? <XCircle className="h-5 w-5 text-red-400 mr-2 shrink-0 mt-0.5" /> : <CheckCircle2 className="h-5 w-5 text-green-400 mr-2 shrink-0 mt-0.5" />}
@@ -186,7 +188,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const [currentHeaderText, setCurrentHeaderText] = useState<string>("ALERTA: SEU DIAGNÓSTICO É CRÍTICO!");
 
-  const [priceCardTimeLeft, setPriceCardTimeLeft] = useState(7 * 60);
+  const [priceCardTimeLeft, setPriceCardTimeLeft] = useState(7 * 60); // 7 minutes
   const [priceCardVacancies, setPriceCardVacancies] = useState(3);
   
   const initialStickyMessages = useCallback(() => [
@@ -202,7 +204,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const [showRecusePopup, setShowRecusePopup] = useState(false);
   const [isScrollLocked, setIsScrollLocked] = useState(false);
   
-  const finalOfferTimerInitial = 2 * 60;
+  const finalOfferTimerInitial = 2 * 60; // 2 minutes
   const [finalOfferTimeLeft, setFinalOfferTimeLeft] = useState(finalOfferTimerInitial);
   const [isPriceRevealed, setIsPriceRevealed] = useState(false);
   const [isFinalOfferTimerBlinking, setIsFinalOfferTimerBlinking] = useState(false);
@@ -222,7 +224,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
   const sectionHeaderMessages: Record<string, string> = {
     'diagnostics-section': "ALERTA: SEU DIAGNÓSTICO É CRÍTICO!",
-    'offer-start-section': "A SOLUÇÃO PARA SEUS BLOQUEIOS ESTÁ AQUI!",
+    'offer-start-section': "A CHAVE PARA SUA LIBERDADE ESTÁ AQUI!",
     'modules-section': "O MÉTODO SECRETO: CÓDIGO DA DEUSA™ REVELADO",
     'testimonials-section': "MILHARES DE MULHERES JÁ SE TRANSFORMARAM!",
     'price-anchor-section': "OFERTA RELÂMPAGO: ACESSO IMEDIATO!",
@@ -247,32 +249,26 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       scrollTimeout = setTimeout(() => {
         let activeSectionId = Object.keys(sectionHeaderMessages)[0]; 
         let minDistance = Infinity;
-        const viewportHeight = window.innerHeight;
-        const threshold = viewportHeight * 0.3; // Um pouco mais para baixo para dar tempo de ler o início da seção
+        const viewportCenterY = window.innerHeight / 2;
 
         Object.entries(sectionRefs.current).forEach(([id, element]) => {
           if (element) {
             const rect = element.getBoundingClientRect();
-            const elementTopRelativeToViewport = rect.top;
-            const elementBottomRelativeToViewport = rect.bottom;
-            
-            // Prioriza seções cujo topo está mais próximo do topo da viewport, mas ainda visível
-            if (elementTopRelativeToViewport < threshold && elementBottomRelativeToViewport > 0) {
-              if (elementTopRelativeToViewport < minDistance) {
-                   minDistance = elementTopRelativeToViewport;
-                   activeSectionId = id;
-              }
-            } else if (elementTopRelativeToViewport >= threshold && elementTopRelativeToViewport < viewportHeight && elementBottomRelativeToViewport > 0 && minDistance === Infinity) {
-               // Fallback para a primeira seção visível se nenhuma estiver no "threshold" ideal
-               if (activeSectionId === Object.keys(sectionHeaderMessages)[0]) { 
-                  minDistance = elementTopRelativeToViewport; // Não é o ideal, mas é um fallback
-                  activeSectionId = id;
-               }
+            // Considera uma seção ativa se seu centro estiver mais próximo do centro da viewport
+            const elementCenterY = rect.top + rect.height / 2;
+            const distanceToCenter = Math.abs(elementCenterY - viewportCenterY);
+
+            // Adicionalmente, a seção deve estar minimamente visível
+            const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+
+            if (isVisible && distanceToCenter < minDistance) {
+                minDistance = distanceToCenter;
+                activeSectionId = id;
             }
           }
         });
         setCurrentHeaderText(sectionHeaderMessages[activeSectionId] || "MANIFESTE SEU PODER AGORA!");
-      }, 100); 
+      }, 150); // Aumentado o debounce para 150ms
     };
     
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -283,7 +279,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       clearTimeout(scrollTimeout);
       if (unlockingTimeoutRef.current) clearTimeout(unlockingTimeoutRef.current);
     };
-  }, [sectionHeaderMessages]); // Removido sectionRefs.current e adicionado sectionHeaderMessages
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sectionHeaderMessages]); 
   
   useEffect(() => {
     if (priceCardTimeLeft <= 0) return;
@@ -298,7 +295,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         setPriceCardVacancies(1);
         playSound('limit_reached.mp3');
     }
-    setStickyMessages(initialStickyMessages()); // Atualiza as mensagens quando priceCardVacancies muda
+    setStickyMessages(initialStickyMessages());
   }, [priceCardTimeLeft, priceCardVacancies, initialStickyMessages]);
 
   useEffect(() => {
@@ -320,7 +317,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   useEffect(() => {
     const intervalId = setInterval(() => {
       setStickyMessageIndex(prevIndex => (prevIndex + 1) % stickyMessages.length);
-    }, 20000); // 20 segundos para trocar a mensagem
+    }, 20000);
     return () => clearInterval(intervalId);
   }, [stickyMessages.length]);
 
@@ -542,7 +539,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             HOJE POR APENAS: R$ {offerPriceAnchor.toFixed(2).replace('.',',')}
                         </p>
                         <div className="text-sm text-yellow-400/90 space-y-1">
-                            <p className="animate-subtle-pulse"><LucideTimerIcon className="inline h-4 w-4 mr-1 shrink-0" /> Promoção válida por: <span className="font-bold">{formatTime(priceCardTimeLeft)}</span></p>
+                            <p className="animate-subtle-pulse"><Clock className="inline h-4 w-4 mr-1 shrink-0" /> Promoção válida por: <span className="font-bold">{formatTime(priceCardTimeLeft)}</span></p>
                             <p className={priceCardVacancies === 1 ? 'text-red-400 font-bold animate-intense-pulse' : ''}><Users className="inline h-4 w-4 mr-1 shrink-0" /> Restam apenas: <span className="font-bold">{priceCardVacancies}</span> {priceCardVacancies === 1 ? 'acesso com este valor!' : 'acessos com este valor!'}</p>
                         </div>
                         {!isPriceRevealed && (
@@ -577,7 +574,13 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             <Progress value={(finalOfferTimeLeft / finalOfferTimerInitial) * 100} className="w-full h-2.5 sm:h-3 bg-yellow-600/30 border border-yellow-600/50 [&>div]:bg-gradient-to-r [&>div]:from-red-500 [&>div]:via-yellow-400 [&>div]:to-orange-500" />
                             {finalOfferTimeLeft === 0 && <p className="text-red-500 font-bold mt-2 text-sm sm:text-base">TEMPO ESGOTADO! OFERTA ENCERRADA.</p>}
                         </div>
-                        {/* O botão de CTA direto para R$47 foi movido para o Bloco 19 (após o handleUnlockCode) */}
+                         {/* O botão de CTA direto para R$47 foi movido para o Bloco 19 (após o handleUnlockCode) e esta seção agora leva aos blocos de construção de valor */}
+                         <Button 
+                            onClick={() => document.getElementById('map-section')?.scrollIntoView({ behavior: 'smooth' })} 
+                            className="bg-gradient-to-r from-pink-500 via-purple-600 to-accent text-white font-semibold text-md sm:text-lg py-3 px-6 rounded-lg shadow-lg hover:scale-105 transition-transform"
+                         >
+                            <Eye className="mr-2 h-5 w-5" /> Ver Como Essa Mágica Acontece...
+                        </Button>
                     </div>
                 )}
             </section>
@@ -589,7 +592,9 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 {/* BLOCO 14 – MAPA DE DESBLOQUEIO (Cronograma em Fases) */}
                 <section id="map-section" ref={registerSectionRef('map-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.2s'}}>
                     <h2 className="font-headline text-3xl sm:text-4xl text-yellow-300 mb-3">⚡ Sua Jornada de 21 Dias</h2>
-                    <p className="text-purple-200/90 text-lg sm:text-xl mb-2 max-w-2xl mx-auto whitespace-pre-line">Você está prestes a atravessar o portal mais importante da sua vida.</p>
+                    <p className="text-purple-200/90 text-lg sm:text-xl mb-2 max-w-2xl mx-auto whitespace-pre-line">
+                        Você está prestes a atravessar o portal mais importante da sua vida.
+                    </p>
                     <p className="text-purple-300/80 text-md sm:text-lg mb-8 max-w-xl mx-auto whitespace-pre-line">
                         21 dias.{'\n'}
                         Cada dia uma ruptura.{'\n'}
@@ -619,8 +624,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                          <BeforeAfterCard 
                             title="ANTES" 
                             items={[
-                                "Você acorda com peso.",
-                                "Se sabota sem perceber.",
+                                "Você acorda com peso. Se sabota sem perceber.",
                                 "Vive como figurante da própria história.",
                                 "Sabe que nasceu pra mais… mas não lembra mais como era ser você."
                             ]}
@@ -814,7 +818,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             >
                                 <a href="https://pay.kiwify.com.br/xxxxxxxx" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
                                     <ShoppingCart className="h-6 w-6 shrink-0" />
-                                    <span className="leading-tight break-words">{finalOfferTimeLeft > 0 ? `DESBLOQUEAR AGORA – POR R$${offerPriceFinal.toFixed(2).replace('.',',')}` : "OFERTA EXPIRADA"}</span>
+                                    <span className="leading-tight break-words">{finalOfferTimeLeft > 0 ? `Desbloquear agora – por R$${offerPriceFinal.toFixed(2).replace('.',',')}` : "OFERTA EXPIRADA"}</span>
                                     <ExternalLink className="h-5 w-5 shrink-0" />
                                 </a>
                             </Button>
@@ -825,7 +829,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
               </>
             )}
 
-            {/* Bloco Comparativo Decisão Binária (existente) */}
             {isCodeUnlocked && (<>
                 <hr className="border-purple-700/30 my-10 md:my-14" />
                 <section id="decision-section" ref={registerSectionRef('decision-section')} className="animate-fade-in" style={{animationDelay: '0.2s'}} onMouseEnter={handleScrollLock}>
@@ -867,7 +870,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
                 <hr className="border-purple-700/30 my-10 md:my-14" />
                 
-                {/* Bloco CTA Final / Encerramento (existente) */}
                 <section id="final-cta-section" ref={registerSectionRef('final-cta-section')} className="animate-fade-in bg-black/80 rounded-3xl p-8 sm:p-12 text-center border-t-4 border-accent" style={{animationDelay: '0.4s'}}>
                     <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-yellow-300 mb-6">É agora ou você vai continuar patinando, {displayName}?</h2>
                     <p className="text-lg sm:text-xl text-purple-200/90 mb-8 max-w-xl mx-auto">A cada segundo de hesitação, você adia a vida extraordinária que MERECE. Outras mulheres estão desbloqueando seus códigos AGORA.</p>
