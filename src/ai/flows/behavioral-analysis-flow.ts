@@ -40,7 +40,15 @@ export type BehavioralAnalysisOutput = z.infer<typeof BehavioralAnalysisOutputSc
 export async function runBehavioralAnalysis(
   input: BehavioralAnalysisInput
 ): Promise<BehavioralAnalysisOutput> {
-  return behavioralAnalysisFlow(input);
+  console.log('Running behavioral analysis with input:', JSON.stringify(input, null, 2));
+  try {
+    const result = await behavioralAnalysisFlow(input);
+    console.log('Behavioral analysis successful with output:', JSON.stringify(result, null, 2));
+    return result;
+  } catch (error) {
+    console.error('Error in runBehavioralAnalysis an external call:', error);
+    throw error; // Re-throw para ser pego pela página de análise
+  }
 }
 
 const behavioralAnalysisPrompt = ai.definePrompt({
@@ -74,11 +82,28 @@ const behavioralAnalysisFlow = ai.defineFlow(
     inputSchema: BehavioralAnalysisInputSchema,
     outputSchema: BehavioralAnalysisOutputSchema,
   },
-  async (input) => {
-    const { output } = await behavioralAnalysisPrompt(input);
+  async (input: BehavioralAnalysisInput) => {
+    console.log('Entering behavioralAnalysisFlow with input:', JSON.stringify(input, null, 2));
+    const response = await behavioralAnalysisPrompt(input);
+    const output = response.output;
+
     if (!output) {
-      throw new Error('Behavioral analysis failed to produce an output.');
+      console.error('Behavioral analysis: No parsed output from prompt.');
+      console.error('Raw response text (if available):', response.text);
+      if (response.candidates && response.candidates.length > 0) {
+        response.candidates.forEach((candidate, index) => {
+          console.error(`Candidate ${index} content:`, JSON.stringify(candidate.message.content, null, 2));
+          console.error(`Candidate ${index} finish reason: ${candidate.finishReason}, message: ${candidate.finishMessage}`);
+          if (candidate.safetyRatings) {
+            console.error(`Candidate ${index} safety ratings:`, JSON.stringify(candidate.safetyRatings, null, 2));
+          }
+        });
+      } else {
+        console.error('No candidates found in the response.');
+      }
+      throw new Error('Behavioral analysis failed to produce a parsed output. Check server logs.');
     }
+    console.log('Behavioral analysis flow successful, returning output:', JSON.stringify(output, null, 2));
     return output;
   }
 );
