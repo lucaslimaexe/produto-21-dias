@@ -8,11 +8,12 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Sparkles, User, Loader2, CheckCircle2, Target, CalendarDays } from 'lucide-react';
+import { Sparkles, User, Loader2, CheckCircle2, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 
+// Opções de sonhos com URLs de placeholder e data-ai-hint
 const dreamOptions = [
   { id: 'financial_freedom', label: 'Liberdade Financeira', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Pilha de moedas e notas simbolizando riqueza", dataAiHint: "money success" },
   { id: 'dream_house', label: 'Casa dos Sonhos', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Casa bonita com jardim", dataAiHint: "dream house" },
@@ -22,6 +23,8 @@ const dreamOptions = [
   { id: 'successful_business', label: 'Negócio de Sucesso', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Gráfico de crescimento e aperto de mãos", dataAiHint: "business achievement" },
   { id: 'inner_peace', label: 'Paz Interior', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Pessoa meditando em paisagem serena", dataAiHint: "serenity peace" },
   { id: 'health_wellness', label: 'Saúde e Bem-Estar', imageUrl: 'https://placehold.co/150x150.png', imageAlt: "Frutas frescas e pessoa se exercitando", dataAiHint: "health wellness" },
+  { id: 'creative_expression', label: 'Expressão Criativa', imageUrl: 'https://placehold.co/150x150.png', imageAlt: 'Paleta de tintas e pincel', dataAiHint: "art creativity"},
+  { id: 'personal_growth', label: 'Crescimento Pessoal', imageUrl: 'https://placehold.co/150x150.png', imageAlt: 'Pessoa subindo uma montanha metafórica', dataAiHint: "self improvement"},
 ];
 
 export interface DreamOption {
@@ -34,7 +37,7 @@ export interface DreamOption {
 
 export interface PreQuestionnaireFormData {
   fullName: string;
-  selectedDreams: DreamOption[];
+  selectedDreams: DreamOption[]; // Array de objetos DreamOption completos
   dreamsAchievementDate: string; // Vai armazenar "end_of_year", "next_year", "two_years"
 }
 
@@ -72,32 +75,38 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
       selectedDreams: [],
       dreamsAchievementDate: '',
     },
-    mode: 'onChange',
+    mode: 'onChange', // Valida no change para 'isValid' ser mais reativo
   });
 
   const watchedFullName = watch('fullName');
   const watchedDreamsAchievementDate = watch('dreamsAchievementDate');
   const watchedSelectedDreams = watch('selectedDreams');
 
-  useEffect(() => {
-    const allFieldsTouchedOrValid = 
-      touchedFields.fullName && 
-      touchedFields.dreamsAchievementDate &&
-      watchedSelectedDreams.length === 3 && // Garante que 3 sonhos estão selecionados
-      !errors.fullName && // Garante que não há erro no nome
-      !errors.dreamsAchievementDate; // Garante que não há erro na data
 
-    if (watchedSelectedDreams.length === 3 && allFieldsTouchedOrValid && !isProcessingSubmit) {
+  useEffect(() => {
+    // Verifica se todos os campos foram tocados/preenchidos e se o formulário é válido
+    const allFieldsTouchedAndValid =
+      touchedFields.fullName &&
+      touchedFields.dreamsAchievementDate && // Garante que a data foi selecionada
+      watchedSelectedDreams.length === 3 && // Garante que 3 sonhos estão selecionados
+      isValid && // Garante que o formulário geral é válido (incluindo nome e data)
+      !errors.fullName && 
+      !errors.dreamsAchievementDate &&
+      !errors.selectedDreams;
+
+    if (allFieldsTouchedAndValid && !isProcessingSubmit) {
       setIsProcessingSubmit(true);
       toast({
         title: "Quase lá!",
         description: "Estamos preparando seu diagnóstico personalizado...",
         duration: 2000,
       });
+      // Adiciona um pequeno delay para o usuário ver a mensagem
       setTimeout(() => {
         onSubmitForm(getValues());
       }, 1500);
     }
+  // Monitora todas as dependências relevantes
   }, [watchedSelectedDreams, watchedFullName, watchedDreamsAchievementDate, isValid, touchedFields, errors, onSubmitForm, getValues, toast, isProcessingSubmit]);
 
 
@@ -107,22 +116,23 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     const currentIndex = selectedDreamsInternal.findIndex(d => d.id === dream.id);
     let newSelectedDreams: DreamOption[];
 
-    if (currentIndex === -1) {
+    if (currentIndex === -1) { // Se não está selecionado, tenta adicionar
       if (selectedDreamsInternal.length < 3) {
         newSelectedDreams = [...selectedDreamsInternal, dream];
       } else {
         toast({
           title: "Limite de 3 Sonhos Atingido",
           description: "Desmarque um sonho para escolher outro.",
-          variant: "default",
+          variant: "default", // Usar 'default' ou um específico se tiver customizado
           duration: 3000,
         });
-        return;
+        return; // Não faz mais nada se o limite foi atingido
       }
-    } else {
+    } else { // Se já está selecionado, remove
       newSelectedDreams = selectedDreamsInternal.filter(d => d.id !== dream.id);
     }
     setSelectedDreamsInternal(newSelectedDreams);
+    // Atualiza o valor no react-hook-form, o que vai disparar a validação e o useEffect
     setValue('selectedDreams', newSelectedDreams, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
   };
 
@@ -150,7 +160,10 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                   id="fullName"
                   placeholder="Como podemos te chamar?"
                   {...field}
-                  className={cn("bg-slate-800/70 border-purple-600/70 focus:border-accent focus:shadow-md focus:shadow-accent/30 text-base", errors.fullName ? 'border-destructive focus:border-destructive' : '')}
+                  className={cn(
+                    "bg-slate-800/70 border-purple-600/70 focus:border-accent focus:shadow-md focus:shadow-accent/30 text-base",
+                    errors.fullName ? 'border-destructive focus:border-destructive' : ''
+                  )}
                   disabled={isProcessingSubmit}
                 />
               )}
@@ -169,6 +182,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                 <RadioGroup
                   onValueChange={(value) => {
                     field.onChange(value);
+                    // Garante que o react-hook-form saiba que este campo foi tocado e deve ser validado
                     setValue('dreamsAchievementDate', value, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
                   }}
                   defaultValue={field.value}
@@ -182,12 +196,18 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                       className={cn(
                         "flex items-center space-x-2 p-3 rounded-lg border-2 cursor-pointer transition-all",
                         field.value === option.id 
-                          ? "border-accent bg-accent/20 text-accent-foreground shadow-lg" 
-                          : "border-purple-600/70 bg-slate-800/70 hover:border-purple-500",
+                          ? "border-accent bg-accent/20 text-primary-foreground shadow-lg" // Alterado para text-primary-foreground
+                          : "border-purple-600/70 bg-slate-800/70 hover:border-purple-500 text-foreground/80", // Cor de texto padrão para não selecionado
                         isProcessingSubmit ? "opacity-50 cursor-not-allowed" : ""
                       )}
                     >
-                      <RadioGroupItem value={option.id} id={option.id} className={cn(field.value === option.id ? "border-accent text-accent" : "border-purple-500 text-purple-500")} />
+                      <RadioGroupItem 
+                        value={option.id} 
+                        id={option.id} 
+                        className={cn(
+                          field.value === option.id ? "border-accent text-accent" : "border-purple-500 text-purple-500"
+                        )} 
+                      />
                       <span className="font-medium text-sm">{option.label}</span>
                     </Label>
                   ))}
@@ -223,7 +243,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                         alt={dream.imageAlt} 
                         width={100} 
                         height={100}
-                        data-ai-hint={dream.dataAiHint}
+                        data-ai-hint={dream.dataAiHint} // data-ai-hint está aqui
                         className={cn(
                             "object-cover rounded-md w-full h-full transition-transform duration-300 group-hover:scale-105",
                             isSelected ? "opacity-90" : "opacity-100"
