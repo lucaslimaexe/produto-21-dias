@@ -167,7 +167,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             </div>
 
             <p className="text-lg sm:text-xl md:text-2xl text-yellow-300 font-semibold mb-2 break-words">
-              Seu Arquétipo Dominante (Problemático): <span className="text-pink-400">{analysisResult.archetype}</span>
+              Seu Arquétipo Dominante (Problemático): <span className="text-pink-400 font-bold text-xl sm:text-2xl md:text-3xl">{analysisResult.archetype}</span>
             </p>
             <p className="text-sm sm:text-base md:text-lg text-red-200/90 leading-relaxed mb-4 sm:mb-6 max-w-3xl mx-auto break-words">
               {analysisResult.summary.replace(/Você/g, displayName).replace(/você/g, displayName.toLowerCase())}
@@ -187,11 +187,17 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             <div className="bg-black/50 p-3 sm:p-4 rounded-lg border border-yellow-500/50 mb-4 sm:mb-6">
                 <p className="text-base sm:text-lg md:text-xl text-yellow-300 font-semibold mb-2 break-words">
                     {displayName}, seu Nível de Alinhamento Atual com Seu Potencial Máximo é:
-                    <span className={`ml-1 sm:ml-2 text-xl sm:text-2xl font-bold ${analysisResult.idealPercentage <= 30 ? 'text-red-400' : 'text-yellow-400'}`}>
-                        {analysisResult.idealPercentage}% (Estado Crítico)
+                    <span className={cn(
+                        "ml-1 sm:ml-2 text-2xl sm:text-3xl font-bold",
+                        analysisResult.idealPercentage <= 25 ? 'text-red-500' :
+                        analysisResult.idealPercentage <= 50 ? 'text-orange-400' :
+                        analysisResult.idealPercentage <= 75 ? 'text-yellow-400' : 'text-green-400'
+                    )}>
+                        {analysisResult.idealPercentage}%
                     </span>
+                    {analysisResult.idealPercentage <= 50 && <span className="text-red-400 font-bold ml-2">(Estado Crítico)</span>}
                 </p>
-                <Progress value={analysisResult.idealPercentage} className={`w-full h-3 sm:h-4 border border-yellow-600/50 [&>div]:${getPercentageColor(analysisResult.idealPercentage)}`} />
+                <Progress value={analysisResult.idealPercentage} className={cn("w-full h-3 sm:h-4 border border-yellow-600/50", `[&>div]:${getPercentageColor(analysisResult.idealPercentage)}`)} />
                 {analysisResult.idealPercentage <= 30 && <p className="text-red-400 text-xs sm:text-sm mt-1 break-words">Este nível é alarmantemente baixo e requer sua atenção imediata, {displayName}.</p>}
             </div>
 
@@ -219,7 +225,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           </section>
         )}
 
-        <hr className="border-purple-700/50 my-6 md:my-10" />
+        <hr className="border-purple-700/50 my-8 md:my-12" />
 
         <section className="animate-fade-in text-center md:text-left" style={{animationDuration: '0.7s', animationDelay: '0.4s'}}>
           <div className="md:flex md:items-center md:gap-6 lg:gap-8">
@@ -250,7 +256,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           </div>
         </section>
 
-        <hr className="border-purple-700/50 my-6 md:my-10" />
+        <hr className="border-purple-700/50 my-8 md:my-12" />
 
         <section className="animate-fade-in text-center" style={{animationDuration: '0.7s', animationDelay: '1.0s'}}>
           <div className="mb-6 sm:mb-8 flex justify-center">
@@ -274,26 +280,26 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           </p>
         </section>
 
-        <hr className="border-purple-700/50 my-6 md:my-10" />
+        <hr className="border-purple-700/50 my-8 md:my-12" />
 
         <section className="animate-fade-in" style={{animationDuration: '0.7s', animationDelay: '1.3s'}}>
-           <h3 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-6 sm:mb-10 goddess-text-gradient break-words">
+           <h3 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-8 sm:mb-12 goddess-text-gradient break-words">
             💎 {displayName}, aqui está o <span className="text-yellow-300">MAPA DETALHADO</span> do que você vai <span className="text-pink-400">DESBLOQUEAR</span> em apenas 21 dias com o Código da Deusa™:
             </h3>
-            <div className="grid md:grid-cols-2 gap-x-4 sm:gap-x-6 lg:gap-x-8 gap-y-4 sm:gap-y-6 max-w-4xl mx-auto text-left">
+            <div className="grid md:grid-cols-2 gap-x-4 sm:gap-x-6 lg:gap-x-8 gap-y-5 sm:gap-y-7 max-w-4xl mx-auto text-left">
                 {goddessCodeModules.map((item, index) => (
                 <div key={index} className="flex items-start p-3 sm:p-4 bg-purple-900/50 rounded-xl border-2 border-purple-700/70 hover:shadow-purple-500/40 shadow-lg transition-shadow duration-300 hover:border-purple-500">
                     <item.icon className="h-7 w-7 sm:h-8 sm:w-8 mr-3 sm:mr-4 text-yellow-400 shrink-0 mt-1" />
                     <div className="flex-1">
-                    <h4 className="text-md sm:text-lg font-semibold text-pink-300 mb-0.5 sm:mb-1 break-words">{item.name}</h4>
-                    <p className="text-xs sm:text-sm text-purple-200/90 mb-1 leading-relaxed break-words">{item.promise}</p>
+                    <h4 className="text-md sm:text-lg font-semibold text-pink-300 mb-1 sm:mb-1.5 break-words">{item.name}</h4>
+                    <p className="text-xs sm:text-sm text-purple-200/90 mb-1.5 leading-relaxed break-words">{item.promise}</p>
                     <p className="text-xs text-yellow-300/80 font-medium">Valor real: <span className="line-through">R${item.value.toFixed(2).replace('.',',')}</span></p>
                     </div>
                 </div>
                 ))}
             </div>
-            <p className="text-center text-purple-200/90 mt-6 sm:mt-8 text-base sm:text-lg break-words">
-                {displayName}, se cada parte desse desafio fosse vendida separadamente, o valor total ultrapassaria <span className="font-bold text-yellow-300 text-lg sm:text-xl">R$ {totalRealValue.toFixed(2).replace('.',',')}</span>.
+            <p className="text-center text-purple-200/90 mt-8 sm:mt-10 text-base sm:text-lg break-words">
+                {displayName}, se cada parte desse desafio fosse vendida separadamente, o valor total ultrapassaria <strong className="font-bold text-yellow-300 text-lg sm:text-xl md:text-2xl">R$ {totalRealValue.toFixed(2).replace('.',',')}</strong>.
             </p>
             <p className="text-center text-white font-semibold mt-2 text-base sm:text-lg md:text-xl break-words">
                 Mas eu decidi reunir tudo em um método completo, prático, validado por centenas de mulheres — por apenas <span className="text-green-400 text-xl sm:text-2xl md:text-3xl font-bold">R$ {offerPrice.toFixed(2).replace('.',',')}</span>.
@@ -304,10 +310,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         </section>
 
 
-        <hr className="border-purple-700/50 my-6 md:my-10" />
+        <hr className="border-purple-700/50 my-8 md:my-12" />
 
         <section className="animate-fade-in" style={{animationDuration: '0.7s', animationDelay: '1.6s'}}>
-          <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-6 sm:mb-10 goddess-text-gradient break-words">Veja o que mulheres como você, {displayName}, estão CONQUISTANDO com o CÓDIGO DA DEUSA™:</h2>
+          <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-8 sm:mb-12 goddess-text-gradient break-words">Veja o que mulheres como você, {displayName}, estão CONQUISTANDO com o CÓDIGO DA DEUSA™:</h2>
           <div className="grid md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {testimonials.map((testimonial, index) => (
               <Card key={index} className="bg-black/60 border-purple-700/80 text-purple-200/90 shadow-xl hover:shadow-purple-600/40 transition-shadow duration-300 flex flex-col">
@@ -324,7 +330,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
               </Card>
             ))}
           </div>
-           <div className="flex justify-center mt-6 sm:mt-8">
+           <div className="flex justify-center mt-8 sm:mt-10">
              <Image
                 data-ai-hint="women success celebration"
                 src="https://placehold.co/700x200.png"
@@ -336,34 +342,34 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           </div>
         </section>
 
-        <hr className="border-purple-700/50 my-6 md:my-10" />
+        <hr className="border-purple-700/50 my-8 md:my-12" />
 
         <section className="animate-fade-in bg-gradient-to-br from-red-800/80 via-black to-purple-900/80 rounded-3xl p-4 sm:p-6 lg:p-10 mb-6 sm:mb-8 border-4 border-yellow-500 shadow-2xl text-center" style={{animationDuration: '0.7s', animationDelay: '2.2s'}}>
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-yellow-200 mb-2 sm:mb-3 animate-pulse [animation-duration:1.2s] break-words">
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-yellow-200 mb-3 sm:mb-4 animate-pulse [animation-duration:1.2s] break-words">
             {displayName}, chega de ser feita de otária. Chega de ver seus sonhos como {dreamsText} no ralo!
           </h2>
-          <p className="text-base sm:text-lg md:text-xl text-red-300 mb-4 sm:mb-6 break-words">Esta é a sua <span className="font-bold underline">ÚLTIMA CHANCE</span> de pegar o atalho ético para a vida que você deseja. O CÓDIGO DA DEUSA™ é para mulheres como você, {displayName}, que estão cansadas de serem enganadas e prontas para <span className="font-bold text-lg sm:text-xl md:text-2xl">COMANDAR</span>.</p>
+          <p className="text-base sm:text-lg md:text-xl text-red-300 mb-5 sm:mb-7 break-words">Esta é a sua <span className="font-bold underline">ÚLTIMA CHANCE</span> de pegar o atalho ético para a vida que você deseja. O CÓDIGO DA DEUSA™ é para mulheres como você, {displayName}, que estão cansadas de serem enganadas e prontas para <span className="font-bold text-lg sm:text-xl md:text-2xl">COMANDAR</span>.</p>
 
-          <div className="bg-black/70 border-2 border-red-500 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
-            <h3 className="text-red-400 font-bold text-lg sm:text-xl md:text-2xl mb-1 sm:mb-2 break-words">🚨 ALERTA FINAL, {displayName.toUpperCase()}: Restam APENAS 3 VAGAS! 🚨</h3>
+          <div className="bg-black/70 border-2 border-red-500 rounded-xl p-3 sm:p-4 mb-5 sm:mb-7">
+            <h3 className="text-red-400 font-bold text-lg sm:text-xl md:text-2xl mb-1.5 sm:mb-2 break-words">🚨 ALERTA FINAL, {displayName.toUpperCase()}: Restam APENAS 3 VAGAS! 🚨</h3>
             <p className="text-yellow-300 text-xs sm:text-sm md:text-base break-words">E quando elas acabarem, o preço vai subir. Não sabemos quando teremos outra oportunidade como essa para você realizar {dreamsText} {achievementDateText}.</p>
           </div>
 
-          <p className="text-purple-200/90 text-base sm:text-lg md:text-xl mb-1 sm:mb-2 break-words">O valor real deste conhecimento, que vai mudar sua vida para sempre, é de <span className="line-through text-red-500/80">R$ {totalRealValue.toFixed(2).replace('.',',')}</span>.</p>
-          <p className="text-purple-200/90 text-sm sm:text-base md:text-lg mb-2 sm:mb-4 break-words">Mas, {displayName}, por um tempo <span className="text-yellow-300 font-bold">LIMITADÍSSIMO</span>, você pode ter acesso a todo o CÓDIGO DA DEUSA™ por um valor simbólico de apenas:</p>
+          <p className="text-purple-200/90 text-base sm:text-lg md:text-xl mb-1 sm:mb-2 break-words">O valor real deste conhecimento, que vai mudar sua vida para sempre, é de <span className="line-through text-red-500/80 text-lg sm:text-xl md:text-2xl">R$ {totalRealValue.toFixed(2).replace('.',',')}</span>.</p>
+          <p className="text-purple-200/90 text-sm sm:text-base md:text-lg mb-3 sm:mb-5 break-words">Mas, {displayName}, por um tempo <span className="text-yellow-300 font-bold">LIMITADÍSSIMO</span>, você pode ter acesso a todo o CÓDIGO DA DEUSA™ por um valor simbólico de apenas:</p>
 
           <p className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-green-400 my-3 sm:my-4 md:my-6 glow">
             R$ {offerPrice.toFixed(2).replace('.',',')}
           </p>
-          <p className="text-yellow-300 font-semibold text-base sm:text-lg md:text-xl mb-4 sm:mb-6 break-words">SIM, {displayName}! APENAS R$ {offerPrice.toFixed(2).replace('.',',')}! É menos que um lanche na rua para você ter o poder de reescrever seu destino e manifestar {dreamsText}.</p>
+          <p className="text-yellow-300 font-bold text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 break-words">SIM, {displayName}! APENAS R$ {offerPrice.toFixed(2).replace('.',',')}! <br className="sm:hidden"/>É menos que um lanche na rua para você ter o poder de reescrever seu destino e manifestar {dreamsText}.</p>
 
           <div className="mb-4 sm:mb-6 md:mb-8">
-            <div className={`flex items-center justify-center space-x-1 sm:space-x-2 mb-1 sm:mb-2 md:mb-3 ${timeLeft < 60 && timeLeft > 0 ? 'text-red-400' : 'text-yellow-200'}`}>
+            <div className={cn("flex items-center justify-center space-x-1 sm:space-x-2 mb-1 sm:mb-2 md:mb-3", timeLeft < 60 && timeLeft > 0 ? 'text-red-400' : 'text-yellow-200')}>
               <Clock className="h-6 w-6 sm:h-7 md:h-10" />
-              <span className={`text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold font-mono ${timeLeft === 0 ? 'text-red-600' : ''} ${isBlinking && timeLeft > 0 ? 'animate-ping opacity-75':'opacity-100'}`}>
+              <span className={cn("text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold font-mono", timeLeft === 0 ? 'text-red-600' : '', isBlinking && timeLeft > 0 ? 'animate-ping opacity-75':'opacity-100')}>
                 {formatTime(timeLeft)}
               </span>
-              <Zap className={`h-6 w-6 sm:h-7 md:h-10 ${timeLeft < 300 && timeLeft > 0 && timeLeft % 2 === 0 ? 'animate-spin [animation-duration:0.5s]' : ''}`} />
+              <Zap className={cn("h-6 w-6 sm:h-7 md:h-10", timeLeft < 300 && timeLeft > 0 && timeLeft % 2 === 0 ? 'animate-spin [animation-duration:0.5s]' : '')} />
             </div>
             <div className="w-full bg-black/60 rounded-full h-3 sm:h-4 md:h-5 border-2 border-yellow-600/70 overflow-hidden shadow-inner">
               <div
@@ -382,13 +388,13 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             disabled={timeLeft === 0}
           >
             <a href="https://pay.kiwify.com.br/xxxxxxxx" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1 sm:gap-2">
-              <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" />
-              <span className="leading-tight">{timeLeft > 0 ? `SIM, ${displayName.toUpperCase()}! QUERO O CÓDIGO AGORA!` : "OFERTA EXPIRADA"}</span>
-              <ExternalLink className="h-5 w-5 sm:h-6 sm:w-6" />
+              <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" />
+              <span className="leading-tight break-words">{timeLeft > 0 ? `SIM, ${displayName.toUpperCase()}! QUERO O CÓDIGO AGORA!` : "OFERTA EXPIRADA"}</span>
+              <ExternalLink className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" />
             </a>
           </Button>
-           <p className="text-xs sm:text-sm text-yellow-200/80 mt-2 sm:mt-4 break-words">Acesso imediato após confirmação. Garantia Incondicional de 7 Dias.</p>
-           <p className="text-sm sm:text-base md:text-lg text-purple-200/90 mt-4 sm:mt-6 break-words">
+           <p className="text-xs sm:text-sm text-yellow-200/80 mt-3 sm:mt-4 break-words">Acesso imediato após confirmação. Garantia Incondicional de 7 Dias.</p>
+           <p className="text-sm sm:text-base md:text-lg text-purple-200/90 mt-5 sm:mt-7 break-words">
             {displayName}, não perca mais um segundo. A cada segundo que você hesita, você está escolhendo continuar na mesma estagnação. Você está escolhendo a mediocridade. <span className="font-bold text-yellow-300">Aja agora.</span> Ou continue sonhando pequeno enquanto outras mulheres estão usando este código para manifestar {dreamsText} {achievementDateText}.
            </p>
         </section>
@@ -403,8 +409,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             variant="ghost"
             className="font-headline text-xs sm:text-sm md:text-base text-purple-400/70 hover:text-purple-300 hover:bg-purple-900/40 rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 transition-colors whitespace-normal text-center h-auto max-w-xs mx-auto"
           >
-            <XCircle className="mr-1 sm:mr-2 h-4 w-4" />
-            Não, obrigado. Entendo as consequências da minha inação.
+            <XCircle className="mr-1 sm:mr-2 h-4 w-4 shrink-0" />
+            <span className="break-words">Não, obrigado. Entendo as consequências da minha inação.</span>
           </Button>
         </section>
       </div>

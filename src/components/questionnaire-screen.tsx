@@ -59,7 +59,7 @@ export const questions: Question[] = [
     options: [
       { text: "Sim, o tempo todo. Parece uma parede invisível que me impede de avançar.", score: 5 },
       { text: "Às vezes. Sinto que quando estou quase lá, algo me puxa pra trás.", score: 4 },
-      { text: "Não sei if é um bloqueio, mas sinto que não tenho a mesma 'sorte' que os outros.", score: 3 },
+      { text: "Não sei se é um bloqueio, mas sinto que não tenho a mesma 'sorte' que os outros.", score: 3 },
       { text: "Sim, e desconfio que os métodos que ensinam por aí são incompletos de propósito.", score: 2 }
     ],
     feedback: "🔥 BINGO! AGORA ESTAMOS CHEGANDO NA RAIZ DO PROBLEMA. 🔥"
@@ -102,46 +102,35 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   const [selectedOptionText, setSelectedOptionText] = useState<string | null>(null);
   const [transitionState, setTransitionState] = useState<TransitionState>('entering');
   const [elapsedTime, setElapsedTime] = useState(0);
-  const componentName = "QuestionnaireScreen"; // Para os logs
-
-  console.log(`${componentName} (QID: ${question.id}): Component RENDER. transitionState: ${transitionState}, selectedOptionText: "${selectedOptionText}", currentAnswer prop: "${currentAnswer}"`);
+  const componentName = "QuestionnaireScreen"; 
 
   // Timer useEffect
   useEffect(() => {
-    console.log(`${componentName} (QID: ${question.id}): Timer useEffect MOUNT.`);
     const intervalId = setInterval(() => {
       setElapsedTime(prevTime => prevTime + 1);
     }, 1000);
     return () => {
-      console.log(`${componentName} (QID: ${question.id}): Timer useEffect UNMOUNT/CLEANUP.`);
       clearInterval(intervalId);
     };
-  }, []); // Roda apenas uma vez na montagem
+  }, []); 
 
   // Handle initial animation and reset for new questions
   useEffect(() => {
-    console.log(`${componentName} (QID: ${question.id}): Question Change/Mount useEffect RUN. currentAnswer prop: "${currentAnswer}"`);
-    
     setSelectedOptionText(currentAnswer || null);
     setTransitionState('entering'); 
-    console.log(`${componentName} (QID: ${question.id}): Set selectedOptionText to "${currentAnswer || null}", transitionState to 'entering'.`);
-
+    
     const timer = setTimeout(() => {
       setTransitionState('idle');
-      console.log(`${componentName} (QID: ${question.id}): Transitioned to 'idle' after entering animation.`);
-    }, 400); // Duration of slide-in-right animation
+    }, 400); 
 
     return () => {
       clearTimeout(timer);
-      console.log(`${componentName} (QID: ${question.id}): Question Change/Mount useEffect CLEANUP.`);
     };
-  }, [question.id]); // SÓ depende de question.id
+  }, [question.id, currentAnswer]);
 
 
   const handleSelectOption = (option: QuestionOption) => {
-    console.log(`${componentName} (QID: ${question.id}): handleSelectOption called. Current transitionState: ${transitionState}. Option: "${option.text}"`);
     if (transitionState !== 'idle') {
-      console.warn(`${componentName} (QID: ${question.id}): Attempted to select option while not in 'idle' state.`);
       return; 
     }
 
@@ -149,15 +138,12 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
     onAnswer(option.text);
     playSound('answer_select.mp3');
     setTransitionState('feedback');
-    console.log(`${componentName} (QID: ${question.id}): Set transitionState to 'feedback'.`);
     playSound('feedback_show.mp3');
 
     setTimeout(() => {
       setTransitionState('exiting');
-      console.log(`${componentName} (QID: ${question.id}): Set transitionState to 'exiting'.`);
       setTimeout(() => {
         onComplete(); 
-        console.log(`${componentName} (QID: ${question.id}): onComplete called. Next question/results should load.`);
       }, 400); 
     }, 1500); 
   };
@@ -242,6 +228,5 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
     </div>
   );
 };
-
     
     
