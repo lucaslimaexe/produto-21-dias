@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, Lightbulb, BookOpen, Users, Map, GitCompareArrows, Heart, Bolt, Sun, Loader2, Sparkles as LucideSparkles, ThumbsDown, ThumbsUp, Lock, CircleDollarSign, ShoppingCart, Star, ChevronLeft, ChevronRight, Eye, Group, Key, Unlock, Brain, TrendingUp, Target, ShieldOff, ShieldCheck, MessageCircle, Rocket, Gift, Palette, Activity, CheckCircle2 } from 'lucide-react'; // Added CheckCircle2
+import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, Lightbulb, BookOpen, Users, Map, GitCompareArrows, Heart, Bolt, Sun, Loader2, Sparkles as LucideSparkles, ThumbsDown, ThumbsUp, Lock, CircleDollarSign, ShoppingCart, Star, ChevronLeft, ChevronRight, Eye, Group, Key, Unlock, Brain, TrendingUp, Target, ShieldOff, ShieldCheck, MessageCircle, Rocket, Gift, Palette, Activity, CheckCircle2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Image from 'next/image';
 import { Progress } from "@/components/ui/progress";
@@ -127,7 +127,7 @@ const TestimonialStoryCard: React.FC<{ name: string, avatar: string, dataAiHint:
 );
 
 const PhaseCard: React.FC<{ phase: string, title: string, description: string | React.ReactNode, icon: React.ElementType, delay: string, lockedIcon?: React.ElementType }> = ({ phase, title, description, icon: Icon, delay, lockedIcon: LockedIcon = Lock }) => (
-    <Card className="bg-slate-800/70 border-purple-600/80 p-5 text-center animate-fade-in transform hover:scale-105 transition-transform duration-300 h-full flex flex-col">
+    <Card className="bg-slate-800/70 border-purple-600/80 p-5 text-center animate-fade-in transform hover:scale-105 transition-transform duration-300 h-full flex flex-col" style={{ animationDelay: delay }}>
         <div className="flex flex-col items-center flex-grow">
             <div className="relative mb-3">
                 <Icon className="h-12 w-12 text-accent" />
@@ -186,6 +186,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 }) => {
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const [currentHeaderText, setCurrentHeaderText] = useState<string>("ALERTA: SEU DIAGNÓSTICO É CRÍTICO!");
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [priceCardTimeLeft, setPriceCardTimeLeft] = useState(7 * 60); 
   const [priceCardVacancies, setPriceCardVacancies] = useState(3);
@@ -234,7 +235,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     'final-touch-section': "A DECISÃO É SUA: O UNIVERSO ESPERA SEU SIM",
     'decision-section': "A ENCRUZILHADA FINAL: ESCOLHA SEU CAMINHO",
     'final-cta-section': "ÚLTIMA CHAMADA: NÃO DEIXE SUA DEUSA INTERIOR ESPERANDO!",
-    'final-offer-reveal-card-moved': "SUA CO-CRIAÇÃO MÁGICA: OFERTA FINAL!",
+    // 'final-offer-reveal-card-moved' is no longer a separate section for header text
   };
 
   const registerSectionRef = useCallback((id: string) => (el: HTMLElement | null) => {
@@ -242,42 +243,64 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   }, []);
 
   useEffect(() => {
-    let scrollTimeout: NodeJS.Timeout | undefined;
     const handleScroll = () => {
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      scrollTimeoutRef.current = setTimeout(() => {
         let activeSectionId: string | null = null;
-        let minDistance = Infinity;
-        const viewportCenterY = window.innerHeight / 2;
-        let firstVisibleSectionTopDistance = Infinity;
-        let firstVisibleSectionId : string | null = null;
-
+        let minDistanceToTop = Infinity;
+        const viewportTop = window.scrollY;
+        const viewportCenterY = viewportTop + window.innerHeight / 2;
 
         Object.entries(sectionRefs.current).forEach(([id, element]) => {
           if (element) {
             const rect = element.getBoundingClientRect();
-            const elementCenterY = rect.top + rect.height / 2;
-            const distanceToCenter = Math.abs(elementCenterY - viewportCenterY);
-            const isTopVisible = rect.top >= 0 && rect.top < window.innerHeight;
-
-            if (isTopVisible && rect.top < firstVisibleSectionTopDistance) {
-                firstVisibleSectionTopDistance = rect.top;
-                firstVisibleSectionId = id;
-            }
+            const elementTopRelativeToDocument = rect.top + viewportTop;
             
-            if (rect.top < viewportCenterY && rect.bottom > viewportCenterY) { // Section is around the center
-                 if (distanceToCenter < minDistance) {
-                    minDistance = distanceToCenter;
+            // Prioritize sections whose top is at or just above the viewport top
+            if (elementTopRelativeToDocument <= viewportTop + 50) { // 50px buffer
+                const distance = viewportTop - elementTopRelativeToDocument;
+                 if (distance < minDistanceToTop) {
+                    minDistanceToTop = distance;
                     activeSectionId = id;
+                }
+            } else { // Fallback for sections in view but below the top
+                const elementCenterY = elementTopRelativeToDocument + rect.height / 2;
+                if (rect.top < window.innerHeight && rect.bottom > 0) { // Element is somewhat visible
+                    if (!activeSectionId) { // If no section is "at the top", take the first one visible
+                         const distanceToCenter = Math.abs(elementCenterY - viewportCenterY);
+                         // This part needs refinement if multiple sections are in view
+                         // For simplicity, we can just take the one whose top is closest to viewportTop if nothing else matches
+                         if (activeSectionId === null || elementTopRelativeToDocument < (sectionRefs.current[activeSectionId]?.getBoundingClientRect().top || Infinity) + viewportTop) {
+                            // A simple heuristic: if no section is "active" by being at the top,
+                            // consider the highest visible section.
+                            // This part can be tricky without IntersectionObserver.
+                         }
+                    }
                 }
             }
           }
         });
         
-        const determinedSectionId = activeSectionId || firstVisibleSectionId || Object.keys(sectionHeaderMessages)[0];
+        // Fallback logic if no section is perfectly matched
+        if (!activeSectionId) {
+            let highestVisibleSectionId: string | null = null;
+            let highestVisibleSectionTop = Infinity;
+            Object.entries(sectionRefs.current).forEach(([id, element]) => {
+                if (element) {
+                    const rect = element.getBoundingClientRect();
+                    if (rect.top < window.innerHeight && rect.bottom > 0 && rect.top < highestVisibleSectionTop) {
+                        highestVisibleSectionTop = rect.top;
+                        highestVisibleSectionId = id;
+                    }
+                }
+            });
+            activeSectionId = highestVisibleSectionId;
+        }
+
+        const determinedSectionId = activeSectionId || Object.keys(sectionHeaderMessages)[0];
         setCurrentHeaderText(sectionHeaderMessages[determinedSectionId] || "MANIFESTE SEU PODER AGORA!");
 
-      }, 50); 
+      }, 150); // Debounce time for scroll
     };
     
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -285,11 +308,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      if (scrollTimeout) clearTimeout(scrollTimeout);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
       if (unlockingTimeoutRef.current) clearTimeout(unlockingTimeoutRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); 
+  }, [sectionHeaderMessages]); 
   
   useEffect(() => {
     if (priceCardTimeLeft <= 0) return;
@@ -336,6 +359,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     playSound('dream_select.mp3');
     setFinalOfferTimeLeft(finalOfferTimerInitial); 
     setTimeout(() => { 
+        // Scroll to the next section after revealing the price, which is now map-section
         document.getElementById('map-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
   };
@@ -349,12 +373,9 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       setIsCodeUnlocked(true);
       playSound('form_complete.mp3'); 
       setTimeout(() => {
-        const ctaButton = document.getElementById('final-purchase-cta-button');
-        if (ctaButton) {
-             ctaButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-            // Fallback if the specific button ID isn't found, scroll to the section
-            document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const ctaSection = document.getElementById('final-purchase-cta-section');
+        if (ctaSection) {
+             ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 100);
     }, 3000);
@@ -410,34 +431,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       { id: 'finance', title: "Finanças em Fluxo", icon: CircleDollarSign, dataAiHint: "money flow" },
   ];
 
-  const finalOfferRevealCardContent = (
-    <div id="final-offer-section-content" className="mt-10 animate-pop-in bg-black/50 border-2 border-yellow-500 p-6 sm:p-10 rounded-3xl shadow-2xl shadow-yellow-500/50 text-center">
-        <Wand2 className="h-16 w-16 text-accent mx-auto mb-4 animate-float" />
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-300 mb-3">Sua Co-Criação Mágica Revelada!</h2>
-        <p className="text-purple-200/90 text-sm sm:text-base md:text-lg mb-3 sm:mb-5 break-words max-w-xl mx-auto">
-            Mas, {displayName}, por um tempo <span className="text-yellow-300 font-bold">LIMITADÍSSIMO</span>, e como uma oportunidade única por ter chegado até aqui, seu acesso a todo o CÓDIGO DA DEUSA™ não será R$ {totalRealValue.toFixed(2).replace('.',',')}, nem mesmo R$ {offerPriceAnchor.toFixed(2).replace('.',',')}. Será por um valor simbólico de apenas:
-        </p>
-        <p className="text-[2.75rem] leading-tight sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-green-400 my-4 md:my-6 glow">
-            R$ {offerPriceFinal.toFixed(2).replace('.',',')}
-        </p>
-        <p className="text-lg sm:text-xl md:text-2xl font-bold text-yellow-300 mb-4 sm:mb-6 break-words">
-            SIM, {displayName}! APENAS R$ {offerPriceFinal.toFixed(2).replace('.',',')} HOJE! <br className="sm:hidden"/> Um desconto inacreditável sobre o valor já especial de R$ {offerPriceAnchor.toFixed(2).replace('.',',')}!
-        </p>
-
-        <div className="mb-6 md:mb-8 max-w-sm mx-auto">
-            <div className={cn("flex items-center justify-center space-x-1 sm:space-x-2 mb-2", finalOfferTimeLeft < 60 && finalOfferTimeLeft > 0 && finalOfferTimeLeft % 2 !== 0 ? 'text-red-400' : 'text-yellow-200', finalOfferTimeLeft === 0 && 'text-red-600')}>
-                <Clock className="h-5 w-5 sm:h-6 shrink-0" />
-                <span className={cn("text-2xl sm:text-3xl font-bold font-mono", isFinalOfferTimerBlinking && finalOfferTimeLeft > 0 ? 'animate-ping opacity-75':'opacity-100')}>
-                    {formatTime(finalOfferTimeLeft)}
-                </span>
-            </div>
-            <Progress value={(finalOfferTimeLeft / finalOfferTimerInitial) * 100} className="w-full h-2.5 sm:h-3 bg-yellow-600/30 border border-yellow-600/50 [&>div]:bg-gradient-to-r [&>div]:from-red-500 [&>div]:via-yellow-400 [&>div]:to-orange-500" />
-            {finalOfferTimeLeft === 0 && <p className="text-red-500 font-bold mt-2 text-sm sm:text-base">TEMPO ESGOTADO! OFERTA ENCERRADA.</p>}
-        </div>
-    </div>
-  );
-
-
   return (
     <div className="min-h-screen w-full flex flex-col items-center pt-16 sm:pt-20 pb-28 bg-gradient-to-br from-purple-950 via-black to-red-950 text-foreground overflow-x-hidden">
         <header className="fixed top-0 left-0 right-0 z-50 bg-destructive/95 backdrop-blur-sm text-destructive-foreground p-2 sm:p-3 text-center shadow-lg animate-flash-red">
@@ -473,7 +466,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                 <Tooltip delayDuration={100}>
                                     <TooltipTrigger asChild>
                                         <Badge variant="outline" className="text-sm bg-red-700/60 text-yellow-200 border-red-500/80 px-3 py-1.5 cursor-default animate-subtle-pulse" style={{animationDelay: `${index * 0.1}s`}}>
-                                            <Lock className="h-3 w-3 mr-1.5 shrink-0" /> {keyword}
+                                            <Lock className="mr-1.5 h-3 w-3 shrink-0" /> {keyword}
                                         </Badge>
                                     </TooltipTrigger>
                                     <TooltipContent className="bg-slate-800 text-white border-purple-500">
@@ -594,20 +587,19 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 </Card>
             </section>
 
-
+            {/* Novos blocos de copy e gamificação entram aqui se o preço foi revelado */}
             {isPriceRevealed && (
-                <div id="final-offer-section-content-wrapper"> {/* This wrapper now contains BLOCKS 14 through 19 */}
-                    {/* The R$47 Reveal Card content that was here is moved to the end of the page */}
-                    
-                    {/* BLOCO 14 – MAPA DE DESBLOQUEIO (CRONOGRAMA) */}
-                    <section id="map-section" ref={registerSectionRef('map-section')} className="animate-fade-in py-10 md:py-12 text-center mt-10" style={{animationDelay: '0.2s'}}>
-                        <h2 className="font-headline text-3xl sm:text-4xl text-yellow-300 mb-3">⚡ Sua Jornada de 21 Dias</h2>
+                <>
+                    <hr className="border-purple-700/30 my-10 md:my-14" />
+                    {/* BLOCO 14 – MAPA DE DESBLOQUEIO (Cronograma em Fases) */}
+                    <section id="map-section" ref={registerSectionRef('map-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.2s'}}>
+                        <h2 className="font-headline text-3xl sm:text-4xl text-yellow-300 mb-3 whitespace-pre-line">⚡ Sua Jornada de 21 Dias</h2>
                         <p className="text-purple-200/90 text-lg sm:text-xl mb-2 max-w-2xl mx-auto whitespace-pre-line">
                             Você está prestes a atravessar o portal mais importante da sua vida.
                         </p>
                         <p className="text-purple-300/80 text-md sm:text-lg mb-8 max-w-xl mx-auto whitespace-pre-line">
-                            21 dias.
-                            Cada dia uma ruptura.
+                            21 dias.{"\n"}
+                            Cada dia uma ruptura.{"\n"}
                             Cada etapa, um fio solto que você vai costurar de volta em você mesma.
                         </p>
                         <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
@@ -616,11 +608,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             <PhaseCard phase="DIAS 15-21" title="Cocriar a sua nova realidade." description="🔥 Manifeste a vida que merece." icon={LucideSparkles} delay="0.7s" />
                         </div>
                         <p className="text-purple-200/90 text-lg sm:text-xl mt-8 max-w-2xl mx-auto whitespace-pre-line">
-                            Isso não é só um plano.
-                            É um processo <span className="font-semibold text-pink-400">irreversível</span> de reconstrução interna.
+                            Isso não é só um plano.{"\n"}
+                            É um processo irreversível de reconstrução interna.
                         </p>
                         <p className="text-yellow-300 text-lg sm:text-xl mt-4 max-w-xl mx-auto whitespace-pre-line">
-                            Você pode continuar adiando…
+                            Você pode continuar adiando…{"\n"}
                             Ou se dar a chance de descobrir quem você teria sido se ninguém tivesse te quebrado.
                         </p>
                         <div className="text-center mt-10">
@@ -665,7 +657,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             />
                         </div>
                         <p className="text-purple-200/90 text-lg sm:text-xl mt-8 max-w-xl mx-auto whitespace-pre-line">
-                            Essa escolha tá na sua mão agora.
+                            Essa escolha tá na sua mão agora.{"\n"}
                             E o tempo tá olhando.
                         </p>
                         <div className="text-center mt-10">
@@ -682,12 +674,12 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         <h2 className="font-headline text-3xl sm:text-4xl text-pink-400 mb-3 whitespace-pre-line">Essa é a vida que JÁ É SUA.</h2>
                         <p className="text-purple-200/90 text-lg sm:text-xl mb-2 max-w-2xl mx-auto whitespace-pre-line">Você está a um <span className="font-bold text-yellow-300">sim</span> da realidade que já é sua.</p>
                         <p className="text-purple-300/80 text-md sm:text-lg mb-10 max-w-2xl mx-auto whitespace-pre-line">
-                            Imagina abrir os olhos e saber que está exatamente onde deveria estar.
-                            Não por sorte. Não por acaso.
+                            Imagina abrir os olhos e saber que está exatamente onde deveria estar.{"\n"}
+                            Não por sorte. Não por acaso.{"\n"}
                             Mas porque você <span className="font-bold text-accent">decidiu</span>.
                         </p>
                         <p className="text-purple-200/90 text-lg sm:text-xl mb-10 max-w-2xl mx-auto whitespace-pre-line">
-                            Essa vida com paz, energia, amor e propósito não é utopia.
+                            Essa vida com paz, energia, amor e propósito não é utopia.{"\n"}
                             Ela já foi desenhada. Ela já tá vibrando dentro de você.
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-10">
@@ -705,7 +697,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             ))}
                         </div>
                         <p className="text-yellow-300 text-lg sm:text-xl max-w-xl mx-auto whitespace-pre-line">
-                            Você só precisa <span className="font-semibold text-pink-400">ativar o código.</span>
+                            Você só precisa <span className="font-semibold text-pink-400">ativar o código.</span>{"\n"}
                             E aceitar o convite.
                         </p>
                         <div className="text-center mt-10">
@@ -721,7 +713,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     <section id="shield-section" ref={registerSectionRef('shield-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.8s'}}>
                         <h2 className="font-headline text-3xl sm:text-4xl goddess-text-gradient mb-3 whitespace-pre-line">Sem Risco. Sem Volta.</h2>
                         <p className="text-purple-200/90 text-lg sm:text-xl mb-6 max-w-2xl mx-auto whitespace-pre-line">
-                            Você já duvidou de tudo.
+                            Você já duvidou de tudo.{"\n"}
                             Do mundo. Das pessoas. De si mesma.
                         </p>
                         <p className="text-purple-300/80 text-md sm:text-lg mb-10 max-w-xl mx-auto whitespace-pre-line">
@@ -744,7 +736,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             <p className="text-xl sm:text-2xl text-pink-400 font-semibold mb-2">🧬 Um código que já está em você.</p>
                             <p className="text-xl sm:text-2xl text-green-400 font-semibold mb-6">💰 Por menos do que você gasta em um lanche qualquer.</p>
                             <p className="text-red-400 font-bold text-lg sm:text-xl animate-subtle-pulse whitespace-pre-line">
-                                E sim…
+                                E sim…{"\n\n"}
                                 Se você ignorar isso agora, você vai se lembrar disso depois.
                             </p>
                         </div>
@@ -763,7 +755,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         “Eu nunca pensei que alguém pudesse me destravar assim…”
                     </h2>
                     <p className="text-center text-purple-200/90 mb-8 sm:mb-12 text-md sm:text-lg max-w-xl mx-auto whitespace-pre-line">
-                        Essas vozes não são frases prontas.
+                        Essas vozes não são frases prontas.{"\n"}
                         São ecos de mulheres que passaram exatamente pelo que você está passando agora.
                     </p>
                     <div className="relative">
@@ -795,15 +787,15 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         {!isCodeUnlocked && (
                             <>
                                 <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-yellow-300 mb-6 whitespace-pre-line">
-                                    Você pode voltar pra sua vida.
+                                    Você pode voltar pra sua vida.{"\n"}
                                     Ou tocar nesse botão e começar a viver a sua.
                                 </h2>
                                 <p className="text-purple-200/90 text-lg sm:text-xl mb-6 max-w-xl mx-auto whitespace-pre-line">
-                                    A diferença entre sua realidade atual e a vida que te espera
+                                    A diferença entre sua realidade atual e a vida que te espera{"\n"}
                                     é um clique.
                                 </p>
                                 <p className="text-pink-400 font-semibold text-lg sm:text-xl mb-10 max-w-xl mx-auto whitespace-pre-line">
-                                    Mas esse clique não é só um botão.
+                                    Mas esse clique não é só um botão.{"\n"}
                                     É a primeira decisão <span className="font-bold">real</span> que você toma por <span className="font-bold">você</span> em anos.
                                 </p>
                                 
@@ -825,100 +817,139 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         )}
 
                         {isCodeUnlocked && (
-                            <div id="final-purchase-cta-button" className="animate-pop-in space-y-6">
+                             <div id="final-purchase-cta-section" className="animate-pop-in space-y-6">
                                 <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-400 whitespace-pre-line">CÓDIGO DESBLOQUEADO!</p>
                                 <p className="text-purple-200/90 text-lg sm:text-xl whitespace-pre-line">
-                                    Sim ou não.
-                                    Agora ou nunca.
+                                    Sim ou não.{"\n"}
+                                    Agora ou nunca.{"\n"}
                                     Acordar ou continuar dormindo.
                                 </p>
                                 <p className="text-yellow-300 font-bold text-xl sm:text-2xl mt-2 mb-6 whitespace-pre-line">
                                     🔓 Você sabe o que precisa fazer.
                                 </p>
                                 
-                                <p className="text-center text-sm text-yellow-200/90 mb-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                                    Essa oportunidade é sua, {displayName}!
-                                </p>
-                                <Button
-                                    asChild
-                                    size="lg"
-                                    className={cn(`w-full max-w-md mx-auto font-headline text-base sm:text-lg md:text-xl px-6 py-7 rounded-xl shadow-2xl transform hover:scale-105 transition-transform duration-200 pulse-goddess whitespace-normal text-center h-auto`,
-                                    finalOfferTimeLeft === 0 ? 'bg-gray-700 hover:bg-gray-800 cursor-not-allowed opacity-60' : 'bg-gradient-to-r from-green-500 via-emerald-600 to-green-700 hover:from-green-600 hover:via-emerald-700 hover:to-green-800 text-white')}
-                                    disabled={finalOfferTimeLeft === 0}
-                                >
-                                    <a href="https://pay.kiwify.com.br/xxxxxxxx" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
-                                        <ShoppingCart className="h-6 w-6 shrink-0" />
-                                        <span className="leading-tight break-words">{finalOfferTimeLeft > 0 ? `Desbloquear agora – por R$${offerPriceFinal.toFixed(2).replace('.',',')}` : "OFERTA EXPIRADA"}</span>
-                                        <ExternalLink className="h-5 w-5 shrink-0" />
-                                    </a>
-                                </Button>
-                                <p className="text-xs text-yellow-200/80 mt-3">Acesso imediato. Garantia Incondicional de 7 Dias.</p>
+                                {/* Conteúdo da Oferta Final de R$47 expandido aqui */}
+                                <div id="final-offer-content-expanded" className="mt-10 animate-pop-in bg-black/50 border-2 border-yellow-500 p-6 sm:p-10 rounded-3xl shadow-2xl shadow-yellow-500/50 text-center">
+                                    <Wand2 className="h-16 w-16 text-accent mx-auto mb-4 animate-float" />
+                                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-300 mb-3">Sua Co-Criação Mágica Revelada!</h2>
+                                    <p className="text-purple-200/90 text-sm sm:text-base md:text-lg mb-3 sm:mb-5 break-words max-w-xl mx-auto">
+                                        Mas, {displayName}, por um tempo <span className="text-yellow-300 font-bold">LIMITADÍSSIMO</span>, e como uma oportunidade única por ter chegado até aqui, seu acesso a todo o CÓDIGO DA DEUSA™ não será R$ {totalRealValue.toFixed(2).replace('.',',')}, nem mesmo R$ {offerPriceAnchor.toFixed(2).replace('.',',')}. Será por um valor simbólico de apenas:
+                                    </p>
+                                    <p className="text-[2.75rem] leading-tight sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-green-400 my-4 md:my-6 glow">
+                                        R$ {offerPriceFinal.toFixed(2).replace('.',',')}
+                                    </p>
+                                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-yellow-300 mb-4 sm:mb-6 break-words">
+                                        SIM, {displayName}! APENAS R$ {offerPriceFinal.toFixed(2).replace('.',',')} HOJE! <br className="sm:hidden"/> Um desconto inacreditável sobre o valor já especial de R$ {offerPriceAnchor.toFixed(2).replace('.',',')}!
+                                    </p>
+
+                                    <div className="mb-6 md:mb-8 max-w-sm mx-auto">
+                                        <div className={cn("flex items-center justify-center space-x-1 sm:space-x-2 mb-2", finalOfferTimeLeft < 60 && finalOfferTimeLeft > 0 && finalOfferTimeLeft % 2 !== 0 ? 'text-red-400' : 'text-yellow-200', finalOfferTimeLeft === 0 && 'text-red-600')}>
+                                            <Clock className="h-5 w-5 sm:h-6 shrink-0" />
+                                            <span className={cn("text-2xl sm:text-3xl font-bold font-mono", isFinalOfferTimerBlinking && finalOfferTimeLeft > 0 ? 'animate-ping opacity-75':'opacity-100')}>
+                                                {formatTime(finalOfferTimeLeft)}
+                                            </span>
+                                        </div>
+                                        <Progress value={(finalOfferTimeLeft / finalOfferTimerInitial) * 100} className="w-full h-2.5 sm:h-3 bg-yellow-600/30 border border-yellow-600/50 [&>div]:bg-gradient-to-r [&>div]:from-red-500 [&>div]:via-yellow-400 [&>div]:to-orange-500" />
+                                        {finalOfferTimeLeft === 0 && <p className="text-red-500 font-bold mt-2 text-sm sm:text-base">TEMPO ESGOTADO! OFERTA ENCERRADA.</p>}
+                                    </div>
+                                     <p className="text-center text-sm text-yellow-200/90 mb-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                                        Essa oportunidade é sua, {displayName}!
+                                    </p>
+                                    <Button
+                                        asChild
+                                        size="lg"
+                                        className={cn(`w-full max-w-md mx-auto font-headline text-base sm:text-lg md:text-xl px-6 py-7 rounded-xl shadow-2xl transform hover:scale-105 transition-transform duration-200 pulse-goddess whitespace-normal text-center h-auto`,
+                                        finalOfferTimeLeft === 0 ? 'bg-gray-700 hover:bg-gray-800 cursor-not-allowed opacity-60' : 'bg-gradient-to-r from-green-500 via-emerald-600 to-green-700 hover:from-green-600 hover:via-emerald-700 hover:to-green-800 text-white')}
+                                        disabled={finalOfferTimeLeft === 0}
+                                    >
+                                        <a href="https://pay.kiwify.com.br/xxxxxxxx" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                                            <ShoppingCart className="h-6 w-6 shrink-0" />
+                                            <span className="leading-tight break-words">{finalOfferTimeLeft > 0 ? `Desbloquear agora – por R$${offerPriceFinal.toFixed(2).replace('.',',')}` : "OFERTA EXPIRADA"}</span>
+                                            <ExternalLink className="h-5 w-5 shrink-0" />
+                                        </a>
+                                    </Button>
+                                    <p className="text-xs text-yellow-200/80 mt-3">Acesso imediato. Garantia Incondicional de 7 Dias.</p>
+                                </div>
                             </div>
                         )}
                     </section>
-                  </div> 
+                  </>
                 )}
 
-            {isCodeUnlocked && (<>
-                <hr className="border-purple-700/30 my-10 md:my-14" />
-                <section id="decision-section" ref={registerSectionRef('decision-section')} className="animate-fade-in" style={{animationDelay: '0.2s'}} onMouseEnter={handleScrollLock}>
-                    <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-8 goddess-text-gradient">Sua Encruzilhada, {displayName}:</h2>
-                    <div className={cn("grid md:grid-cols-2 gap-6 md:gap-8 transition-opacity duration-500", isScrollLocked && "opacity-50 blur-sm scroll-lock-pulse")}>
-                        <Card className="bg-red-900/70 border-2 border-red-600 p-6 rounded-2xl">
-                            <CardHeader className="p-0 mb-3 text-center">
-                                <ThumbsDown className="h-10 w-10 text-red-300 mx-auto mb-2 shrink-0" />
-                                <CardTitle className="text-xl sm:text-2xl text-red-200">CONTINUAR COMO ESTÁ</CardTitle>
-                            </CardHeader>
-                            <ul className="space-y-2 text-red-200/90 text-sm sm:text-base">
-                                <li className="flex items-start"><XCircle className="h-5 w-5 text-red-400 mr-2 shrink-0 mt-0.5" /> Frustração constante com a falta de resultados.</li>
-                                <li className="flex items-start"><XCircle className="h-5 w-5 text-red-400 mr-2 shrink-0 mt-0.5" /> Sonhos como {dreamsText} parecendo impossíveis.</li>
-                                <li className="flex items-start"><XCircle className="h-5 w-5 text-red-400 mr-2 shrink-0 mt-0.5" /> Ciclos de autossabotagem e procrastinação.</li>
-                                <li className="flex items-start"><XCircle className="h-5 w-5 text-red-400 mr-2 shrink-0 mt-0.5" /> Ver outras pessoas conquistando e você não.</li>
-                                <li className="flex items-start"><XCircle className="h-5 w-5 text-red-400 mr-2 shrink-0 mt-0.5" /> Desperdício de energia e potencial.</li>
-                            </ul>
-                        </Card>
-                        <Card className="bg-green-900/70 border-2 border-green-600 p-6 rounded-2xl">
-                            <CardHeader className="p-0 mb-3 text-center">
-                                <ThumbsUp className="h-10 w-10 text-green-300 mx-auto mb-2 shrink-0" />
-                                <CardTitle className="text-xl sm:text-2xl text-green-200">VIRAR O JOGO AGORA</CardTitle>
-                            </CardHeader>
-                            <ul className="space-y-2 text-green-200/90 text-sm sm:text-base">
-                                <li className="flex items-start"><CheckCircle2 className="h-5 w-5 text-green-400 mr-2 shrink-0 mt-0.5" /> Desbloquear seu poder de manifestação real.</li>
-                                <li className="flex items-start"><CheckCircle2 className="h-5 w-5 text-green-400 mr-2 shrink-0 mt-0.5" /> Manifestar {dreamsText} {achievementDateText}.</li>
-                                <li className="flex items-start"><CheckCircle2 className="h-5 w-5 text-green-400 mr-2 shrink-0 mt-0.5" /> Reprogramar sua mente para o sucesso.</li>
-                                <li className="flex items-start"><CheckCircle2 className="h-5 w-5 text-green-400 mr-2 shrink-0 mt-0.5" /> Sentir-se confiante, capaz e merecedora.</li>
-                                <li className="flex items-start"><CheckCircle2 className="h-5 w-5 text-green-400 mr-2 shrink-0 mt-0.5" /> Viver a vida dos seus sonhos.</li>
-                            </ul>
-                        </Card>
-                    </div>
-                    <div className={cn("text-center mt-10 transition-opacity duration-1000", isScrollLocked ? "opacity-0" : "opacity-100 animate-fade-in")} style={{animationDelay: isScrollLocked ? '0s' : '2s'}}>
-                        <Button onClick={() => document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth' })} size="lg" className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-700 hover:via-pink-700 hover:to-red-700 text-white font-bold text-lg sm:text-xl py-4 px-10 rounded-xl shadow-2xl animate-intense-pulse h-auto whitespace-normal text-center">
-                            <Rocket className="mr-2 h-6 w-6 shrink-0" /> EU DECIDO VIRAR O JOGO!
-                        </Button>
-                    </div>
-                </section>
-
-                <hr className="border-purple-700/30 my-10 md:my-14" />
-                
-                <section id="final-cta-section" ref={registerSectionRef('final-cta-section')} className="animate-fade-in bg-black/80 rounded-3xl p-8 sm:p-12 text-center border-t-4 border-accent" style={{animationDelay: '0.4s'}}>
-                    <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-yellow-300 mb-6">É agora ou você vai continuar patinando, {displayName}?</h2>
-                    <p className="text-lg sm:text-xl text-purple-200/90 mb-8 max-w-xl mx-auto">A cada segundo de hesitação, você adia a vida extraordinária que MERECE. Outras mulheres estão desbloqueando seus códigos AGORA.</p>
+            <hr className="border-purple-700/30 my-10 md:my-14" />
+            <section id="decision-section" ref={registerSectionRef('decision-section')} className="animate-fade-in" style={{animationDelay: '0.2s'}} onMouseEnter={handleScrollLock}>
+                <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-8 goddess-text-gradient">Sua Encruzilhada, {displayName}:</h2>
+                <div className={cn("grid md:grid-cols-2 gap-6 md:gap-8 transition-opacity duration-500", isScrollLocked && "opacity-50 blur-sm scroll-lock-pulse")}>
+                    <Card className="bg-red-900/70 border-2 border-red-600 p-6 rounded-2xl">
+                        <CardHeader className="p-0 mb-3 text-center">
+                            <ThumbsDown className="h-10 w-10 text-red-300 mx-auto mb-2 shrink-0" />
+                            <CardTitle className="text-xl sm:text-2xl text-red-200">CONTINUAR COMO ESTÁ</CardTitle>
+                        </CardHeader>
+                        <ul className="space-y-2 text-red-200/90 text-sm sm:text-base">
+                            <li className="flex items-start"><XCircle className="h-5 w-5 text-red-400 mr-2 shrink-0 mt-0.5" /> Frustração constante com a falta de resultados.</li>
+                            <li className="flex items-start"><XCircle className="h-5 w-5 text-red-400 mr-2 shrink-0 mt-0.5" /> Sonhos como {dreamsText} parecendo impossíveis.</li>
+                            <li className="flex items-start"><XCircle className="h-5 w-5 text-red-400 mr-2 shrink-0 mt-0.5" /> Ciclos de autossabotagem e procrastinação.</li>
+                            <li className="flex items-start"><XCircle className="h-5 w-5 text-red-400 mr-2 shrink-0 mt-0.5" /> Ver outras pessoas conquistando e você não.</li>
+                            <li className="flex items-start"><XCircle className="h-5 w-5 text-red-400 mr-2 shrink-0 mt-0.5" /> Desperdício de energia e potencial.</li>
+                        </ul>
+                    </Card>
+                    <Card className="bg-green-900/70 border-2 border-green-600 p-6 rounded-2xl">
+                        <CardHeader className="p-0 mb-3 text-center">
+                            <ThumbsUp className="h-10 w-10 text-green-300 mx-auto mb-2 shrink-0" />
+                            <CardTitle className="text-xl sm:text-2xl text-green-200">VIRAR O JOGO AGORA</CardTitle>
+                        </CardHeader>
+                        <ul className="space-y-2 text-green-200/90 text-sm sm:text-base">
+                            <li className="flex items-start"><CheckCircle2 className="h-5 w-5 text-green-400 mr-2 shrink-0 mt-0.5" /> Desbloquear seu poder de manifestação real.</li>
+                            <li className="flex items-start"><CheckCircle2 className="h-5 w-5 text-green-400 mr-2 shrink-0 mt-0.5" /> Manifestar {dreamsText} {achievementDateText}.</li>
+                            <li className="flex items-start"><CheckCircle2 className="h-5 w-5 text-green-400 mr-2 shrink-0 mt-0.5" /> Reprogramar sua mente para o sucesso.</li>
+                            <li className="flex items-start"><CheckCircle2 className="h-5 w-5 text-green-400 mr-2 shrink-0 mt-0.5" /> Sentir-se confiante, capaz e merecedora.</li>
+                            <li className="flex items-start"><CheckCircle2 className="h-5 w-5 text-green-400 mr-2 shrink-0 mt-0.5" /> Viver a vida dos seus sonhos.</li>
+                        </ul>
+                    </Card>
+                </div>
+                <div className={cn("text-center mt-10 transition-opacity duration-1000", isScrollLocked ? "opacity-0" : "opacity-100 animate-fade-in")} style={{animationDelay: isScrollLocked ? '0s' : '2s'}}>
                     <Button onClick={() => {
-                        const finalPurchaseButton = document.getElementById('final-purchase-cta-button');
-                        if (finalPurchaseButton) {
-                            finalPurchaseButton.scrollIntoView({behavior: 'smooth', block: 'center'});
-                            // Optionally, trigger a click if it's a direct link or a focus
-                            // (finalPurchaseButton.querySelector('a') as HTMLElement)?.click(); 
+                        const ctaSection = document.getElementById('final-purchase-cta-section');
+                        if (ctaSection) {
+                            ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         } else {
-                             document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth' });
+                             document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
-                    }} 
-                    size="lg" className="goddess-gradient text-primary-foreground font-extrabold text-xl sm:text-2xl py-4 sm:py-5 px-10 sm:px-12 rounded-xl shadow-2xl animate-subtle-vibration hover:shadow-accent/50 transform hover:scale-105 transition-all h-auto whitespace-normal text-center">
-                        CLIQUE AQUI E TRANSFORME SUA VIDA!
+                    }} size="lg" className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-700 hover:via-pink-700 hover:to-red-700 text-white font-bold text-lg sm:text-xl py-4 px-10 rounded-xl shadow-2xl animate-intense-pulse h-auto whitespace-normal text-center">
+                        <Rocket className="mr-2 h-6 w-6 shrink-0" /> EU DECIDO VIRAR O JOGO!
                     </Button>
-                    <p className="text-sm text-muted-foreground mt-4 animate-subtle-pulse" style={{animationDelay: '1s'}}>+9 mulheres desbloqueando seus códigos neste exato momento...</p>
-                </section>
-            </>)}
+                </div>
+            </section>
+
+            <hr className="border-purple-700/30 my-10 md:my-14" />
+            
+            <section id="final-cta-section" ref={registerSectionRef('final-cta-section')} className="animate-fade-in bg-black/80 rounded-3xl p-8 sm:p-12 text-center border-t-4 border-accent" style={{animationDelay: '0.4s'}}>
+                <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-yellow-300 mb-6">É agora ou você vai continuar patinando, {displayName}?</h2>
+                <p className="text-lg sm:text-xl text-purple-200/90 mb-8 max-w-xl mx-auto">A cada segundo de hesitação, você adia a vida extraordinária que MERECE. Outras mulheres estão desbloqueando seus códigos AGORA.</p>
+                <Button onClick={() => {
+                    const finalPurchaseSection = document.getElementById('final-purchase-cta-section'); // This ID is now inside Bloco 19
+                    if (finalPurchaseSection) {
+                        finalPurchaseSection.scrollIntoView({behavior: 'smooth', block: 'center'});
+                        // We might need to ensure the 'final-touch-section' is also visible if the purchase button is nested.
+                        // This logic might need a check: if isCodeUnlocked is false, first click handleUnlockCode.
+                        if (!isCodeUnlocked) {
+                            handleUnlockCode(); // Trigger the unlock sequence
+                        } else {
+                             const purchaseButtonLink = finalPurchaseSection.querySelector('a');
+                             if(purchaseButtonLink) purchaseButtonLink.click();
+                        }
+                    } else {
+                        // Fallback: If direct purchase section not found (e.g. code not unlocked yet),
+                        // scroll to the "Toque Final" button that initiates the unlock.
+                        document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }} 
+                size="lg" className="goddess-gradient text-primary-foreground font-extrabold text-xl sm:text-2xl py-4 sm:py-5 px-10 sm:px-12 rounded-xl shadow-2xl animate-subtle-vibration hover:shadow-accent/50 transform hover:scale-105 transition-all h-auto whitespace-normal text-center">
+                    CLIQUE AQUI E TRANSFORME SUA VIDA!
+                </Button>
+                <p className="text-sm text-muted-foreground mt-4 animate-subtle-pulse" style={{animationDelay: '1s'}}>+9 mulheres desbloqueando seus códigos neste exato momento...</p>
+            </section>
+
 
             <section className="text-center py-8" style={{animationDelay: '0.7s'}}>
                 <AlertDialog open={showRecusePopup} onOpenChange={setShowRecusePopup}>
@@ -942,22 +973,17 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 </AlertDialog>
             </section>
 
-            {/* MOVED SECTION: R$47 Final Offer Reveal Card */}
-            {isPriceRevealed && (
-              <section id="final-offer-reveal-card-moved" ref={registerSectionRef('final-offer-reveal-card-moved')} className="w-full animate-fade-in" style={{animationDelay: '0.5s'}}>
-                <hr className="border-purple-700/30 my-10 md:my-14" />
-                {finalOfferRevealCardContent}
-              </section>
-            )}
-
         </main>
 
         <div className="fixed bottom-0 left-0 right-0 md:hidden bg-black/80 backdrop-blur-sm p-3 border-t border-purple-700/50 z-50 shadow-2xl animate-fade-in animate-subtle-vibration" style={{animationDelay: '3s'}}>
             <Button 
                 onClick={() => {
-                    const targetId = isCodeUnlocked 
-                        ? 'final-purchase-cta-button' 
-                        : (isPriceRevealed ? 'final-touch-section' : 'price-anchor-section');
+                    let targetId = 'price-anchor-section'; // Default if nothing else is revealed/unlocked
+                    if (isCodeUnlocked) {
+                        targetId = 'final-purchase-cta-section';
+                    } else if (isPriceRevealed) {
+                        targetId = 'final-touch-section'; // Go to the magic button
+                    }
                     const targetElement = document.getElementById(targetId);
                     if (targetElement) {
                         targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -982,3 +1008,6 @@ const formatUserDreams = (dreams?: DreamOption[]): string => {
   const initialDreams = dreams.slice(0, -1).map(d => d.label.toLowerCase()).join(', ');
   return `${initialDreams} e ${lastDream}`;
 };
+
+
+    
