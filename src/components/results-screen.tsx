@@ -285,14 +285,22 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       idealPercentage: 50,
       missingForIdeal: " Clareza sobre seus bloqueios mais profundos e ferramentas eficazes para transmutá-los em poder de manifestação."
   };
-
+  const { toast } = useToast();
   const [gamifiedPercentage, setGamifiedPercentage] = useState(currentAnalysisResult.idealPercentage);
   const [currentDreamNotificationIndex, setCurrentDreamNotificationIndex] = useState(0);
-  const { toast } = useToast();
-
+  
   useEffect(() => {
     setGamifiedPercentage(currentAnalysisResult.idealPercentage);
   }, [currentAnalysisResult.idealPercentage]);
+
+  const showProgressNotification = useCallback((newPercentage: number) => {
+    toast({
+      title: "🌟 Progresso Desbloqueado! 🌟",
+      description: `Seu alinhamento subiu para ${newPercentage}%! Você está cada vez mais perto de manifestar seus sonhos.`,
+      duration: 3500,
+    });
+    playSound('progress_increase.mp3');
+  }, [toast]);
 
   const showDreamNotification = useCallback(() => {
     if (userDreams && userDreams.length > 0) {
@@ -311,15 +319,18 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   }, [userDreams, currentDreamNotificationIndex, toast]);
 
 
-  const conditionallyIncrementPercentage = (increment: number, capBeforeIncrement?: number) => {
+  const conditionallyIncrementPercentage = useCallback((increment: number, capBeforeIncrement?: number) => {
     setGamifiedPercentage(prev => {
       if (capBeforeIncrement !== undefined && prev >= capBeforeIncrement) {
         return Math.min(100, prev); 
       }
-      const newValue = prev + increment;
-      return Math.min(100, newValue);
+      const newValue = Math.min(100, prev + increment);
+      if (newValue > prev) {
+        showProgressNotification(newValue);
+      }
+      return newValue;
     });
-  };
+  }, [setGamifiedPercentage, showProgressNotification]);
 
   const analysisCards = analysisCardsData(currentAnalysisResult);
 
@@ -416,7 +427,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   }, [finalOfferTimeLeft, isPriceRevealed]);
 
 
-  const handleRevealPrice = () => {
+  const handleRevealPrice = useCallback(() => {
     setIsPriceRevealed(true);
     playSound('dream_select.mp3');
     setFinalOfferTimeLeft(finalOfferTimerInitial);
@@ -425,9 +436,9 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     setTimeout(() => { 
         document.getElementById('map-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
-  };
+  }, [conditionallyIncrementPercentage, showDreamNotification]);
   
-  const handleUnlockCode = () => {
+  const handleUnlockCode = useCallback(() => {
     setIsUnlockingCode(true);
     playSound('feedback_show.mp3'); 
     if (unlockingTimeoutRef.current) clearTimeout(unlockingTimeoutRef.current);
@@ -436,6 +447,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       setIsCodeUnlocked(true);
       playSound('form_complete.mp3');
       setGamifiedPercentage(95); 
+      showProgressNotification(95);
       showDreamNotification();
       
       requestAnimationFrame(() => {
@@ -447,7 +459,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         }, 50); 
       });
     }, 3000);
-  };
+  }, [showDreamNotification, showProgressNotification]);
   
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -461,6 +473,13 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     if (percentage <= 75) return "bg-yellow-400";
     return "bg-green-500";
   };
+
+  const handlePrimaryCTAClick = useCallback((targetSectionId: string, percentageIncrement: number, cap?: number) => {
+    document.getElementById(targetSectionId)?.scrollIntoView({ behavior: 'smooth' });
+    conditionallyIncrementPercentage(percentageIncrement, cap);
+    showDreamNotification();
+  }, [conditionallyIncrementPercentage, showDreamNotification]);
+
 
   if (analysisError && !analysisResult) { 
       return (
@@ -544,11 +563,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 </div>
                 
                 <Button 
-                    onClick={() => {
-                        document.getElementById('offer-start-section')?.scrollIntoView({ behavior: 'smooth' });
-                        conditionallyIncrementPercentage(10, 40);
-                        showDreamNotification();
-                    }} 
+                    onClick={() => handlePrimaryCTAClick('offer-start-section', 10, 40)}
                     className="goddess-gradient text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-pulse-goddess h-auto whitespace-normal text-center leading-normal"
                 >
                     <Unlock className="mr-2 h-5 w-5 shrink-0" /> ENTENDI MEUS BLOQUEIOS, QUERO A SOLUÇÃO!
@@ -594,10 +609,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 </div>
                 <div className="text-center mt-10">
                      <Button 
-                        onClick={() => {
-                            document.getElementById('who-its-for-section')?.scrollIntoView({ behavior: 'smooth' });
-                            conditionallyIncrementPercentage(10, 55);
-                        }} 
+                        onClick={() => handlePrimaryCTAClick('who-its-for-section', 10, 55)}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal"
                     >
                         <Group className="mr-2 h-5 w-5 shrink-0" /> ISSO É PARA MIM?
@@ -666,11 +678,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 </div>
                  <div className="text-center mt-10">
                     <Button 
-                        onClick={() => {
-                            document.getElementById('price-anchor-section')?.scrollIntoView({ behavior: 'smooth' });
-                            conditionallyIncrementPercentage(10, 65);
-                            showDreamNotification();
-                        }} 
+                        onClick={() => handlePrimaryCTAClick('price-anchor-section', 10, 65)}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal"
                     >
                         <Gift className="mr-2 h-5 w-5 shrink-0" /> QUERO MINHA TRANSFORMAÇÃO AGORA!
@@ -970,7 +978,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             </div>
                         )}
                         
-                        <div id="final-purchase-cta-section" className={cn(isCodeUnlocked ? "animate-pop-in" : "")}>
+                        <div id="final-purchase-cta-section" className={cn(isCodeUnlocked ? "animate-pop-in" : "hidden")}>
                             {isCodeUnlocked && (
                                 <div className="space-y-6 mt-8">
                                     <p className="text-purple-200/90 text-lg sm:text-xl whitespace-pre-line">
@@ -1014,6 +1022,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                             size="lg"
                                             onClick={() => {
                                                 setGamifiedPercentage(100);
+                                                showProgressNotification(100);
                                                 playSound('form_complete.mp3');
                                             }}
                                             className={cn(`w-full max-w-md mx-auto font-headline text-base sm:text-lg md:text-xl px-6 py-7 rounded-xl shadow-2xl transform hover:scale-105 transition-transform duration-200 pulse-goddess whitespace-normal text-center h-auto leading-normal`,
@@ -1141,7 +1150,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 </Button>
                 <p className="text-sm text-muted-foreground mt-4 animate-subtle-pulse" style={{animationDelay: '1s'}}>+9 mulheres desbloqueando seus códigos neste exato momento...</p>
             </section>
-
 
             <section className="text-center py-8" style={{animationDelay: '0.7s'}}>
                 <AlertDialog open={showRecusePopup} onOpenChange={setShowRecusePopup}>
