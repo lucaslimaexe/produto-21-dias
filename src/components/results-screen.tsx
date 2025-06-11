@@ -60,6 +60,18 @@ const storyTestimonialsData = [
   { id: 4, name: "Laura B.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman happy", message: "“Eu nunca pensei que alguém pudesse me destravar assim…”" },
 ];
 
+const dreamNotificationMap: Record<string, string> = {
+  financial_freedom: "💰 O universo está alinhando novas fontes de renda para você!",
+  dream_house: "🏡 A energia da sua casa dos sonhos está se aproximando...",
+  travel_world: "✈️ Novas aventuras e destinos estão se abrindo no seu caminho!",
+  new_car: "🚗 Sinta a vibração do seu novo carro chegando...",
+  soul_mate: "💖 Uma conexão especial está mais perto do que você imagina...",
+  successful_business: "📈 Seu negócio está prestes a alcançar um novo patamar!",
+  inner_peace: "🧘‍♀️ Uma onda de calma e clareza está vindo em sua direção...",
+  health_wellness: "🌿 Sinta sua vitalidade e bem-estar se expandindo...",
+  creative_expression: "🎨 Sua inspiração criativa está fluindo abundantemente...",
+  personal_growth: "🚀 Você está evoluindo e se tornando sua melhor versão...",
+};
 
 const analysisCardsData = (analysisResult?: BehavioralAnalysisData) => {
     if (!analysisResult) return [];
@@ -250,7 +262,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const [priceCardVacancies, setPriceCardVacancies] = useState(3);
   
   const [showRecusePopup, setShowRecusePopup] = useState(false);
-  const [isScrollLocked, setIsScrollLocked] = useState(false);
   
   const finalOfferTimerInitial = 2 * 60; 
   const [finalOfferTimeLeft, setFinalOfferTimeLeft] = useState(finalOfferTimerInitial);
@@ -276,10 +287,29 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   };
 
   const [gamifiedPercentage, setGamifiedPercentage] = useState(currentAnalysisResult.idealPercentage);
+  const [currentDreamNotificationIndex, setCurrentDreamNotificationIndex] = useState(0);
+  const { toast } = useToast();
 
   useEffect(() => {
     setGamifiedPercentage(currentAnalysisResult.idealPercentage);
   }, [currentAnalysisResult.idealPercentage]);
+
+  const showDreamNotification = useCallback(() => {
+    if (userDreams && userDreams.length > 0) {
+      const currentDream = userDreams[currentDreamNotificationIndex];
+      const message = dreamNotificationMap[currentDream.id] || `Sua manifestação de '${currentDream.label}' está mais próxima! ✨`;
+      
+      toast({
+        title: "🌌 Mensagem do Universo 🌌",
+        description: message,
+        duration: 4500, 
+      });
+      playSound('notification_light.mp3'); 
+
+      setCurrentDreamNotificationIndex((prevIndex) => (prevIndex + 1) % userDreams.length);
+    }
+  }, [userDreams, currentDreamNotificationIndex, toast]);
+
 
   const conditionallyIncrementPercentage = (increment: number, capBeforeIncrement?: number) => {
     setGamifiedPercentage(prev => {
@@ -391,6 +421,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     playSound('dream_select.mp3');
     setFinalOfferTimeLeft(finalOfferTimerInitial);
     conditionallyIncrementPercentage(10, 75); 
+    showDreamNotification();
     setTimeout(() => { 
         document.getElementById('map-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
@@ -405,6 +436,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       setIsCodeUnlocked(true);
       playSound('form_complete.mp3');
       setGamifiedPercentage(95); 
+      showDreamNotification();
       
       requestAnimationFrame(() => {
         setTimeout(() => {
@@ -415,15 +447,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         }, 50); 
       });
     }, 3000);
-  };
-  
-  const handleScrollLock = () => {
-    setIsScrollLocked(true);
-    document.body.style.overflow = 'hidden';
-    setTimeout(() => {
-      setIsScrollLocked(false);
-      document.body.style.overflow = 'auto';
-    }, 2000);
   };
   
   const formatTime = (seconds: number) => {
@@ -460,7 +483,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   ];
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center pt-16 sm:pt-20 pb-28 bg-gradient-to-br from-purple-950 via-black to-red-950 text-foreground overflow-x-hidden">
+    <div className="min-h-screen w-full flex flex-col items-center pt-16 sm:pt-20 pb-12 bg-gradient-to-br from-purple-950 via-black to-red-950 text-foreground overflow-x-hidden">
         <header className="fixed top-0 left-0 right-0 z-50 h-2 sm:h-3 bg-slate-800/60 backdrop-blur-sm shadow-lg border-b border-purple-700/30">
             <div
                 className="h-full bg-gradient-to-r from-accent via-pink-500 to-primary transition-all duration-150 ease-linear"
@@ -524,6 +547,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     onClick={() => {
                         document.getElementById('offer-start-section')?.scrollIntoView({ behavior: 'smooth' });
                         conditionallyIncrementPercentage(10, 40);
+                        showDreamNotification();
                     }} 
                     className="goddess-gradient text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-pulse-goddess h-auto whitespace-normal text-center leading-normal"
                 >
@@ -645,6 +669,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         onClick={() => {
                             document.getElementById('price-anchor-section')?.scrollIntoView({ behavior: 'smooth' });
                             conditionallyIncrementPercentage(10, 65);
+                            showDreamNotification();
                         }} 
                         className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal"
                     >
@@ -945,9 +970,9 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             </div>
                         )}
                         
-                        <div id="final-purchase-cta-section">
+                        <div id="final-purchase-cta-section" className={cn(isCodeUnlocked ? "animate-pop-in" : "")}>
                             {isCodeUnlocked && (
-                                <div className="animate-pop-in space-y-6 mt-8">
+                                <div className="space-y-6 mt-8">
                                     <p className="text-purple-200/90 text-lg sm:text-xl whitespace-pre-line">
                                         Sim ou não.{"\n"}
                                         Agora ou nunca.{"\n"}
@@ -1049,7 +1074,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
             <section id="decision-section" ref={registerSectionRef('decision-section')} className="animate-fade-in" style={{animationDelay: '0.2s'}}>
                 <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-8 goddess-text-gradient">Sua Encruzilhada, {displayName}:</h2>
-                <div className={cn("grid md:grid-cols-2 gap-6 md:gap-8 transition-opacity duration-500", isScrollLocked && "opacity-50 blur-sm scroll-lock-pulse")}>
+                <div className={cn("grid md:grid-cols-2 gap-6 md:gap-8 transition-opacity duration-500")}>
                     <Card className="bg-red-900/70 border-2 border-red-600 p-6 rounded-2xl h-full">
                         <CardHeader className="p-0 mb-3 text-center">
                             <ThumbsDown className="h-10 w-10 text-red-300 mx-auto mb-2 shrink-0" />
@@ -1077,7 +1102,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         </ul>
                     </Card>
                 </div>
-                <div className={cn("text-center mt-10 transition-opacity duration-1000", isScrollLocked ? "opacity-0" : "opacity-100 animate-fade-in")} style={{animationDelay: isScrollLocked ? '0s' : '2s'}}>
+                <div className={cn("text-center mt-10 transition-opacity duration-1000 opacity-100 animate-fade-in")} style={{animationDelay: '2s'}}>
                     <Button onClick={() => {
                         const ctaSection = document.getElementById('final-purchase-cta-section');
                         if (ctaSection) {
@@ -1154,5 +1179,4 @@ const formatUserDreams = (dreams?: DreamOption[]): string => {
   return `${initialDreams} e ${lastDream}`;
 };
 
-    
     
