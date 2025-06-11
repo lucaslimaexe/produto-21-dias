@@ -73,6 +73,10 @@ const dreamNotificationMap: Record<string, string> = {
   personal_growth: "🚀 Você está evoluindo e se tornando sua melhor versão...",
 };
 
+const fakeUserNames = ["Ana", "Beatriz", "Camila", "Daniela", "Eduarda", "Fernanda", "Gabriela", "Helena", "Isabela", "Juliana", "Larissa", "Mariana", "Natália", "Olivia", "Patrícia", "Quintia", "Rafaela", "Sofia", "Tatiana", "Valentina", "Laura", "Alice", "Clara", "Elisa", "Yasmin"];
+const fakeUserCities = ["São Paulo", "Rio de Janeiro", "Belo Horizonte", "Salvador", "Fortaleza", "Curitiba", "Manaus", "Recife", "Porto Alegre", "Goiânia", "Belém", "Brasília", "Florianópolis", "Vitória", "Natal", "João Pessoa", "Maceió", "Teresina", "Campo Grande", "Cuiabá"];
+
+
 const analysisCardsData = (analysisResult?: BehavioralAnalysisData) => {
     if (!analysisResult) return [];
     const summarySentences = analysisResult.summary.split('. ').filter(s => s.length > 10);
@@ -126,7 +130,7 @@ const majorSectionIds = [
   'final-touch-section',
   'faq-section',
   'decision-section',
-  'final-cta-section',
+  'final-purchase-cta-section', // Adicionado para o caso de scroll direto para o CTA final
 ];
 
 
@@ -268,11 +272,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const [isPriceRevealed, setIsPriceRevealed] = useState(false);
   const [isFinalOfferTimerBlinking, setIsFinalOfferTimerBlinking] = useState(false);
 
-  const [isUnlockingCode, setIsUnlockingCode] = useState(false);
   const [isCodeUnlocked, setIsCodeUnlocked] = useState(false);
-  const unlockingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
+  
   const [selectedVisionCard, setSelectedVisionCard] = useState<string | null>(null);
+  const [socialProofIntervalId, setSocialProofIntervalId] = useState<NodeJS.Timeout | null>(null);
   
   const displayName = userName || "Querida Deusa";
   const dreamsText = userDreams && userDreams.length > 0 ? formatUserDreams(userDreams) : "seus maiores sonhos";
@@ -317,6 +320,50 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       setCurrentDreamNotificationIndex((prevIndex) => (prevIndex + 1) % userDreams.length);
     }
   }, [userDreams, currentDreamNotificationIndex, toast]);
+
+  const showSocialProofNotification = useCallback(() => {
+    const randomName = fakeUserNames[Math.floor(Math.random() * fakeUserNames.length)];
+    const randomCity = fakeUserCities[Math.floor(Math.random() * fakeUserCities.length)];
+    const messages = [
+      `✨ ${randomName} de ${randomCity} acabou de desbloquear seu Código da Deusa!`,
+      `🎉 Mais uma Deusa Iluminada! ${randomName} (${randomCity}) iniciou sua transformação.`,
+      `🗝️ ${randomName} de ${randomCity} deu o primeiro passo para a sua nova realidade!`,
+      `🚀 ${randomName} (${randomCity}) está decolando com o Código da Deusa!`
+    ];
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+
+    toast({
+      title: "⚡ Conexão Universal ⚡",
+      description: randomMessage,
+      duration: 5000,
+    });
+    playSound('new_purchase_subtle.mp3');
+  }, [toast]);
+
+  useEffect(() => {
+    const startInterval = () => {
+      // Clear any existing interval first
+      if (socialProofIntervalId) {
+        clearInterval(socialProofIntervalId);
+      }
+      // Set a new interval with a random delay
+      const randomDelay = Math.random() * (45000 - 15000) + 15000; // Between 15s and 45s
+      const newId = setInterval(() => {
+        showSocialProofNotification();
+      }, randomDelay);
+      setSocialProofIntervalId(newId);
+    };
+  
+    startInterval(); // Start on mount
+  
+    // This will run when the component unmounts or before re-running due to dependency changes (though showSocialProofNotification is stable)
+    return () => {
+      if (socialProofIntervalId) {
+        clearInterval(socialProofIntervalId);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showSocialProofNotification]); // Re-run if showSocialProofNotification changes (it shouldn't due to useCallback)
 
 
   const conditionallyIncrementPercentage = useCallback((increment: number, capBeforeIncrement?: number) => {
@@ -391,7 +438,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     return () => {
       window.removeEventListener('scroll', handleScroll);
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-      if (unlockingTimeoutRef.current) clearTimeout(unlockingTimeoutRef.current);
     };
   }, [pageScrollProgress]); 
   
@@ -433,32 +479,28 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     setFinalOfferTimeLeft(finalOfferTimerInitial);
     conditionallyIncrementPercentage(10, 75); 
     showDreamNotification();
-    setTimeout(() => { 
-        document.getElementById('map-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
+    requestAnimationFrame(() => {
+        setTimeout(() => { 
+            document.getElementById('map-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 50);
+    });
   }, [conditionallyIncrementPercentage, showDreamNotification]);
   
   const handleUnlockCode = useCallback(() => {
-    setIsUnlockingCode(true);
-    playSound('feedback_show.mp3'); 
-    if (unlockingTimeoutRef.current) clearTimeout(unlockingTimeoutRef.current);
-    unlockingTimeoutRef.current = setTimeout(() => {
-      setIsUnlockingCode(false);
-      setIsCodeUnlocked(true);
-      playSound('form_complete.mp3');
-      setGamifiedPercentage(95); 
-      showProgressNotification(95);
-      showDreamNotification();
-      
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-            const ctaSection = document.getElementById('final-purchase-cta-section');
-            if (ctaSection) {
-                 ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 50); 
-      });
-    }, 3000);
+    setIsCodeUnlocked(true); // Reveal content immediately
+    playSound('form_complete.mp3');
+    setGamifiedPercentage(95); 
+    showProgressNotification(95);
+    showDreamNotification();
+    
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+          const ctaSection = document.getElementById('final-purchase-cta-section');
+          if (ctaSection) {
+               ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+      }, 50); 
+    });
   }, [showDreamNotification, showProgressNotification]);
   
   const formatTime = (seconds: number) => {
@@ -475,7 +517,12 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   };
 
   const handlePrimaryCTAClick = useCallback((targetSectionId: string, percentageIncrement: number, cap?: number) => {
-    document.getElementById(targetSectionId)?.scrollIntoView({ behavior: 'smooth' });
+    const element = document.getElementById(targetSectionId);
+    if (element) {
+        requestAnimationFrame(() => {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    }
     conditionallyIncrementPercentage(percentageIncrement, cap);
     showDreamNotification();
   }, [conditionallyIncrementPercentage, showDreamNotification]);
@@ -584,7 +631,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                  </p>
                 <Button 
                     onClick={() => {
-                        document.getElementById('modules-section')?.scrollIntoView({ behavior: 'smooth' });
+                        const element = document.getElementById('modules-section');
+                        if (element) requestAnimationFrame(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }));
                     }} 
                     variant="outline" 
                     className="border-accent text-accent hover:bg-accent/20 hover:text-yellow-300 font-semibold text-md sm:text-lg py-2.5 px-6 rounded-lg animate-fade-in animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal" style={{animationDelay: '1.2s'}}
@@ -650,7 +698,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                  <div className="text-center mt-10">
                     <Button 
                         onClick={() => {
-                            document.getElementById('testimonials-section')?.scrollIntoView({ behavior: 'smooth' });
+                            const element = document.getElementById('testimonials-section');
+                            if (element) requestAnimationFrame(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }));
                         }} 
                         className="goddess-gradient text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal"
                     >
@@ -744,7 +793,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             Ou se dar a chance de descobrir quem você teria sido se ninguém tivesse te quebrado.
                         </p>
                         <div className="text-center mt-10">
-                            <Button onClick={() => document.getElementById('before-after-section')?.scrollIntoView({ behavior: 'smooth' })} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal">
+                            <Button onClick={() => {
+                                const element = document.getElementById('before-after-section');
+                                if (element) requestAnimationFrame(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                                }} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal">
                                 <Eye className="mr-2 h-5 w-5" /> VER O ANTES E DEPOIS
                             </Button>
                         </div>
@@ -791,7 +843,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         </div>
                        
                         <div className="text-center mt-10">
-                            <Button onClick={() => document.getElementById('vision-section')?.scrollIntoView({ behavior: 'smooth' })} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal">
+                            <Button onClick={() => {
+                                const element = document.getElementById('vision-section');
+                                if (element) requestAnimationFrame(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                                }} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal">
                             <LucideSparkles className="mr-2 h-5 w-5" /> ATIVAR MINHA VISÃO DE VIDA
                             </Button>
                         </div>
@@ -832,7 +887,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             E aceitar o convite.
                         </p>
                         <div className="text-center mt-10">
-                            <Button onClick={() => document.getElementById('shield-section')?.scrollIntoView({ behavior: 'smooth' })} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal">
+                            <Button onClick={() => {
+                                const element = document.getElementById('shield-section');
+                                if (element) requestAnimationFrame(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                                }} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal">
                             <ShieldCheck className="mr-2 h-5 w-5" /> VER MINHA GARANTIA TOTAL
                             </Button>
                         </div>
@@ -905,7 +963,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         </Card>
 
                         <div className="text-center mt-10">
-                            <Button onClick={() => document.getElementById('moving-testimonials-section')?.scrollIntoView({ behavior: 'smooth' })} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal">
+                            <Button onClick={() => {
+                                const element = document.getElementById('moving-testimonials-section');
+                                if (element) requestAnimationFrame(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                                }} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal">
                             <MessageCircle className="mr-2 h-5 w-5" /> OUVIR QUEM JÁ VIVEU ISSO
                             </Button>
                         </div>
@@ -935,7 +996,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     </div>
                     <div className="text-center mt-10">
                         <Button 
-                        onClick={() => document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth' })} 
+                        onClick={() => {
+                             const element = document.getElementById('final-touch-section');
+                             if (element) requestAnimationFrame(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                            }} 
                         className="goddess-gradient text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal"
                         >
                         <LucideSparkles className="mr-2 h-5 w-5 shrink-0" /> ESTOU PRONTA PARA O TOQUE FINAL!
@@ -946,7 +1010,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     <hr className="border-purple-700/30 my-10 md:my-14" />
                    
                     <section id="final-touch-section" ref={registerSectionRef('final-touch-section')} className="animate-fade-in py-10 md:py-16 text-center" style={{animationDelay: '1.2s'}}>
-                        {!isCodeUnlocked && !isUnlockingCode && (
+                        {!isCodeUnlocked && (
                             <>
                                 <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-yellow-300 mb-6 whitespace-pre-line">
                                     Você pode voltar pra sua vida.{"\n"}
@@ -969,13 +1033,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                     DESBLOQUEAR MEU CÓDIGO PESSOAL
                                 </Button>
                             </>
-                        )}
-
-                        {isUnlockingCode && (
-                            <div className="flex flex-col items-center justify-center h-24 py-6">
-                                <Loader2 className="h-12 w-12 text-primary animate-spin mb-3" />
-                                <p className="text-lg text-purple-300 font-semibold">Desbloqueando seu código pessoal...</p>
-                            </div>
                         )}
                         
                         <div id="final-purchase-cta-section" className={cn(isCodeUnlocked ? "animate-pop-in" : "hidden")}>
@@ -1067,8 +1124,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                              if (isCodeUnlocked) {
                                 targetId = 'final-purchase-cta-section';
                             }
-                            document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                             if (targetId === 'final-touch-section' && !isCodeUnlocked && !isUnlockingCode) {
+                            const element = document.getElementById(targetId);
+                            if (element) requestAnimationFrame(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+
+                             if (targetId === 'final-touch-section' && !isCodeUnlocked) {
                                 handleUnlockCode();
                             }
                         }}
@@ -1115,9 +1174,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     <Button onClick={() => {
                         const ctaSection = document.getElementById('final-purchase-cta-section');
                         if (ctaSection) {
-                            ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            requestAnimationFrame(() => ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' }));
                         } else {
-                             document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                             const finalTouch = document.getElementById('final-touch-section');
+                             if (finalTouch) requestAnimationFrame(() => finalTouch.scrollIntoView({ behavior: 'smooth', block: 'center' }));
                         }
                     }} size="lg" className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-700 hover:via-pink-700 hover:to-red-700 text-white font-bold text-lg sm:text-xl py-4 px-10 rounded-xl shadow-2xl animate-intense-pulse h-auto whitespace-normal text-center leading-normal">
                         <Rocket className="mr-2 h-6 w-6 shrink-0" /> EU DECIDO VIRAR O JOGO!
@@ -1132,17 +1192,18 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 <p className="text-lg sm:text-xl text-purple-200/90 mb-8 max-w-xl mx-auto">A cada segundo de hesitação, você adia a vida extraordinária que MERECE. Outras mulheres estão desbloqueando seus códigos AGORA.</p>
                 <Button onClick={() => {
                     const finalPurchaseSection = document.getElementById('final-purchase-cta-section'); 
-                    if (finalPurchaseSection) {
-                        finalPurchaseSection.scrollIntoView({behavior: 'smooth', block: 'center'});
-                        if (!isCodeUnlocked) {
-                            handleUnlockCode(); 
-                        } else {
-                             const purchaseButtonLink = finalPurchaseSection.querySelector('a');
-                             if(purchaseButtonLink) purchaseButtonLink.click();
-                        }
+                    if (finalPurchaseSection && isCodeUnlocked) {
+                        requestAnimationFrame(() => {
+                            finalPurchaseSection.scrollIntoView({behavior: 'smooth', block: 'center'});
+                            const purchaseButtonLink = finalPurchaseSection.querySelector('a');
+                            if(purchaseButtonLink && finalOfferTimeLeft > 0) purchaseButtonLink.click();
+                        });
                     } else {
-                        document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        if(!isCodeUnlocked) handleUnlockCode();
+                        const finalTouchSection = document.getElementById('final-touch-section');
+                        if(finalTouchSection) {
+                           requestAnimationFrame(() => finalTouchSection.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                        }
+                        if(!isCodeUnlocked) handleUnlockCode(); // Only call unlock if not already unlocked
                     }
                 }} 
                 size="lg" className="goddess-gradient text-primary-foreground font-extrabold text-xl sm:text-2xl py-4 sm:py-5 px-10 sm:px-12 rounded-xl shadow-2xl animate-subtle-vibration hover:shadow-accent/50 transform hover:scale-105 transition-all h-auto whitespace-normal text-center leading-normal">
