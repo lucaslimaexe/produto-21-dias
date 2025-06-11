@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, Lightbulb, BookOpen, Users, Map, GitCompareArrows, Heart, Bolt, Sun, Loader2, Sparkles as LucideSparkles, ThumbsDown, ThumbsUp, Lock, CircleDollarSign, ShoppingCart, Star, ChevronLeft, ChevronRight, Eye, Group, Key, Unlock, Brain, TrendingUp, Target, ShieldOff, ShieldCheck, MessageCircle, Rocket, Gift, Palette, Activity, CheckCircle2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Image from 'next/image';
@@ -69,6 +70,35 @@ const analysisCardsData = (analysisResult?: BehavioralAnalysisData) => {
         { id: 'insight3', icon: TrendingUp, title: "Caminho para Mudança", text: analysisResult.missingForIdeal.substring(100) || "A transformação requer foco e as ferramentas certas." },
     ];
 };
+
+const faqItems = [
+    {
+        id: "faq1",
+        question: "O Código da Deusa™ é mais um curso online?",
+        answer: "Não. É um RITUAL DE TRANSFORMAÇÃO PROFUNDA de 21 dias, desenhado para reprogramar sua identidade e desbloquear seu poder de manifestação na raiz. Não é sobre informação, é sobre IMPLANTAÇÃO de um novo eu."
+    },
+    {
+        id: "faq2",
+        question: "Preciso de muito tempo por dia?",
+        answer: "O ritual diário leva menos de 5 MINUTOS. O poder não está no tempo, mas na FREQUÊNCIA e na INTENÇÃO que você coloca. É sobre micro-ajustes diários que geram um impacto massivo."
+    },
+    {
+        id: "faq3",
+        question: "E se eu já tentei de tudo e nada funcionou?",
+        answer: "Ótimo. Isso significa que você está pronta para algo que REALMENTE funciona. O Código da Deusa™ não é mais do mesmo. Ele vai onde os outros métodos não ousam ir: na sua IDENTIDADE CENTRAL."
+    },
+    {
+        id: "faq4",
+        question: "É seguro? Tem garantia?",
+        answer: "Sua transformação é o nosso único foco. Você tem uma GARANTIA INCONDICIONAL de 7 dias. Se, por qualquer motivo, você sentir que este não é o seu momento de despertar, seu investimento simbólico é 100% devolvido. O risco é zero. O arrependimento de não tentar é eterno."
+    },
+    {
+        id: "faq5",
+        question: "Como recebo o acesso?",
+        answer: "IMEDIATAMENTE após a confirmação do seu desbloqueio. Você receberá um email com todas as instruções para acessar o portal secreto e iniciar sua jornada de 21 dias. O universo não espera. Sua transformação também não."
+    }
+];
+
 
 const AnalysisInsightCard: React.FC<{ icon: React.ElementType, title: string, text: string, className?: string }> = ({ icon: Icon, title, text, className }) => (
     <Card className={cn("bg-purple-900/50 border-purple-700/70 p-4 w-full min-w-[280px] sm:min-w-[300px] md:min-w-0 md:w-auto md:max-w-xs shrink-0 scroll-snap-align-center", className)}>
@@ -229,10 +259,22 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const dreamsText = userDreams && userDreams.length > 0 ? formatUserDreams(userDreams) : "seus maiores sonhos";
   const achievementDateText = dreamsAchievementDateLabel ? `já no ${dreamsAchievementDateLabel.toLowerCase()}` : "em breve";
 
-  const analysisCards = analysisCardsData(analysisResult);
+  const currentAnalysisResult = analysisResult || {
+      archetype: "Deusa em Descoberta",
+      summary: "Sua jornada de autoconhecimento está apenas começando. Existem padrões a serem explorados e potenciais a serem desbloqueados. Continue com coragem e abertura para revelar seu verdadeiro poder.",
+      keywords: ["Autoconhecimento", "Potencial Oculto", "Descoberta"],
+      idealPercentage: 50,
+      missingForIdeal: " Clareza sobre seus bloqueios mais profundos e ferramentas eficazes para transmutá-los em poder de manifestação."
+  };
+
+  const [gamifiedPercentage, setGamifiedPercentage] = useState(currentAnalysisResult.idealPercentage);
+
+  const analysisCards = analysisCardsData(currentAnalysisResult); // Pass currentAnalysisResult here
+
 
   const sectionHeaderMessages: Record<string, string> = {
     'diagnostics-section': "ALERTA: SEU DIAGNÓSTICO É CRÍTICO!",
+    'who-its-for-section': "ESTE CÓDIGO É PARA VOCÊ?",
     'offer-start-section': "DESBLOQUEIE SEU POTENCIAL AGORA!",
     'modules-section': "O MÉTODO SECRETO: CÓDIGO DA DEUSA™ REVELADO",
     'testimonials-section': "VEJA QUEM JÁ SE TRANSFORMOU!",
@@ -242,6 +284,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     'vision-section': "A VIDA QUE VOCÊ MERECE ESTÁ AQUI.",
     'shield-section': "RISCO ZERO, TRANSFORMAÇÃO TOTAL!",
     'moving-testimonials-section': "ECOS DA TRANSFORMAÇÃO: ELAS FALAM POR SI",
+    'faq-section': "AINDA TEM DÚVIDAS? NÓS RESPONDEMOS!",
     'final-touch-section': "A DECISÃO É SUA: O UNIVERSO ESPERA SEU SIM",
     'decision-section': "A ENCRUZILHADA FINAL: ESCOLHA SEU CAMINHO",
     'final-cta-section': "ÚLTIMA CHAMADA: NÃO DEIXE SUA DEUSA INTERIOR ESPERANDO!",
@@ -250,6 +293,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const registerSectionRef = useCallback((id: string) => (el: HTMLElement | null) => {
     sectionRefs.current[id] = el;
   }, []);
+
+  useEffect(() => {
+    setGamifiedPercentage(currentAnalysisResult.idealPercentage);
+  }, [currentAnalysisResult.idealPercentage]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -261,12 +308,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             Object.entries(sectionRefs.current).forEach(([id, element]) => {
                 if (element) {
                     const rect = element.getBoundingClientRect();
-                    // Consider a section "active" if its top is at or above the viewport top,
-                    // or if a significant portion of it is visible near the top.
                     const distanceToTop = Math.abs(rect.top);
                     const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
 
-                    if (rect.top <= 100 && rect.bottom >= 100 && visibleHeight > 0) { // Check if top part of section is near viewport top
+                    if (rect.top <= 100 && rect.bottom >= 100 && visibleHeight > 0) { 
                         if (distanceToTop < minDistanceToViewportTop) {
                             minDistanceToViewportTop = distanceToTop;
                             activeSectionId = id;
@@ -278,7 +323,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             if (activeSectionId) {
                 setCurrentHeaderText(sectionHeaderMessages[activeSectionId] || "MANIFESTE SEU PODER AGORA!");
             } else {
-                // Fallback: if no section is actively near the top, check for the topmost section in view
                 let highestVisibleSectionId: string | null = null;
                 let highestSectionTop = Infinity;
                 Object.entries(sectionRefs.current).forEach(([id, element]) => {
@@ -293,7 +337,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 if (highestVisibleSectionId) {
                     setCurrentHeaderText(sectionHeaderMessages[highestVisibleSectionId] || "MANIFESTE SEU PODER AGORA!");
                 } else {
-                     setCurrentHeaderText(sectionHeaderMessages['diagnostics-section']); // Default
+                     setCurrentHeaderText(sectionHeaderMessages['diagnostics-section']);
                 }
             }
         }, 150); 
@@ -349,11 +393,22 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     return () => clearInterval(intervalId);
   }, [stickyMessages.length]);
 
+  const conditionallyIncrementPercentage = (increment: number, capBeforeIncrement?: number) => {
+    setGamifiedPercentage(prev => {
+      if (capBeforeIncrement !== undefined && prev >= capBeforeIncrement) {
+        return Math.min(100, prev); 
+      }
+      const newValue = prev + increment;
+      return Math.min(100, newValue);
+    });
+    // playSound('unlock_chunk.mp3'); 
+  };
 
   const handleRevealPrice = () => {
     setIsPriceRevealed(true);
     playSound('dream_select.mp3');
-    setFinalOfferTimeLeft(finalOfferTimerInitial); 
+    setFinalOfferTimeLeft(finalOfferTimerInitial);
+    conditionallyIncrementPercentage(10, 75); 
     setTimeout(() => { 
         document.getElementById('map-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
@@ -366,13 +421,17 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     unlockingTimeoutRef.current = setTimeout(() => {
       setIsUnlockingCode(false);
       setIsCodeUnlocked(true);
-      playSound('form_complete.mp3'); 
-      setTimeout(() => {
-        const ctaSection = document.getElementById('final-purchase-cta-section');
-        if (ctaSection) {
-             ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 100);
+      playSound('form_complete.mp3');
+      setGamifiedPercentage(95); 
+      
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+            const ctaSection = document.getElementById('final-purchase-cta-section');
+            if (ctaSection) {
+                 ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 50); 
+      });
     }, 3000);
   };
   
@@ -410,14 +469,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           </div>
       );
   }
-
-  const currentAnalysisResult = analysisResult || {
-      archetype: "Deusa em Descoberta",
-      summary: "Sua jornada de autoconhecimento está apenas começando. Existem padrões a serem explorados e potenciais a serem desbloqueados. Continue com coragem e abertura para revelar seu verdadeiro poder.",
-      keywords: ["Autoconhecimento", "Potencial Oculto", "Descoberta"],
-      idealPercentage: 50,
-      missingForIdeal: " Clareza sobre seus bloqueios mais profundos e ferramentas eficazes para transmutá-los em poder de manifestação."
-  };
   
   const visionCardsItems = [
       { id: 'love', title: "Relacionamento Saudável", icon: Heart, dataAiHint: "couple love" },
@@ -436,8 +487,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         </header>
 
         <main className="w-full max-w-5xl space-y-12 md:space-y-16 px-4">
-            {/* BLOCO 1 – DIAGNÓSTICO COMPORTAMENTAL */}
             <section id="diagnostics-section" ref={registerSectionRef('diagnostics-section')} className="animate-fade-in text-center pt-4" style={{animationDuration: '0.7s'}}>
+                <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-pink-400 mb-8 leading-tight">
+                    DESCUBRA ABAIXO, {displayName}, O PORQUÊ VOCÊ NÃO REALIZA SEUS SONHOS
+                </h2>
                 <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center mb-8">
                     <Card className="bg-black/50 border-2 border-pink-500/70 p-6 rounded-2xl shadow-xl">
                         <CardTitle className="text-lg sm:text-xl text-muted-foreground mb-1">Seu Arquétipo Dominante (Problemático):</CardTitle>
@@ -446,10 +499,15 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     <Card className="bg-black/50 border-2 border-yellow-500/70 p-6 rounded-2xl shadow-xl">
                         <CardTitle className="text-lg sm:text-xl text-muted-foreground mb-2">Nível de Alinhamento com Seu Potencial Máximo:</CardTitle>
                         <div className="flex items-center justify-center gap-3 mb-2">
-                            <p className={cn("text-2xl sm:text-3xl font-bold", getPercentageColor(currentAnalysisResult.idealPercentage).replace('bg-','text-'))}>{currentAnalysisResult.idealPercentage}%</p>
-                            {currentAnalysisResult.idealPercentage <= 50 && <Badge variant="destructive" className="text-xs sm:text-sm animate-subtle-pulse">Estado Crítico</Badge>}
+                            <p className={cn("text-2xl sm:text-3xl font-bold", getPercentageColor(gamifiedPercentage).replace('bg-','text-'))}>{gamifiedPercentage}%</p>
+                            {gamifiedPercentage <= 50 && <Badge variant="destructive" className="text-xs sm:text-sm animate-subtle-pulse">Estado Crítico</Badge>}
                         </div>
-                        <Progress value={currentAnalysisResult.idealPercentage} className={cn("w-full h-3 sm:h-4 border border-yellow-600/50 animated-progress-bar", `[&>div]:${getPercentageColor(currentAnalysisResult.idealPercentage)}`)} />
+                        <Progress value={gamifiedPercentage} className={cn("w-full h-3 sm:h-4 border border-yellow-600/50 animated-progress-bar", `[&>div]:${getPercentageColor(gamifiedPercentage)}`)} />
+                         {gamifiedPercentage === 100 && (
+                            <p className="text-center text-lg text-green-400 font-bold animate-pulse-goddess mt-3">
+                                ✨ PARABÉNS, {displayName}! SEU POTENCIAL MÁXIMO ESTÁ 100% DESBLOQUEADO! ✨
+                            </p>
+                        )}
                     </Card>
                 </div>
 
@@ -480,14 +538,19 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     </div>
                 </div>
                 
-                <Button onClick={() => document.getElementById('offer-start-section')?.scrollIntoView({ behavior: 'smooth' })} className="goddess-gradient text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-pulse-goddess h-auto whitespace-normal text-center">
+                <Button 
+                    onClick={() => {
+                        document.getElementById('offer-start-section')?.scrollIntoView({ behavior: 'smooth' });
+                        conditionallyIncrementPercentage(10, 40);
+                    }} 
+                    className="goddess-gradient text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-pulse-goddess h-auto whitespace-normal text-center"
+                >
                     <Unlock className="mr-2 h-5 w-5 shrink-0" /> ENTENDI MEUS BLOQUEIOS, QUERO A SOLUÇÃO!
                 </Button>
             </section>
 
             <hr className="border-purple-700/30 my-10 md:my-14" />
 
-            {/* BLOCO 2 – INÍCIO DA OFERTA */}
             <section id="offer-start-section" ref={registerSectionRef('offer-start-section')} className="animate-fade-in space-y-6 text-center" style={{animationDelay: '0.5s'}}>
                  <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold goddess-text-gradient leading-tight animate-fade-in" style={{animationDelay: '0.6s'}}>
                     {displayName}, Você Sente Que Algo Te Impede de Realizar {dreamsText}?
@@ -498,14 +561,20 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                  <p className="text-md sm:text-lg text-purple-200/90 max-w-2xl mx-auto leading-relaxed animate-fade-in" style={{animationDelay: '1s'}}>
                     E se eu te dissesse que existe um <span className="font-bold text-yellow-300">MÉTODO COMPLETO</span>, prático e validado por centenas de mulheres para pulverizar esse bloqueio?
                  </p>
-                <Button onClick={() => document.getElementById('modules-section')?.scrollIntoView({ behavior: 'smooth' })} variant="outline" className="border-accent text-accent hover:bg-accent/20 hover:text-yellow-300 font-semibold text-md sm:text-lg py-2.5 px-6 rounded-lg animate-fade-in animate-icon-subtle-float h-auto whitespace-normal text-center" style={{animationDelay: '1.2s'}}>
+                <Button 
+                    onClick={() => {
+                        document.getElementById('modules-section')?.scrollIntoView({ behavior: 'smooth' });
+                        // Opcional: conditionallyIncrementPercentage(5, 50); // Pequeno incremento se desejar
+                    }} 
+                    variant="outline" 
+                    className="border-accent text-accent hover:bg-accent/20 hover:text-yellow-300 font-semibold text-md sm:text-lg py-2.5 px-6 rounded-lg animate-fade-in animate-icon-subtle-float h-auto whitespace-normal text-center" style={{animationDelay: '1.2s'}}
+                >
                     <Eye className="mr-2 h-5 w-5 shrink-0" /> Veja o Método Completo
                 </Button>
             </section>
 
             <hr className="border-purple-700/30 my-10 md:my-14" />
             
-            {/* BLOCO 3 – CONTEÚDO DO MÉTODO (MÓDULOS) */}
             <section id="modules-section" ref={registerSectionRef('modules-section')} className="animate-fade-in" style={{animationDelay: '1.5s'}}>
                 <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-8 sm:mb-12 goddess-text-gradient">
                     💎 {displayName}, o <span className="text-yellow-300">MAPA DETALHADO</span> para Você <span className="text-pink-400">DESBLOQUEAR</span> Sua Vida:
@@ -519,15 +588,63 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     ))}
                 </div>
                 <div className="text-center mt-10">
-                    <Button onClick={() => document.getElementById('testimonials-section')?.scrollIntoView({ behavior: 'smooth' })} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center">
-                        <Group className="mr-2 h-5 w-5 shrink-0" /> QUERO VER QUEM JÁ DESBLOQUEOU
+                    <Button 
+                        onClick={() => {
+                            document.getElementById('who-its-for-section')?.scrollIntoView({ behavior: 'smooth' });
+                            conditionallyIncrementPercentage(10, 55);
+                        }} 
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center"
+                    >
+                        <Group className="mr-2 h-5 w-5 shrink-0" /> ISSO É PARA MIM?
                     </Button>
                 </div>
             </section>
 
             <hr className="border-purple-700/30 my-10 md:my-14" />
+
+            <section id="who-its-for-section" ref={registerSectionRef('who-its-for-section')} className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-10 goddess-text-gradient">Este Código É Para Você?</h2>
+                <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+                    <Card className="bg-green-900/20 border-green-500/50 p-6 rounded-xl shadow-lg">
+                        <CardHeader className="p-0 mb-4">
+                            <CardTitle className="text-xl sm:text-2xl text-green-300 text-center">O CÓDIGO DA DEUSA™ É PERFEITO PARA VOCÊ SE...</CardTitle>
+                        </CardHeader>
+                        <ul className="space-y-3 text-green-200/90">
+                            <li className="flex items-start"><CheckCircle2 className="h-6 w-6 text-green-400 mr-3 shrink-0 mt-0.5" /> Você sente um chamado profundo para mais, mas uma força invisível te prende.</li>
+                            <li className="flex items-start"><CheckCircle2 className="h-6 w-6 text-green-400 mr-3 shrink-0 mt-0.5" /> Você está cansada de métodos superficiais e busca uma transformação real e duradoura.</li>
+                            <li className="flex items-start"><CheckCircle2 className="h-6 w-6 text-green-400 mr-3 shrink-0 mt-0.5" /> Você tem coragem de olhar para as suas sombras e ressignificar sua história.</li>
+                            <li className="flex items-start"><CheckCircle2 className="h-6 w-6 text-green-400 mr-3 shrink-0 mt-0.5" /> Você está decidida a quebrar ciclos de autossabotagem e manifestar a vida que merece.</li>
+                            <li className="flex items-start"><CheckCircle2 className="h-6 w-6 text-green-400 mr-3 shrink-0 mt-0.5" /> Você anseia por clareza, poder pessoal e uma conexão autêntica com sua intuição.</li>
+                        </ul>
+                    </Card>
+                    <Card className="bg-red-900/20 border-red-500/50 p-6 rounded-xl shadow-lg">
+                        <CardHeader className="p-0 mb-4">
+                            <CardTitle className="text-xl sm:text-2xl text-red-300 text-center">FUJA DESTE CÓDIGO SE...</CardTitle>
+                        </CardHeader>
+                        <ul className="space-y-3 text-red-200/90">
+                            <li className="flex items-start"><XCircle className="h-6 w-6 text-red-400 mr-3 shrink-0 mt-0.5" /> Você busca uma pílula mágica que não exija sua entrega e comprometimento.</li>
+                            <li className="flex items-start"><XCircle className="h-6 w-6 text-red-400 mr-3 shrink-0 mt-0.5" /> Você prefere continuar na zona de conforto, mesmo que ela te aprisione.</li>
+                            <li className="flex items-start"><XCircle className="h-6 w-6 text-red-400 mr-3 shrink-0 mt-0.5" /> Você não está disposta a investir tempo e energia na sua própria evolução.</li>
+                            <li className="flex items-start"><XCircle className="h-6 w-6 text-red-400 mr-3 shrink-0 mt-0.5" /> Você acredita que a mudança vem de fora, e não de uma reprogramação interna.</li>
+                            <li className="flex items-start"><XCircle className="h-6 w-6 text-red-400 mr-3 shrink-0 mt-0.5" /> Você tem medo de descobrir seu verdadeiro potencial e o poder que ele carrega.</li>
+                        </ul>
+                    </Card>
+                </div>
+                 <div className="text-center mt-10">
+                    <Button 
+                        onClick={() => {
+                            document.getElementById('testimonials-section')?.scrollIntoView({ behavior: 'smooth' });
+                             // Incremento já acontece no botão anterior que leva a esta seção
+                        }} 
+                        className="goddess-gradient text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center"
+                    >
+                        <Heart className="mr-2 h-5 w-5 shrink-0" /> SIM, SOU EU! QUERO VER PROVAS REAIS!
+                    </Button>
+                </div>
+            </section>
             
-            {/* BLOCO 4 – DEPOIMENTOS (PRIMEIRO BLOCO) */}
+            <hr className="border-purple-700/30 my-10 md:my-14" />
+
             <section id="testimonials-section" ref={registerSectionRef('testimonials-section')} className="animate-fade-in" style={{animationDelay: '1.8s'}}>
                 <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-4 goddess-text-gradient">
                     +7.400 Mulheres Já Desbloquearam Seus Códigos!
@@ -544,7 +661,13 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                      <Image data-ai-hint="women success celebration" src="https://placehold.co/700x200.png" alt="Mulheres Felizes e Realizadas" width={600} height={171} className="rounded-lg shadow-xl border-2 border-accent/50 w-full max-w-md sm:max-w-lg md:max-w-xl mx-auto"/>
                 </div>
                  <div className="text-center mt-10">
-                    <Button onClick={() => document.getElementById('price-anchor-section')?.scrollIntoView({ behavior: 'smooth' })} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center">
+                    <Button 
+                        onClick={() => {
+                            document.getElementById('price-anchor-section')?.scrollIntoView({ behavior: 'smooth' });
+                            conditionallyIncrementPercentage(10, 65);
+                        }} 
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center"
+                    >
                         <Gift className="mr-2 h-5 w-5 shrink-0" /> QUERO MINHA TRANSFORMAÇÃO AGORA!
                     </Button>
                 </div>
@@ -552,7 +675,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             
             <hr className="border-purple-700/30 my-10 md:my-14" />
 
-            {/* BLOCO 5 – ANCORAGEM DE PREÇO (R$97) E REVELAÇÃO (R$47) */}
             <section id="price-anchor-section" ref={registerSectionRef('price-anchor-section')} className="animate-fade-in text-center" style={{animationDelay: '1.2s'}}>
                  <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-6 sm:mb-8 goddess-text-gradient">
                     Sua Transformação Está a Um Passo...
@@ -571,7 +693,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         </p>
                         <div className="text-sm text-yellow-400/90 space-y-1">
                             <p className="animate-subtle-pulse"><Clock className="inline h-4 w-4 mr-1 shrink-0" /> Promoção válida por: <span className="font-bold">{formatTime(priceCardTimeLeft)}</span></p>
-                            <p className={priceCardVacancies === 1 ? 'text-red-400 font-bold animate-intense-pulse' : ''}><Users className="inline h-4 w-4 mr-1 shrink-0" /> Restam apenas: <span className="font-bold">{priceCardVacancies}</span> {priceCardVacancies === 1 ? 'acesso com este valor!' : 'acessos com este valor!'}</p>
+                            <p className={cn("animate-subtle-pulse",priceCardVacancies === 1 ? 'text-red-400 font-bold animate-intense-pulse' : '')}><Users className="inline h-4 w-4 mr-1 shrink-0" /> Restam apenas: <span className="font-bold">{priceCardVacancies}</span> {priceCardVacancies === 1 ? 'acesso com este valor!' : 'acessos com este valor!'}</p>
                         </div>
                         
                         <Button onClick={handleRevealPrice} className="w-full goddess-gradient text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 mt-4 h-auto whitespace-normal text-center">
@@ -585,7 +707,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             {isPriceRevealed && (
                 <>
                     <hr className="border-purple-700/30 my-10 md:my-14" />
-                    {/* BLOCO 14 – MAPA DE DESBLOQUEIO (Cronograma em Fases) */}
                     <section id="map-section" ref={registerSectionRef('map-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.2s'}}>
                         <h2 className="font-headline text-3xl sm:text-4xl text-yellow-300 mb-3 whitespace-pre-line">⚡ Sua Jornada de 21 Dias</h2>
                         <p className="text-purple-200/90 text-lg sm:text-xl mb-2 max-w-2xl mx-auto whitespace-pre-line">
@@ -618,7 +739,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
                     <hr className="border-purple-700/30 my-10 md:my-14" />
 
-                    {/* BLOCO 15 – ANTES VS DEPOIS (Interativo) */}
                     <section id="before-after-section" ref={registerSectionRef('before-after-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.4s'}}>
                         <h2 className="font-headline text-3xl sm:text-4xl goddess-text-gradient mb-8">Sua Vida: Antes e Depois do Código</h2>
                          <p className="text-purple-300/80 text-md sm:text-lg mb-10 max-w-xl mx-auto whitespace-pre-line">
@@ -666,7 +786,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
                     <hr className="border-purple-700/30 my-10 md:my-14" />
 
-                    {/* BLOCO 16 – VISÃO DE VIDA (Simulação de Possibilidades) */}
                     <section id="vision-section" ref={registerSectionRef('vision-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.6s'}}>
                         <h2 className="font-headline text-3xl sm:text-4xl text-pink-400 mb-3 whitespace-pre-line">Essa é a vida que JÁ É SUA.</h2>
                         <p className="text-purple-200/90 text-lg sm:text-xl mb-2 max-w-2xl mx-auto whitespace-pre-line">
@@ -708,8 +827,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
                     <hr className="border-purple-700/30 my-10 md:my-14" />
                     
-                    {/* BLOCO 17 – SEM RISCO. SEM VOLTA. */}
-                    <section id="shield-section" ref={registerSectionRef('shield-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.8s'}}>
+                    <section id="shield-section" ref={registerSectionRef('shield-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{ animationDelay: '0.8s' }}>
                         <h2 className="font-headline text-3xl sm:text-4xl goddess-text-gradient mb-3 whitespace-pre-line">Sem Risco. Sem Volta.</h2>
                         <p className="text-purple-200/90 text-lg sm:text-xl mb-6 max-w-2xl mx-auto whitespace-pre-line">
                             Você já duvidou de tudo.{"\n"}
@@ -730,10 +848,14 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         </div>
 
                         <div className="mb-10 space-y-6">
-                            <h3 className="font-headline text-xl sm:text-2xl text-yellow-300">Sua Garantia Absoluta:</h3>
+                            <h3 className="font-headline text-xl sm:text-2xl text-yellow-300 mb-4">Sua Garantia Absoluta:</h3>
                             <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
-                                {["Sem chance de dar errado.", "Sem volta pra dor.", "Sem mais desculpas."].map((item, index) => (
-                                    <Card key={index} className="bg-slate-800/60 border-purple-700/70 p-4 animate-fade-in transform hover:scale-105 transition-transform duration-300" style={{animationDelay: `${0.2 + index * 0.15}s`}}>
+                                {[
+                                    "Sem chance de dar errado.",
+                                    "Sem volta pra dor.",
+                                    "Sem mais desculpas."
+                                ].map((item, index) => (
+                                    <Card key={index} className="bg-slate-800/60 border-purple-700/70 p-4 animate-fade-in transform hover:scale-105 transition-transform duration-300" style={{ animationDelay: `${0.2 + index * 0.15}s` }}>
                                         <CardContent className="flex items-center gap-3 p-0">
                                             <CheckCircle2 className="h-7 w-7 text-green-400 shrink-0" />
                                             <p className="text-md text-purple-200/95 text-left">{item}</p>
@@ -742,9 +864,9 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                 ))}
                             </div>
                         </div>
-
+                        
                         <div className="mb-10 space-y-6">
-                            <h3 className="font-headline text-xl sm:text-2xl text-pink-400">Três Pilares da Sua Transformação Irreversível:</h3>
+                            <h3 className="font-headline text-xl sm:text-2xl text-pink-400 mb-4">Três Pilares da Sua Transformação Irreversível:</h3>
                             <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
                                 <GuaranteePillarCard icon={Target} title="À Prova de Falhas" description="Um processo desenhado para o seu sucesso." delay="0.5s" />
                                 <GuaranteePillarCard icon={Key} title="Código Pessoal" description="Um sistema que já reside em você, esperando para ser ativado." delay="0.65s" />
@@ -772,7 +894,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     
                     <hr className="border-purple-700/30 my-10 md:my-14" />
 
-                    {/* BLOCO 18 – DEPOIMENTOS EM MOVIMENTO (Falsos Stories) */}
                     <section id="moving-testimonials-section" ref={registerSectionRef('moving-testimonials-section')} className="animate-fade-in py-10 md:py-12" style={{animationDelay: '1.0s'}}>
                     <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-4 goddess-text-gradient whitespace-pre-line">
                         “Eu nunca pensei que alguém pudesse me destravar assim…”
@@ -795,17 +916,42 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     </div>
                     <div className="text-center mt-10">
                         <Button 
-                        onClick={() => document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth' })} 
+                        onClick={() => document.getElementById('faq-section')?.scrollIntoView({ behavior: 'smooth' })} 
                         className="goddess-gradient text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center"
                         >
-                        <LucideSparkles className="mr-2 h-5 w-5 shrink-0" /> EU QUERO SENTIR ESSA TRANSFORMAÇÃO!
+                        <LucideSparkles className="mr-2 h-5 w-5 shrink-0" /> AINDA COM DÚVIDAS? VEJA ISSO!
                         </Button>
                     </div>
                     </section>
 
                     <hr className="border-purple-700/30 my-10 md:my-14" />
-
-                    {/* BLOCO 19 – TOQUE FINAL */}
+                    
+                    <section id="faq-section" ref={registerSectionRef('faq-section')} className="animate-fade-in py-10 md:py-12" style={{ animationDelay: '0.2s' }}>
+                        <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-10 goddess-text-gradient">Ainda Tem Dúvidas? Nós Respondemos!</h2>
+                        <Accordion type="single" collapsible className="w-full max-w-2xl mx-auto space-y-3">
+                            {faqItems.map((item, index) => (
+                                <AccordionItem key={item.id} value={item.id} className="bg-slate-800/60 border border-purple-600/70 rounded-lg px-4 animate-fade-in" style={{animationDelay: `${0.1 * index}s`}}>
+                                    <AccordionTrigger className="text-left text-md sm:text-lg text-pink-300 hover:text-accent font-semibold hover:no-underline py-4">
+                                        {item.question}
+                                    </AccordionTrigger>
+                                    <AccordionContent className="text-purple-200/90 text-sm sm:text-base leading-relaxed pb-4">
+                                        {item.answer}
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
+                         <div className="text-center mt-12">
+                            <Button 
+                                onClick={() => document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth' })}
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center"
+                            >
+                                <Key className="mr-2 h-5 w-5 shrink-0" /> ESTOU PRONTA PARA DESBLOQUEAR!
+                            </Button>
+                        </div>
+                    </section>
+                    
+                    <hr className="border-purple-700/30 my-10 md:my-14" />
+                   
                     <section id="final-touch-section" ref={registerSectionRef('final-touch-section')} className="animate-fade-in py-10 md:py-16 text-center" style={{animationDelay: '1.2s'}}>
                         {!isCodeUnlocked && !isUnlockingCode && (
                             <>
@@ -838,20 +984,21 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                 <p className="text-lg text-purple-300 font-semibold">Desbloqueando seu código pessoal...</p>
                             </div>
                         )}
-
+                        
+                        <div id="final-purchase-cta-section">
                         {isCodeUnlocked && (
-                             <div id="final-purchase-cta-section" className="animate-pop-in space-y-6">
+                             <div className="animate-pop-in space-y-6">
                                 <p className="text-purple-200/90 text-lg sm:text-xl whitespace-pre-line">
                                     Sim ou não.{"\n"}
                                     Agora ou nunca.{"\n"}
                                     Acordar ou continuar dormindo.
                                 </p>
                                 <p className="text-yellow-300 font-bold text-xl sm:text-2xl mt-2 mb-6 whitespace-pre-line">
+                                    CÓDIGO DESBLOQUEADO!{"\n"}
                                     🔓 Você sabe o que precisa fazer.
                                 </p>
                                 
-                                {/* Conteúdo da Oferta Final de R$47 expandido aqui */}
-                                <div id="final-offer-content-expanded" className="mt-10 animate-pop-in bg-black/50 border-2 border-yellow-500 p-6 sm:p-10 rounded-3xl shadow-2xl shadow-yellow-500/50 text-center">
+                                <div id="final-offer-content-expanded" className="mt-10 bg-black/50 border-2 border-yellow-500 p-6 sm:p-10 rounded-3xl shadow-2xl shadow-yellow-500/50 text-center">
                                     <Wand2 className="h-16 w-16 text-accent mx-auto mb-4 animate-float" />
                                     <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-300 mb-3">Sua Co-Criação Mágica Revelada!</h2>
                                     <p className="text-purple-200/90 text-sm sm:text-base md:text-lg mb-3 sm:mb-5 break-words max-w-xl mx-auto">
@@ -880,6 +1027,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                     <Button
                                         asChild
                                         size="lg"
+                                        onClick={() => setGamifiedPercentage(100)}
                                         className={cn(`w-full max-w-md mx-auto font-headline text-base sm:text-lg md:text-xl px-6 py-7 rounded-xl shadow-2xl transform hover:scale-105 transition-transform duration-200 pulse-goddess whitespace-normal text-center h-auto`,
                                         finalOfferTimeLeft === 0 ? 'bg-gray-700 hover:bg-gray-800 cursor-not-allowed opacity-60' : 'bg-gradient-to-r from-green-500 via-emerald-600 to-green-700 hover:from-green-600 hover:via-emerald-700 hover:to-green-800 text-white')}
                                         disabled={finalOfferTimeLeft === 0}
@@ -894,6 +1042,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                 </div>
                             </div>
                         )}
+                        </div>
                     </section>
                   </>
                 )}
@@ -902,7 +1051,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             <section id="decision-section" ref={registerSectionRef('decision-section')} className="animate-fade-in" style={{animationDelay: '0.2s'}} onMouseEnter={handleScrollLock}>
                 <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-8 goddess-text-gradient">Sua Encruzilhada, {displayName}:</h2>
                 <div className={cn("grid md:grid-cols-2 gap-6 md:gap-8 transition-opacity duration-500", isScrollLocked && "opacity-50 blur-sm scroll-lock-pulse")}>
-                    <Card className="bg-red-900/70 border-2 border-red-600 p-6 rounded-2xl">
+                    <Card className="bg-red-900/70 border-2 border-red-600 p-6 rounded-2xl h-full">
                         <CardHeader className="p-0 mb-3 text-center">
                             <ThumbsDown className="h-10 w-10 text-red-300 mx-auto mb-2 shrink-0" />
                             <CardTitle className="text-xl sm:text-2xl text-red-200">CONTINUAR COMO ESTÁ</CardTitle>
@@ -915,7 +1064,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             <li className="flex items-start"><XCircle className="h-5 w-5 text-red-400 mr-2 shrink-0 mt-0.5" /> Desperdício de energia e potencial.</li>
                         </ul>
                     </Card>
-                    <Card className="bg-green-900/70 border-2 border-green-600 p-6 rounded-2xl">
+                    <Card className="bg-green-900/70 border-2 border-green-600 p-6 rounded-2xl h-full">
                         <CardHeader className="p-0 mb-3 text-center">
                             <ThumbsUp className="h-10 w-10 text-green-300 mx-auto mb-2 shrink-0" />
                             <CardTitle className="text-xl sm:text-2xl text-green-200">VIRAR O JOGO AGORA</CardTitle>
@@ -991,7 +1140,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     </AlertDialogContent>
                 </AlertDialog>
             </section>
-
         </main>
 
         <div className="fixed bottom-0 left-0 right-0 md:hidden bg-black/80 backdrop-blur-sm p-3 border-t border-purple-700/50 z-50 shadow-2xl animate-fade-in animate-subtle-vibration" style={{animationDelay: '3s'}}>
