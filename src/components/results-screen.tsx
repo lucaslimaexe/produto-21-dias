@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, Lightbulb, BookOpen, Users, Map, GitCompareArrows, Heart, Bolt, Sun, Loader2, Sparkles as LucideSparkles, ThumbsDown, ThumbsUp, Lock, CircleDollarSign, ShoppingCart, Star, ChevronLeft, ChevronRight, Eye, Group, Key, Unlock, Brain, TrendingUp, Target, ShieldOff, ShieldCheck, MessageCircle, Rocket, Gift, Palette, Activity, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, Lightbulb, BookOpen, Users, Map, GitCompareArrows, Heart, Bolt, Sun, Loader2, Sparkles as LucideSparkles, ThumbsDown, ThumbsUp, Lock, CircleDollarSign, ShoppingCart, Star, ChevronLeft, ChevronRight, Eye, Group, Key, Unlock, Brain, TrendingUp, Target, ShieldOff, ShieldCheck, MessageCircle, Rocket, Gift, Palette, Activity, CheckCircle2 } from 'lucide-react'; // Added CheckCircle2
 import { useToast } from "@/hooks/use-toast";
 import Image from 'next/image';
 import { Progress } from "@/components/ui/progress";
@@ -71,7 +71,7 @@ const analysisCardsData = (analysisResult?: BehavioralAnalysisData) => {
 };
 
 const AnalysisInsightCard: React.FC<{ icon: React.ElementType, title: string, text: string, className?: string }> = ({ icon: Icon, title, text, className }) => (
-    <Card className={cn("bg-purple-900/50 border-purple-700/70 p-4 w-full min-w-[280px] sm:min-w-[300px] md:min-w-0 md:w-[calc(33.33%-0.66rem)] shrink-0 scroll-snap-align-center", className)}>
+    <Card className={cn("bg-purple-900/50 border-purple-700/70 p-4 w-full min-w-[280px] sm:min-w-[300px] md:min-w-0 md:w-auto md:max-w-xs shrink-0 scroll-snap-align-center", className)}>
         <CardHeader className="p-0 pb-2 flex flex-row items-center gap-2">
             <Icon className="h-6 w-6 text-accent shrink-0" />
             <CardTitle className="text-md text-pink-400">{title}</CardTitle>
@@ -127,15 +127,15 @@ const TestimonialStoryCard: React.FC<{ name: string, avatar: string, dataAiHint:
 );
 
 const PhaseCard: React.FC<{ phase: string, title: string, description: string | React.ReactNode, icon: React.ElementType, delay: string, lockedIcon?: React.ElementType }> = ({ phase, title, description, icon: Icon, delay, lockedIcon: LockedIcon = Lock }) => (
-    <Card className="bg-slate-800/70 border-purple-600/80 p-5 text-center animate-fade-in transform hover:scale-105 transition-transform duration-300">
-        <div className="flex flex-col items-center">
+    <Card className="bg-slate-800/70 border-purple-600/80 p-5 text-center animate-fade-in transform hover:scale-105 transition-transform duration-300 h-full flex flex-col">
+        <div className="flex flex-col items-center flex-grow">
             <div className="relative mb-3">
                 <Icon className="h-12 w-12 text-accent" />
                 <LockedIcon className="absolute -top-1 -right-1 h-5 w-5 text-yellow-400 bg-slate-900 p-0.5 rounded-full" />
             </div>
             <p className="text-xs text-yellow-300 font-semibold mb-1">{phase}</p>
             <h4 className="text-lg font-semibold text-pink-400 mb-2">{title}</h4>
-            {typeof description === 'string' ? <p className="text-sm text-purple-200/90 leading-relaxed whitespace-pre-line">{description}</p> : description}
+            {typeof description === 'string' ? <p className="text-sm text-purple-200/90 leading-relaxed whitespace-pre-line flex-grow">{description}</p> : <div className="flex-grow">{description}</div>}
         </div>
     </Card>
 );
@@ -187,7 +187,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const [currentHeaderText, setCurrentHeaderText] = useState<string>("ALERTA: SEU DIAGNÓSTICO É CRÍTICO!");
 
-  const [priceCardTimeLeft, setPriceCardTimeLeft] = useState(7 * 60); // 7 minutes
+  const [priceCardTimeLeft, setPriceCardTimeLeft] = useState(7 * 60); 
   const [priceCardVacancies, setPriceCardVacancies] = useState(3);
   
   const initialStickyMessages = useCallback(() => [
@@ -203,7 +203,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const [showRecusePopup, setShowRecusePopup] = useState(false);
   const [isScrollLocked, setIsScrollLocked] = useState(false);
   
-  const finalOfferTimerInitial = 2 * 60; // 2 minutes
+  const finalOfferTimerInitial = 2 * 60; 
   const [finalOfferTimeLeft, setFinalOfferTimeLeft] = useState(finalOfferTimerInitial);
   const [isPriceRevealed, setIsPriceRevealed] = useState(false);
   const [isFinalOfferTimerBlinking, setIsFinalOfferTimerBlinking] = useState(false);
@@ -214,7 +214,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
   const [selectedVisionCard, setSelectedVisionCard] = useState<string | null>(null);
   
-  const { toast } = useToast();
   const displayName = userName || "Querida Deusa";
   const dreamsText = userDreams && userDreams.length > 0 ? formatUserDreams(userDreams) : "seus maiores sonhos";
   const achievementDateText = dreamsAchievementDateLabel ? `já no ${dreamsAchievementDateLabel.toLowerCase()}` : "em breve";
@@ -235,6 +234,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     'final-touch-section': "A DECISÃO É SUA: O UNIVERSO ESPERA SEU SIM",
     'decision-section': "A ENCRUZILHADA FINAL: ESCOLHA SEU CAMINHO",
     'final-cta-section': "ÚLTIMA CHAMADA: NÃO DEIXE SUA DEUSA INTERIOR ESPERANDO!",
+    'final-offer-reveal-card-moved': "SUA CO-CRIAÇÃO MÁGICA: OFERTA FINAL!",
   };
 
   const registerSectionRef = useCallback((id: string) => (el: HTMLElement | null) => {
@@ -242,59 +242,65 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   }, []);
 
   useEffect(() => {
-    let scrollTimeout: NodeJS.Timeout;
+    let scrollTimeout: NodeJS.Timeout | undefined;
     const handleScroll = () => {
-      clearTimeout(scrollTimeout);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
-        let activeSectionId = Object.keys(sectionHeaderMessages)[0]; 
+        let activeSectionId: string | null = null;
         let minDistance = Infinity;
         const viewportCenterY = window.innerHeight / 2;
-        let firstVisibleSectionId: string | null = null;
+        let firstVisibleSectionTopDistance = Infinity;
+        let firstVisibleSectionId : string | null = null;
+
 
         Object.entries(sectionRefs.current).forEach(([id, element]) => {
           if (element) {
             const rect = element.getBoundingClientRect();
             const elementCenterY = rect.top + rect.height / 2;
             const distanceToCenter = Math.abs(elementCenterY - viewportCenterY);
-            const isVisible = rect.top < window.innerHeight && rect.bottom >= 0; // Check if any part is visible
+            const isTopVisible = rect.top >= 0 && rect.top < window.innerHeight;
 
-            if (isVisible) {
-              if (!firstVisibleSectionId && rect.top >=0 && rect.top < window.innerHeight) {
-                firstVisibleSectionId = id; // Capture the first section whose top is visible
-              }
-              if (distanceToCenter < minDistance) {
-                  minDistance = distanceToCenter;
-                  activeSectionId = id;
-              }
+            if (isTopVisible && rect.top < firstVisibleSectionTopDistance) {
+                firstVisibleSectionTopDistance = rect.top;
+                firstVisibleSectionId = id;
+            }
+            
+            if (rect.top < viewportCenterY && rect.bottom > viewportCenterY) { // Section is around the center
+                 if (distanceToCenter < minDistance) {
+                    minDistance = distanceToCenter;
+                    activeSectionId = id;
+                }
             }
           }
         });
-        // Prioritize the first fully visible section if available, otherwise use the closest to center
-        setCurrentHeaderText(sectionHeaderMessages[firstVisibleSectionId || activeSectionId] || "MANIFESTE SEU PODER AGORA!");
-      }, 100); 
+        
+        const determinedSectionId = activeSectionId || firstVisibleSectionId || Object.keys(sectionHeaderMessages)[0];
+        setCurrentHeaderText(sectionHeaderMessages[determinedSectionId] || "MANIFESTE SEU PODER AGORA!");
+
+      }, 50); 
     };
     
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial check
+    handleScroll(); 
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      clearTimeout(scrollTimeout);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
       if (unlockingTimeoutRef.current) clearTimeout(unlockingTimeoutRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sectionHeaderMessages]); // Add sectionHeaderMessages to dependency array
+  }, []); 
   
   useEffect(() => {
     if (priceCardTimeLeft <= 0) return;
     const timerId = setInterval(() => {
-      setPriceCardTimeLeft(prevTime => prevTime - 1);
+      setPriceCardTimeLeft(prevTime => Math.max(0, prevTime - 1));
     }, 1000);
     return () => clearInterval(timerId);
   }, [priceCardTimeLeft]);
 
   useEffect(() => {
-    if (priceCardTimeLeft <= (5 * 60) && priceCardTimeLeft > 0 && priceCardVacancies !== 1) { 
+    if (priceCardTimeLeft <= (5 * 60) && priceCardTimeLeft > 0 && priceCardVacancies > 1) { 
         setPriceCardVacancies(1);
         playSound('limit_reached.mp3');
     }
@@ -320,7 +326,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   useEffect(() => {
     const intervalId = setInterval(() => {
       setStickyMessageIndex(prevIndex => (prevIndex + 1) % stickyMessages.length);
-    }, 20000);
+    }, 20000); 
     return () => clearInterval(intervalId);
   }, [stickyMessages.length]);
 
@@ -343,7 +349,13 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       setIsCodeUnlocked(true);
       playSound('form_complete.mp3'); 
       setTimeout(() => {
-        document.getElementById('final-cta-button-actual')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const ctaButton = document.getElementById('final-purchase-cta-button');
+        if (ctaButton) {
+             ctaButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            // Fallback if the specific button ID isn't found, scroll to the section
+            document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }, 100);
     }, 3000);
   };
@@ -398,6 +410,34 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       { id: 'finance', title: "Finanças em Fluxo", icon: CircleDollarSign, dataAiHint: "money flow" },
   ];
 
+  const finalOfferRevealCardContent = (
+    <div id="final-offer-section-content" className="mt-10 animate-pop-in bg-black/50 border-2 border-yellow-500 p-6 sm:p-10 rounded-3xl shadow-2xl shadow-yellow-500/50 text-center">
+        <Wand2 className="h-16 w-16 text-accent mx-auto mb-4 animate-float" />
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-300 mb-3">Sua Co-Criação Mágica Revelada!</h2>
+        <p className="text-purple-200/90 text-sm sm:text-base md:text-lg mb-3 sm:mb-5 break-words max-w-xl mx-auto">
+            Mas, {displayName}, por um tempo <span className="text-yellow-300 font-bold">LIMITADÍSSIMO</span>, e como uma oportunidade única por ter chegado até aqui, seu acesso a todo o CÓDIGO DA DEUSA™ não será R$ {totalRealValue.toFixed(2).replace('.',',')}, nem mesmo R$ {offerPriceAnchor.toFixed(2).replace('.',',')}. Será por um valor simbólico de apenas:
+        </p>
+        <p className="text-[2.75rem] leading-tight sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-green-400 my-4 md:my-6 glow">
+            R$ {offerPriceFinal.toFixed(2).replace('.',',')}
+        </p>
+        <p className="text-lg sm:text-xl md:text-2xl font-bold text-yellow-300 mb-4 sm:mb-6 break-words">
+            SIM, {displayName}! APENAS R$ {offerPriceFinal.toFixed(2).replace('.',',')} HOJE! <br className="sm:hidden"/> Um desconto inacreditável sobre o valor já especial de R$ {offerPriceAnchor.toFixed(2).replace('.',',')}!
+        </p>
+
+        <div className="mb-6 md:mb-8 max-w-sm mx-auto">
+            <div className={cn("flex items-center justify-center space-x-1 sm:space-x-2 mb-2", finalOfferTimeLeft < 60 && finalOfferTimeLeft > 0 && finalOfferTimeLeft % 2 !== 0 ? 'text-red-400' : 'text-yellow-200', finalOfferTimeLeft === 0 && 'text-red-600')}>
+                <Clock className="h-5 w-5 sm:h-6 shrink-0" />
+                <span className={cn("text-2xl sm:text-3xl font-bold font-mono", isFinalOfferTimerBlinking && finalOfferTimeLeft > 0 ? 'animate-ping opacity-75':'opacity-100')}>
+                    {formatTime(finalOfferTimeLeft)}
+                </span>
+            </div>
+            <Progress value={(finalOfferTimeLeft / finalOfferTimerInitial) * 100} className="w-full h-2.5 sm:h-3 bg-yellow-600/30 border border-yellow-600/50 [&>div]:bg-gradient-to-r [&>div]:from-red-500 [&>div]:via-yellow-400 [&>div]:to-orange-500" />
+            {finalOfferTimeLeft === 0 && <p className="text-red-500 font-bold mt-2 text-sm sm:text-base">TEMPO ESGOTADO! OFERTA ENCERRADA.</p>}
+        </div>
+    </div>
+  );
+
+
   return (
     <div className="min-h-screen w-full flex flex-col items-center pt-16 sm:pt-20 pb-28 bg-gradient-to-br from-purple-950 via-black to-red-950 text-foreground overflow-x-hidden">
         <header className="fixed top-0 left-0 right-0 z-50 bg-destructive/95 backdrop-blur-sm text-destructive-foreground p-2 sm:p-3 text-center shadow-lg animate-flash-red">
@@ -447,7 +487,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
                 <div className="mb-8">
                      <h3 className="font-headline text-xl sm:text-2xl text-purple-300 mb-4">Desvendando Sua Realidade Interna:</h3>
-                    <div className="flex overflow-x-auto snap-x snap-mandatory py-4 space-x-4 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/50">
+                    <div className="flex overflow-x-auto snap-x snap-mandatory py-4 space-x-4 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/50 -mx-4 px-4">
                         {analysisCards.map(card => <AnalysisInsightCard key={card.id} icon={card.icon} title={card.title} text={card.text}/>)}
                     </div>
                 </div>
@@ -506,7 +546,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 </h2>
                 <p className="text-center text-muted-foreground mb-8 text-md">Veja o que elas estão dizendo:</p>
                 <div className="relative">
-                    <div className="flex overflow-x-auto snap-x snap-mandatory py-4 space-x-6 scrollbar-thin scrollbar-thumb-accent scrollbar-track-purple-900/50 px-4">
+                    <div className="flex overflow-x-auto snap-x snap-mandatory py-4 space-x-6 scrollbar-thin scrollbar-thumb-accent scrollbar-track-purple-900/50 px-4 -mx-4">
                         {testimonialsData.map((testimonial) => (
                             <TestimonialCard key={testimonial.id} {...testimonial} />
                         ))}
@@ -545,42 +585,20 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             <p className="animate-subtle-pulse"><Clock className="inline h-4 w-4 mr-1 shrink-0" /> Promoção válida por: <span className="font-bold">{formatTime(priceCardTimeLeft)}</span></p>
                             <p className={priceCardVacancies === 1 ? 'text-red-400 font-bold animate-intense-pulse' : ''}><Users className="inline h-4 w-4 mr-1 shrink-0" /> Restam apenas: <span className="font-bold">{priceCardVacancies}</span> {priceCardVacancies === 1 ? 'acesso com este valor!' : 'acessos com este valor!'}</p>
                         </div>
-                        {!isPriceRevealed && (
-                            <Button onClick={handleRevealPrice} className="w-full goddess-gradient text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 mt-4 h-auto whitespace-normal text-center">
-                                <Wand2 className="mr-2 h-5 w-5 shrink-0 animate-float" /> QUERO GARANTIR AGORA POR R${offerPriceAnchor} E REVELAR MINHA OFERTA MÁGICA!
-                            </Button>
-                        )}
+                        
+                        <Button onClick={handleRevealPrice} className="w-full goddess-gradient text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 mt-4 h-auto whitespace-normal text-center">
+                            <Wand2 className="mr-2 h-5 w-5 shrink-0 animate-float" /> QUERO GARANTIR AGORA POR R${offerPriceAnchor} E REVELAR MINHA OFERTA MÁGICA!
+                        </Button>
+                        
                     </CardContent>
                 </Card>
+            </section>
 
-                {isPriceRevealed && (
-                  <div id="final-offer-section-content-wrapper"> {/* Wrapper para controlar visibilidade/transição de todo o bloco pós-revelação */}
-                    <div id="final-offer-section-content" className="mt-10 animate-pop-in bg-black/50 border-2 border-yellow-500 p-6 sm:p-10 rounded-3xl shadow-2xl shadow-yellow-500/50 text-center">
-                        <Wand2 className="h-16 w-16 text-accent mx-auto mb-4 animate-float" />
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-300 mb-3">Sua Co-Criação Mágica Revelada!</h2>
-                        <p className="text-purple-200/90 text-sm sm:text-base md:text-lg mb-3 sm:mb-5 break-words max-w-xl mx-auto">
-                            Mas, {displayName}, por um tempo <span className="text-yellow-300 font-bold">LIMITADÍSSIMO</span>, e como uma oportunidade única por ter chegado até aqui, seu acesso a todo o CÓDIGO DA DEUSA™ não será R$ {totalRealValue.toFixed(2).replace('.',',')}, nem mesmo R$ {offerPriceAnchor.toFixed(2).replace('.',',')}. Será por um valor simbólico de apenas:
-                        </p>
-                        <p className="text-[2.75rem] leading-tight sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-green-400 my-4 md:my-6 glow">
-                            R$ {offerPriceFinal.toFixed(2).replace('.',',')}
-                        </p>
-                        <p className="text-lg sm:text-xl md:text-2xl font-bold text-yellow-300 mb-4 sm:mb-6 break-words">
-                            SIM, {displayName}! APENAS R$ {offerPriceFinal.toFixed(2).replace('.',',')} HOJE! <br className="sm:hidden"/> Um desconto inacreditável sobre o valor já especial de R$ {offerPriceAnchor.toFixed(2).replace('.',',')}!
-                        </p>
 
-                        <div className="mb-6 md:mb-8 max-w-sm mx-auto">
-                            <div className={cn("flex items-center justify-center space-x-1 sm:space-x-2 mb-2", finalOfferTimeLeft < 60 && finalOfferTimeLeft > 0 ? 'text-red-400' : 'text-yellow-200')}>
-                                <Clock className="h-5 w-5 sm:h-6 shrink-0" />
-                                <span className={cn("text-2xl sm:text-3xl font-bold font-mono", finalOfferTimeLeft === 0 ? 'text-red-600' : '', isFinalOfferTimerBlinking && finalOfferTimeLeft > 0 ? 'animate-ping opacity-75':'opacity-100')}>
-                                    {formatTime(finalOfferTimeLeft)}
-                                </span>
-                            </div>
-                            <Progress value={(finalOfferTimeLeft / finalOfferTimerInitial) * 100} className="w-full h-2.5 sm:h-3 bg-yellow-600/30 border border-yellow-600/50 [&>div]:bg-gradient-to-r [&>div]:from-red-500 [&>div]:via-yellow-400 [&>div]:to-orange-500" />
-                            {finalOfferTimeLeft === 0 && <p className="text-red-500 font-bold mt-2 text-sm sm:text-base">TEMPO ESGOTADO! OFERTA ENCERRADA.</p>}
-                        </div>
-                         {/* O botão de compra imediato foi removido daqui, o fluxo seguirá para os blocos 14-19 */}
-                    </div>
-
+            {isPriceRevealed && (
+                <div id="final-offer-section-content-wrapper"> {/* This wrapper now contains BLOCKS 14 through 19 */}
+                    {/* The R$47 Reveal Card content that was here is moved to the end of the page */}
+                    
                     {/* BLOCO 14 – MAPA DE DESBLOQUEIO (CRONOGRAMA) */}
                     <section id="map-section" ref={registerSectionRef('map-section')} className="animate-fade-in py-10 md:py-12 text-center mt-10" style={{animationDelay: '0.2s'}}>
                         <h2 className="font-headline text-3xl sm:text-4xl text-yellow-300 mb-3">⚡ Sua Jornada de 21 Dias</h2>
@@ -588,8 +606,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             Você está prestes a atravessar o portal mais importante da sua vida.
                         </p>
                         <p className="text-purple-300/80 text-md sm:text-lg mb-8 max-w-xl mx-auto whitespace-pre-line">
-                            21 dias.{'\n'}
-                            Cada dia uma ruptura.{'\n'}
+                            21 dias.
+                            Cada dia uma ruptura.
                             Cada etapa, um fio solto que você vai costurar de volta em você mesma.
                         </p>
                         <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
@@ -598,11 +616,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             <PhaseCard phase="DIAS 15-21" title="Cocriar a sua nova realidade." description="🔥 Manifeste a vida que merece." icon={LucideSparkles} delay="0.7s" />
                         </div>
                         <p className="text-purple-200/90 text-lg sm:text-xl mt-8 max-w-2xl mx-auto whitespace-pre-line">
-                            Isso não é só um plano.{'\n'}
+                            Isso não é só um plano.
                             É um processo <span className="font-semibold text-pink-400">irreversível</span> de reconstrução interna.
                         </p>
                         <p className="text-yellow-300 text-lg sm:text-xl mt-4 max-w-xl mx-auto whitespace-pre-line">
-                            Você pode continuar adiando…{'\n'}
+                            Você pode continuar adiando…
                             Ou se dar a chance de descobrir quem você teria sido se ninguém tivesse te quebrado.
                         </p>
                         <div className="text-center mt-10">
@@ -647,7 +665,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             />
                         </div>
                         <p className="text-purple-200/90 text-lg sm:text-xl mt-8 max-w-xl mx-auto whitespace-pre-line">
-                            Essa escolha tá na sua mão agora.{'\n'}
+                            Essa escolha tá na sua mão agora.
                             E o tempo tá olhando.
                         </p>
                         <div className="text-center mt-10">
@@ -664,12 +682,12 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         <h2 className="font-headline text-3xl sm:text-4xl text-pink-400 mb-3 whitespace-pre-line">Essa é a vida que JÁ É SUA.</h2>
                         <p className="text-purple-200/90 text-lg sm:text-xl mb-2 max-w-2xl mx-auto whitespace-pre-line">Você está a um <span className="font-bold text-yellow-300">sim</span> da realidade que já é sua.</p>
                         <p className="text-purple-300/80 text-md sm:text-lg mb-10 max-w-2xl mx-auto whitespace-pre-line">
-                            Imagina abrir os olhos e saber que está exatamente onde deveria estar.{'\n'}
-                            Não por sorte. Não por acaso.{'\n'}
+                            Imagina abrir os olhos e saber que está exatamente onde deveria estar.
+                            Não por sorte. Não por acaso.
                             Mas porque você <span className="font-bold text-accent">decidiu</span>.
                         </p>
                         <p className="text-purple-200/90 text-lg sm:text-xl mb-10 max-w-2xl mx-auto whitespace-pre-line">
-                            Essa vida com paz, energia, amor e propósito não é utopia.{'\n'}
+                            Essa vida com paz, energia, amor e propósito não é utopia.
                             Ela já foi desenhada. Ela já tá vibrando dentro de você.
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-10">
@@ -687,7 +705,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             ))}
                         </div>
                         <p className="text-yellow-300 text-lg sm:text-xl max-w-xl mx-auto whitespace-pre-line">
-                            Você só precisa <span className="font-semibold text-pink-400">ativar o código.</span>{'\n'}
+                            Você só precisa <span className="font-semibold text-pink-400">ativar o código.</span>
                             E aceitar o convite.
                         </p>
                         <div className="text-center mt-10">
@@ -703,7 +721,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     <section id="shield-section" ref={registerSectionRef('shield-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.8s'}}>
                         <h2 className="font-headline text-3xl sm:text-4xl goddess-text-gradient mb-3 whitespace-pre-line">Sem Risco. Sem Volta.</h2>
                         <p className="text-purple-200/90 text-lg sm:text-xl mb-6 max-w-2xl mx-auto whitespace-pre-line">
-                            Você já duvidou de tudo.{'\n'}
+                            Você já duvidou de tudo.
                             Do mundo. Das pessoas. De si mesma.
                         </p>
                         <p className="text-purple-300/80 text-md sm:text-lg mb-10 max-w-xl mx-auto whitespace-pre-line">
@@ -726,7 +744,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             <p className="text-xl sm:text-2xl text-pink-400 font-semibold mb-2">🧬 Um código que já está em você.</p>
                             <p className="text-xl sm:text-2xl text-green-400 font-semibold mb-6">💰 Por menos do que você gasta em um lanche qualquer.</p>
                             <p className="text-red-400 font-bold text-lg sm:text-xl animate-subtle-pulse whitespace-pre-line">
-                                E sim…{'\n'}
+                                E sim…
                                 Se você ignorar isso agora, você vai se lembrar disso depois.
                             </p>
                         </div>
@@ -745,11 +763,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         “Eu nunca pensei que alguém pudesse me destravar assim…”
                     </h2>
                     <p className="text-center text-purple-200/90 mb-8 sm:mb-12 text-md sm:text-lg max-w-xl mx-auto whitespace-pre-line">
-                        Essas vozes não são frases prontas.{'\n'}
+                        Essas vozes não são frases prontas.
                         São ecos de mulheres que passaram exatamente pelo que você está passando agora.
                     </p>
                     <div className="relative">
-                        <div className="flex overflow-x-auto snap-x snap-mandatory py-4 space-x-4 sm:space-x-6 scrollbar-thin scrollbar-thumb-accent scrollbar-track-purple-900/50 px-4">
+                        <div className="flex overflow-x-auto snap-x snap-mandatory py-4 space-x-4 sm:space-x-6 scrollbar-thin scrollbar-thumb-accent scrollbar-track-purple-900/50 px-4 -mx-4">
                         {storyTestimonialsData.map((testimonial, index) => (
                             <TestimonialStoryCard 
                                 key={testimonial.id} 
@@ -777,15 +795,15 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         {!isCodeUnlocked && (
                             <>
                                 <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-yellow-300 mb-6 whitespace-pre-line">
-                                    Você pode voltar pra sua vida.{'\n'}
+                                    Você pode voltar pra sua vida.
                                     Ou tocar nesse botão e começar a viver a sua.
                                 </h2>
                                 <p className="text-purple-200/90 text-lg sm:text-xl mb-6 max-w-xl mx-auto whitespace-pre-line">
-                                    A diferença entre sua realidade atual e a vida que te espera{'\n'}
+                                    A diferença entre sua realidade atual e a vida que te espera
                                     é um clique.
                                 </p>
                                 <p className="text-pink-400 font-semibold text-lg sm:text-xl mb-10 max-w-xl mx-auto whitespace-pre-line">
-                                    Mas esse clique não é só um botão.{'\n'}
+                                    Mas esse clique não é só um botão.
                                     É a primeira decisão <span className="font-bold">real</span> que você toma por <span className="font-bold">você</span> em anos.
                                 </p>
                                 
@@ -807,11 +825,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         )}
 
                         {isCodeUnlocked && (
-                            <div id="final-cta-button-actual" className="animate-pop-in space-y-6">
+                            <div id="final-purchase-cta-button" className="animate-pop-in space-y-6">
                                 <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-400 whitespace-pre-line">CÓDIGO DESBLOQUEADO!</p>
                                 <p className="text-purple-200/90 text-lg sm:text-xl whitespace-pre-line">
-                                    Sim ou não.{'\n'}
-                                    Agora ou nunca.{'\n'}
+                                    Sim ou não.
+                                    Agora ou nunca.
                                     Acordar ou continuar dormindo.
                                 </p>
                                 <p className="text-yellow-300 font-bold text-xl sm:text-2xl mt-2 mb-6 whitespace-pre-line">
@@ -838,9 +856,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             </div>
                         )}
                     </section>
-                  </div> // End of final-offer-section-content-wrapper
+                  </div> 
                 )}
-            </section>
 
             {isCodeUnlocked && (<>
                 <hr className="border-purple-700/30 my-10 md:my-14" />
@@ -886,7 +903,17 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 <section id="final-cta-section" ref={registerSectionRef('final-cta-section')} className="animate-fade-in bg-black/80 rounded-3xl p-8 sm:p-12 text-center border-t-4 border-accent" style={{animationDelay: '0.4s'}}>
                     <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-yellow-300 mb-6">É agora ou você vai continuar patinando, {displayName}?</h2>
                     <p className="text-lg sm:text-xl text-purple-200/90 mb-8 max-w-xl mx-auto">A cada segundo de hesitação, você adia a vida extraordinária que MERECE. Outras mulheres estão desbloqueando seus códigos AGORA.</p>
-                    <Button onClick={() => document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth' })} size="lg" className="goddess-gradient text-primary-foreground font-extrabold text-xl sm:text-2xl py-4 sm:py-5 px-10 sm:px-12 rounded-xl shadow-2xl animate-subtle-vibration hover:shadow-accent/50 transform hover:scale-105 transition-all h-auto whitespace-normal text-center">
+                    <Button onClick={() => {
+                        const finalPurchaseButton = document.getElementById('final-purchase-cta-button');
+                        if (finalPurchaseButton) {
+                            finalPurchaseButton.scrollIntoView({behavior: 'smooth', block: 'center'});
+                            // Optionally, trigger a click if it's a direct link or a focus
+                            // (finalPurchaseButton.querySelector('a') as HTMLElement)?.click(); 
+                        } else {
+                             document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }} 
+                    size="lg" className="goddess-gradient text-primary-foreground font-extrabold text-xl sm:text-2xl py-4 sm:py-5 px-10 sm:px-12 rounded-xl shadow-2xl animate-subtle-vibration hover:shadow-accent/50 transform hover:scale-105 transition-all h-auto whitespace-normal text-center">
                         CLIQUE AQUI E TRANSFORME SUA VIDA!
                     </Button>
                     <p className="text-sm text-muted-foreground mt-4 animate-subtle-pulse" style={{animationDelay: '1s'}}>+9 mulheres desbloqueando seus códigos neste exato momento...</p>
@@ -914,11 +941,28 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     </AlertDialogContent>
                 </AlertDialog>
             </section>
+
+            {/* MOVED SECTION: R$47 Final Offer Reveal Card */}
+            {isPriceRevealed && (
+              <section id="final-offer-reveal-card-moved" ref={registerSectionRef('final-offer-reveal-card-moved')} className="w-full animate-fade-in" style={{animationDelay: '0.5s'}}>
+                <hr className="border-purple-700/30 my-10 md:my-14" />
+                {finalOfferRevealCardContent}
+              </section>
+            )}
+
         </main>
 
         <div className="fixed bottom-0 left-0 right-0 md:hidden bg-black/80 backdrop-blur-sm p-3 border-t border-purple-700/50 z-50 shadow-2xl animate-fade-in animate-subtle-vibration" style={{animationDelay: '3s'}}>
             <Button 
-                onClick={() => document.getElementById(isCodeUnlocked ? 'final-cta-button-actual' : (isPriceRevealed ? 'final-touch-section' : 'price-anchor-section'))?.scrollIntoView({ behavior: 'smooth' })} 
+                onClick={() => {
+                    const targetId = isCodeUnlocked 
+                        ? 'final-purchase-cta-button' 
+                        : (isPriceRevealed ? 'final-touch-section' : 'price-anchor-section');
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }} 
                 className="w-full goddess-gradient text-primary-foreground font-bold text-md py-3 rounded-lg animate-subtle-glow h-auto whitespace-normal text-center"
                 >
                 <LucideSparkles className="mr-2 h-5 w-5 animate-ping absolute left-4 opacity-50 shrink-0" style={{animationDuration:'3s'}} />
@@ -938,4 +982,3 @@ const formatUserDreams = (dreams?: DreamOption[]): string => {
   const initialDreams = dreams.slice(0, -1).map(d => d.label.toLowerCase()).join(', ');
   return `${initialDreams} e ${lastDream}`;
 };
-
