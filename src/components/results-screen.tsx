@@ -249,16 +249,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const [priceCardTimeLeft, setPriceCardTimeLeft] = useState(7 * 60); 
   const [priceCardVacancies, setPriceCardVacancies] = useState(3);
   
-  const initialStickyMessages = useCallback(() => [
-    "Garanta seu código agora ✨",
-    `Faltam ${priceCardVacancies} acessos no seu estado 🔥`,
-    "+9 mulheres desbloqueando agora ⏳",
-    "A chance tá se fechando… 💔"
-  ], [priceCardVacancies]);
-
-  const [stickyMessages, setStickyMessages] = useState(initialStickyMessages());
-  const [stickyMessageIndex, setStickyMessageIndex] = useState(0);
-  
   const [showRecusePopup, setShowRecusePopup] = useState(false);
   const [isScrollLocked, setIsScrollLocked] = useState(false);
   
@@ -299,7 +289,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       const newValue = prev + increment;
       return Math.min(100, newValue);
     });
-    // playSound('unlock_chunk.mp3'); 
   };
 
   const analysisCards = analysisCardsData(currentAnalysisResult);
@@ -323,14 +312,12 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     const distanceToTop = Math.abs(rect.top);
                     const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
 
-                    // Check for active section (closest to top of viewport, at least partially visible)
                     if (rect.top <= 100 && rect.bottom >= 100 && visibleHeight > 0) { 
                         if (distanceToTop < minDistanceToViewportTop) {
                             minDistanceToViewportTop = distanceToTop;
                             activeSectionId = id;
                         }
                     }
-                    // Check for highest visible section overall (even if not "active")
                     if (rect.top < window.innerHeight && rect.bottom > 0 && rect.top < highestSectionTop) {
                        highestSectionTop = rect.top;
                        highestVisibleSectionId = id;
@@ -345,17 +332,16 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 const progress = currentIndex >= 0 ? ((currentIndex + 1) / majorSectionIds.length) * 100 : (pageScrollProgress || 0);
                 setPageScrollProgress(progress);
             } else {
-                 // If no section is determined as active or highest, set progress based on scroll position
                  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                  const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
                  if (scrollHeight > 0) {
                      const generalProgress = (scrollTop / scrollHeight) * 100;
                      setPageScrollProgress(generalProgress);
                  } else {
-                     setPageScrollProgress(0); // Handles case where scrollHeight is 0 (no scrollbar)
+                     setPageScrollProgress(0); 
                  }
             }
-        }, 100); // Reduced timeout for faster updates
+        }, 100); 
     };
     
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -366,7 +352,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
       if (unlockingTimeoutRef.current) clearTimeout(unlockingTimeoutRef.current);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageScrollProgress]); 
   
   useEffect(() => {
@@ -382,8 +367,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         setPriceCardVacancies(1);
         playSound('limit_reached.mp3');
     }
-    setStickyMessages(initialStickyMessages());
-  }, [priceCardTimeLeft, priceCardVacancies, initialStickyMessages]);
+  }, [priceCardTimeLeft, priceCardVacancies]);
 
   useEffect(() => {
     if (!isPriceRevealed || finalOfferTimeLeft <= 0) {
@@ -400,13 +384,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     }
     return () => clearInterval(timerId);
   }, [finalOfferTimeLeft, isPriceRevealed]);
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setStickyMessageIndex(prevIndex => (prevIndex + 1) % stickyMessages.length);
-    }, 20000); 
-    return () => clearInterval(intervalId);
-  }, [stickyMessages.length]);
 
 
   const handleRevealPrice = () => {
@@ -605,7 +582,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             </section>
 
             <hr className="border-purple-700/30 my-10 md:my-14" />
-            
+
             <section id="who-its-for-section" ref={registerSectionRef('who-its-for-section')} className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-10 goddess-text-gradient">Este Código É Para Você?</h2>
                 <div className="grid md:grid-cols-2 gap-6 md:gap-8">
@@ -850,21 +827,27 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             </div>
                         </div>
 
-                        <div className="mb-10 space-y-6">
+                         <div className="mb-10 space-y-6">
                             <h3 className="font-headline text-xl sm:text-2xl text-yellow-300 mb-4">Sua Garantia Absoluta:</h3>
                              <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
-                                {[
-                                    "Sem chance de dar errado.",
-                                    "Sem volta pra dor.",
-                                    "Sem mais desculpas."
-                                ].map((item, index) => (
-                                    <Card key={index} className="bg-slate-800/60 border-purple-700/70 p-4 animate-fade-in transform hover:scale-105 transition-transform duration-300" style={{ animationDelay: `${0.2 + index * 0.15}s` }}>
-                                        <CardContent className="flex items-center gap-3 p-0">
-                                            <CheckCircle2 className="h-7 w-7 text-green-400 shrink-0" />
-                                            <p className="text-md text-purple-200/95 text-left">{item}</p>
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                                <Card className="bg-slate-800/60 border-purple-700/70 p-4 animate-fade-in transform hover:scale-105 transition-transform duration-300" style={{ animationDelay: "0.2s" }}>
+                                    <CardContent className="flex items-center gap-3 p-0">
+                                        <CheckCircle2 className="h-7 w-7 text-green-400 shrink-0" />
+                                        <p className="text-md text-purple-200/95 text-left">Sem chance de dar errado.</p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="bg-slate-800/60 border-purple-700/70 p-4 animate-fade-in transform hover:scale-105 transition-transform duration-300" style={{ animationDelay: "0.35s" }}>
+                                    <CardContent className="flex items-center gap-3 p-0">
+                                        <CheckCircle2 className="h-7 w-7 text-green-400 shrink-0" />
+                                        <p className="text-md text-purple-200/95 text-left">Sem volta pra dor.</p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="bg-slate-800/60 border-purple-700/70 p-4 animate-fade-in transform hover:scale-105 transition-transform duration-300" style={{ animationDelay: "0.5s" }}>
+                                    <CardContent className="flex items-center gap-3 p-0">
+                                        <CheckCircle2 className="h-7 w-7 text-green-400 shrink-0" />
+                                        <p className="text-md text-purple-200/95 text-left">Sem mais desculpas.</p>
+                                    </CardContent>
+                                </Card>
                             </div>
                         </div>
                         
@@ -962,9 +945,9 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             </div>
                         )}
                         
-                        <div id="final-purchase-cta-section" className={cn(isCodeUnlocked ? '' : 'hidden')}> {/* Animação movida para o pai, ou removida se causar problemas */}
+                        <div id="final-purchase-cta-section">
                             {isCodeUnlocked && (
-                                <div className="space-y-6 mt-8">
+                                <div className="animate-pop-in space-y-6 mt-8">
                                     <p className="text-purple-200/90 text-lg sm:text-xl whitespace-pre-line">
                                         Sim ou não.{"\n"}
                                         Agora ou nunca.{"\n"}
@@ -975,7 +958,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                         🔓 Você sabe o que precisa fazer.
                                     </p>
                                     
-                                    <div id="final-offer-content-expanded" className="mt-10 bg-black/50 border-2 border-yellow-500 p-6 sm:p-10 rounded-3xl shadow-2xl shadow-yellow-500/50 text-center"> {/* Animação removida daqui */}
+                                    <div id="final-offer-content-expanded" className="mt-10 bg-black/50 border-2 border-yellow-500 p-6 sm:p-10 rounded-3xl shadow-2xl shadow-yellow-500/50 text-center">
                                         <Wand2 className="h-16 w-16 text-accent mx-auto mb-4 animate-float" />
                                         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-300 mb-3">Sua Co-Criação Mágica Revelada!</h2>
                                         <p className="text-purple-200/90 text-sm sm:text-base md:text-lg mb-3 sm:mb-5 break-words max-w-xl mx-auto">
@@ -1064,7 +1047,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
             <hr className="border-purple-700/30 my-10 md:my-14" />
 
-            <section id="decision-section" ref={registerSectionRef('decision-section')} className="animate-fade-in" style={{animationDelay: '0.2s'}} onMouseEnter={handleScrollLock}>
+            <section id="decision-section" ref={registerSectionRef('decision-section')} className="animate-fade-in" style={{animationDelay: '0.2s'}}>
                 <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-8 goddess-text-gradient">Sua Encruzilhada, {displayName}:</h2>
                 <div className={cn("grid md:grid-cols-2 gap-6 md:gap-8 transition-opacity duration-500", isScrollLocked && "opacity-50 blur-sm scroll-lock-pulse")}>
                     <Card className="bg-red-900/70 border-2 border-red-600 p-6 rounded-2xl h-full">
@@ -1158,30 +1141,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             </section>
         </main>
 
-        <div className="fixed bottom-0 left-0 right-0 md:hidden bg-black/80 backdrop-blur-sm p-3 border-t border-purple-700/50 z-50 shadow-2xl animate-fade-in animate-subtle-vibration" style={{animationDelay: '3s'}}>
-            <Button 
-                onClick={() => {
-                    let targetId = 'price-anchor-section'; 
-                    if (isCodeUnlocked) {
-                        targetId = 'final-purchase-cta-section';
-                    } else if (isPriceRevealed) {
-                        targetId = 'final-touch-section'; 
-                    }
-                    const targetElement = document.getElementById(targetId);
-                    if (targetElement) {
-                        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                         if (targetId === 'final-touch-section' && !isCodeUnlocked && !isUnlockingCode) {
-                            handleUnlockCode();
-                        }
-                    }
-                }} 
-                className="w-full goddess-gradient text-primary-foreground font-bold text-md py-3 rounded-lg animate-subtle-glow h-auto whitespace-normal text-center leading-normal"
-                >
-                <LucideSparkles className="mr-2 h-5 w-5 animate-ping absolute left-4 opacity-50 shrink-0" style={{animationDuration:'3s'}} />
-                {stickyMessages[stickyMessageIndex]}
-                <LucideSparkles className="ml-2 h-5 w-5 animate-ping absolute right-4 opacity-50 shrink-0" style={{animationDuration:'3s', animationDelay:'0.5s'}}/>
-            </Button>
-        </div>
     </div>
   );
 };
@@ -1196,5 +1155,4 @@ const formatUserDreams = (dreams?: DreamOption[]): string => {
 };
 
     
-
     
