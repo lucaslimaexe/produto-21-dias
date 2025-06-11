@@ -8,7 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, Lightbulb, BookOpen, Users, Map, GitCompareArrows, Heart, Bolt, Sun, Loader2, Sparkles as LucideSparkles, ThumbsDown, ThumbsUp, Lock, CircleDollarSign, ShoppingCart, Star, ChevronLeft, ChevronRight, Eye, Group, Key, Unlock, Brain, TrendingUp, Target, ShieldOff, ShieldCheck, MessageCircle, Rocket, Gift, Palette, Activity, CheckCircle2 } from 'lucide-react'; // Added CheckCircle2, XCircle
+import { AlertTriangle, Clock, Zap, ExternalLink, XCircle, Wand2, Lightbulb, BookOpen, Users, Map, GitCompareArrows, Heart, Bolt, Sun, Loader2, Sparkles as LucideSparkles, ThumbsDown, ThumbsUp, Lock, CircleDollarSign, ShoppingCart, Star, ChevronLeft, ChevronRight, Eye, Group, Key, Unlock, Brain, TrendingUp, Target, ShieldOff, ShieldCheck, MessageCircle, Rocket, Gift, Palette, Activity, CheckCircle2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Image from 'next/image';
 import { Progress } from "@/components/ui/progress";
@@ -97,6 +97,24 @@ const faqItems = [
         question: "Como recebo o acesso?",
         answer: "IMEDIATAMENTE após a confirmação do seu desbloqueio. Você receberá um email com todas as instruções para acessar o portal secreto e iniciar sua jornada de 21 dias. O universo não espera. Sua transformação também não."
     }
+];
+
+const majorSectionIds = [
+  'diagnostics-section',
+  'offer-start-section',
+  'modules-section',
+  'who-its-for-section',
+  'testimonials-section',
+  'price-anchor-section',
+  'map-section',
+  'before-after-section',
+  'vision-section',
+  'shield-section',
+  'moving-testimonials-section',
+  'final-touch-section',
+  'faq-section',
+  'decision-section',
+  'final-cta-section',
 ];
 
 
@@ -225,8 +243,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   dreamsAchievementDateLabel
 }) => {
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
-  const [currentHeaderText, setCurrentHeaderText] = useState<string>("ALERTA: SEU DIAGNÓSTICO É CRÍTICO!");
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [pageScrollProgress, setPageScrollProgress] = useState(0);
 
   const [priceCardTimeLeft, setPriceCardTimeLeft] = useState(7 * 60); 
   const [priceCardVacancies, setPriceCardVacancies] = useState(3);
@@ -286,25 +304,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
   const analysisCards = analysisCardsData(currentAnalysisResult);
 
-
-  const sectionHeaderMessages: Record<string, string> = {
-    'diagnostics-section': "ALERTA: SEU DIAGNÓSTICO É CRÍTICO!",
-    'offer-start-section': "DESBLOQUEIE SEU POTENCIAL AGORA!",
-    'modules-section': "O MÉTODO SECRETO: CÓDIGO DA DEUSA™ REVELADO",
-    'who-its-for-section': "ESTE CÓDIGO É PARA VOCÊ?",
-    'testimonials-section': "VEJA QUEM JÁ SE TRANSFORMOU!",
-    'price-anchor-section': "OFERTA ÚNICA: SUA TRANSFORMAÇÃO!",
-    'map-section': "SUA JORNADA DE 21 DIAS COMEÇA...",
-    'before-after-section': "SUA VIDA: ANTES E DEPOIS DO CÓDIGO",
-    'vision-section': "A VIDA QUE VOCÊ MERECE ESTÁ AQUI.",
-    'shield-section': "RISCO ZERO, TRANSFORMAÇÃO TOTAL!",
-    'moving-testimonials-section': "ECOS DA TRANSFORMAÇÃO: ELAS FALAM POR SI",
-    'faq-section': "AINDA TEM DÚVIDAS? NÓS RESPONDEMOS!",
-    'final-touch-section': "A DECISÃO É SUA: O UNIVERSO ESPERA SEU SIM",
-    'decision-section': "A ENCRUZILHADA FINAL: ESCOLHA SEU CAMINHO",
-    'final-cta-section': "ÚLTIMA CHAMADA: NÃO DEIXE SUA DEUSA INTERIOR ESPERANDO!",
-  };
-
   const registerSectionRef = useCallback((id: string) => (el: HTMLElement | null) => {
     sectionRefs.current[id] = el;
   }, []);
@@ -315,6 +314,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         scrollTimeoutRef.current = setTimeout(() => {
             let activeSectionId: string | null = null;
             let minDistanceToViewportTop = Infinity;
+            let highestVisibleSectionId: string | null = null;
+            let highestSectionTop = Infinity;
 
             Object.entries(sectionRefs.current).forEach(([id, element]) => {
                 if (element) {
@@ -322,36 +323,39 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     const distanceToTop = Math.abs(rect.top);
                     const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
 
+                    // Check for active section (closest to top of viewport, at least partially visible)
                     if (rect.top <= 100 && rect.bottom >= 100 && visibleHeight > 0) { 
                         if (distanceToTop < minDistanceToViewportTop) {
                             minDistanceToViewportTop = distanceToTop;
                             activeSectionId = id;
                         }
                     }
+                    // Check for highest visible section overall (even if not "active")
+                    if (rect.top < window.innerHeight && rect.bottom > 0 && rect.top < highestSectionTop) {
+                       highestSectionTop = rect.top;
+                       highestVisibleSectionId = id;
+                    }
                 }
             });
             
-            if (activeSectionId) {
-                setCurrentHeaderText(sectionHeaderMessages[activeSectionId] || "MANIFESTE SEU PODER AGORA!");
+            const determinedSectionId = activeSectionId || highestVisibleSectionId;
+            
+            if (determinedSectionId) {
+                const currentIndex = majorSectionIds.indexOf(determinedSectionId);
+                const progress = currentIndex >= 0 ? ((currentIndex + 1) / majorSectionIds.length) * 100 : (pageScrollProgress || 0);
+                setPageScrollProgress(progress);
             } else {
-                let highestVisibleSectionId: string | null = null;
-                let highestSectionTop = Infinity;
-                Object.entries(sectionRefs.current).forEach(([id, element]) => {
-                    if (element) {
-                        const rect = element.getBoundingClientRect();
-                        if (rect.top < window.innerHeight && rect.bottom > 0 && rect.top < highestSectionTop) {
-                            highestSectionTop = rect.top;
-                            highestVisibleSectionId = id;
-                        }
-                    }
-                });
-                if (highestVisibleSectionId) {
-                    setCurrentHeaderText(sectionHeaderMessages[highestVisibleSectionId] || "MANIFESTE SEU PODER AGORA!");
-                } else {
-                     setCurrentHeaderText(sectionHeaderMessages['diagnostics-section']);
-                }
+                 // If no section is determined as active or highest, set progress based on scroll position
+                 const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                 const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                 if (scrollHeight > 0) {
+                     const generalProgress = (scrollTop / scrollHeight) * 100;
+                     setPageScrollProgress(generalProgress);
+                 } else {
+                     setPageScrollProgress(0); // Handles case where scrollHeight is 0 (no scrollbar)
+                 }
             }
-        }, 150); 
+        }, 100); // Reduced timeout for faster updates
     };
     
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -363,7 +367,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       if (unlockingTimeoutRef.current) clearTimeout(unlockingTimeoutRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); 
+  }, [pageScrollProgress]); 
   
   useEffect(() => {
     if (priceCardTimeLeft <= 0) return;
@@ -480,11 +484,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center pt-16 sm:pt-20 pb-28 bg-gradient-to-br from-purple-950 via-black to-red-950 text-foreground overflow-x-hidden">
-        <header className="fixed top-0 left-0 right-0 z-50 bg-destructive/95 backdrop-blur-sm text-destructive-foreground p-2 sm:p-3 text-center shadow-lg animate-flash-red">
-            <div className="container mx-auto flex items-center justify-center gap-2">
-                <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" />
-                <h1 className="text-xs sm:text-sm md:text-base font-bold uppercase tracking-wider truncate px-2">{currentHeaderText}</h1>
-            </div>
+        <header className="fixed top-0 left-0 right-0 z-50 h-2 sm:h-3 bg-slate-800/60 backdrop-blur-sm shadow-lg border-b border-purple-700/30">
+            <div
+                className="h-full bg-gradient-to-r from-accent via-pink-500 to-primary transition-all duration-150 ease-linear"
+                style={{ width: `${pageScrollProgress}%` }}
+            />
         </header>
 
         <main className="w-full max-w-5xl space-y-12 md:space-y-16 px-4">
@@ -588,7 +592,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     ))}
                 </div>
                 <div className="text-center mt-10">
-                    <Button 
+                     <Button 
                         onClick={() => {
                             document.getElementById('who-its-for-section')?.scrollIntoView({ behavior: 'smooth' });
                             conditionallyIncrementPercentage(10, 55);
@@ -599,9 +603,9 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     </Button>
                 </div>
             </section>
-            
-            <hr className="border-purple-700/30 my-10 md:my-14" />
 
+            <hr className="border-purple-700/30 my-10 md:my-14" />
+            
             <section id="who-its-for-section" ref={registerSectionRef('who-its-for-section')} className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-center mb-10 goddess-text-gradient">Este Código É Para Você?</h2>
                 <div className="grid md:grid-cols-2 gap-6 md:gap-8">
@@ -958,7 +962,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                             </div>
                         )}
                         
-                        <div id="final-purchase-cta-section" className={cn(isCodeUnlocked ? 'animate-pop-in' : 'hidden')}>
+                        <div id="final-purchase-cta-section" className={cn(isCodeUnlocked ? '' : 'hidden')}> {/* Animação movida para o pai, ou removida se causar problemas */}
                             {isCodeUnlocked && (
                                 <div className="space-y-6 mt-8">
                                     <p className="text-purple-200/90 text-lg sm:text-xl whitespace-pre-line">
@@ -971,7 +975,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                         🔓 Você sabe o que precisa fazer.
                                     </p>
                                     
-                                    <div id="final-offer-content-expanded" className="mt-10 bg-black/50 border-2 border-yellow-500 p-6 sm:p-10 rounded-3xl shadow-2xl shadow-yellow-500/50 text-center">
+                                    <div id="final-offer-content-expanded" className="mt-10 bg-black/50 border-2 border-yellow-500 p-6 sm:p-10 rounded-3xl shadow-2xl shadow-yellow-500/50 text-center"> {/* Animação removida daqui */}
                                         <Wand2 className="h-16 w-16 text-accent mx-auto mb-4 animate-float" />
                                         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-300 mb-3">Sua Co-Criação Mágica Revelada!</h2>
                                         <p className="text-purple-200/90 text-sm sm:text-base md:text-lg mb-3 sm:mb-5 break-words max-w-xl mx-auto">
@@ -1022,7 +1026,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     </section>
                   </>
                 )}
-
+            
             <hr className="border-purple-700/30 my-10 md:my-14" />
             
             <section id="faq-section" ref={registerSectionRef('faq-section')} className="animate-fade-in py-10 md:py-12" style={{ animationDelay: '0.2s' }}>
@@ -1190,5 +1194,7 @@ const formatUserDreams = (dreams?: DreamOption[]): string => {
   const initialDreams = dreams.slice(0, -1).map(d => d.label.toLowerCase()).join(', ');
   return `${initialDreams} e ${lastDream}`;
 };
+
+    
 
     
