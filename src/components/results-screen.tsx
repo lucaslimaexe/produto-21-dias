@@ -130,7 +130,7 @@ const majorSectionIds = [
   'final-touch-section',
   'faq-section',
   'decision-section',
-  'final-purchase-cta-section', // Adicionado para o caso de scroll direto para o CTA final
+  'final-purchase-cta-section',
 ];
 
 
@@ -302,7 +302,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       description: `Seu alinhamento subiu para ${newPercentage}%! Você está cada vez mais perto de manifestar seus sonhos.`,
       duration: 3500,
     });
-    playSound('progress_increase.mp3');
+    // playSound('progress_increase.mp3');
   }, [toast]);
 
   const showDreamNotification = useCallback(() => {
@@ -315,7 +315,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         description: message,
         duration: 4500, 
       });
-      playSound('notification_light.mp3'); 
+      // playSound('notification_light.mp3'); 
 
       setCurrentDreamNotificationIndex((prevIndex) => (prevIndex + 1) % userDreams.length);
     }
@@ -337,33 +337,29 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       description: randomMessage,
       duration: 5000,
     });
-    playSound('new_purchase_subtle.mp3');
+    // playSound('new_purchase_subtle.mp3');
   }, [toast]);
 
   useEffect(() => {
     const startInterval = () => {
-      // Clear any existing interval first
       if (socialProofIntervalId) {
         clearInterval(socialProofIntervalId);
       }
-      // Set a new interval with a random delay
-      const randomDelay = Math.random() * (45000 - 15000) + 15000; // Between 15s and 45s
+      const randomDelay = Math.random() * (45000 - 15000) + 15000; 
       const newId = setInterval(() => {
         showSocialProofNotification();
       }, randomDelay);
       setSocialProofIntervalId(newId);
     };
   
-    startInterval(); // Start on mount
+    startInterval();
   
-    // This will run when the component unmounts or before re-running due to dependency changes (though showSocialProofNotification is stable)
     return () => {
       if (socialProofIntervalId) {
         clearInterval(socialProofIntervalId);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showSocialProofNotification]); // Re-run if showSocialProofNotification changes (it shouldn't due to useCallback)
+  }, [showSocialProofNotification]);
 
 
   const conditionallyIncrementPercentage = useCallback((increment: number, capBeforeIncrement?: number) => {
@@ -377,7 +373,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       }
       return newValue;
     });
-  }, [setGamifiedPercentage, showProgressNotification]);
+  }, [showProgressNotification]);
 
   const analysisCards = analysisCardsData(currentAnalysisResult);
 
@@ -487,19 +483,17 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   }, [conditionallyIncrementPercentage, showDreamNotification]);
   
   const handleUnlockCode = useCallback(() => {
-    setIsCodeUnlocked(true); // Reveal content immediately
+    setIsCodeUnlocked(true);
     playSound('form_complete.mp3');
     setGamifiedPercentage(95); 
     showProgressNotification(95);
     showDreamNotification();
     
     requestAnimationFrame(() => {
-      setTimeout(() => {
-          const ctaSection = document.getElementById('final-purchase-cta-section');
-          if (ctaSection) {
-               ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-      }, 50); 
+      const ctaSection = document.getElementById('final-purchase-cta-section');
+      if (ctaSection) {
+           ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     });
   }, [showDreamNotification, showProgressNotification]);
   
@@ -1125,10 +1119,14 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                 targetId = 'final-purchase-cta-section';
                             }
                             const element = document.getElementById(targetId);
-                            if (element) requestAnimationFrame(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                            if (element) {
+                                requestAnimationFrame(() => {
+                                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                });
+                            }
 
                              if (targetId === 'final-touch-section' && !isCodeUnlocked) {
-                                handleUnlockCode();
+                                handleUnlockCode(); 
                             }
                         }}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg sm:text-xl py-3 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center leading-normal"
@@ -1173,11 +1171,14 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 <div className={cn("text-center mt-10 transition-opacity duration-1000 opacity-100 animate-fade-in")} style={{animationDelay: '2s'}}>
                     <Button onClick={() => {
                         const ctaSection = document.getElementById('final-purchase-cta-section');
-                        if (ctaSection) {
+                        if (ctaSection && isCodeUnlocked) {
                             requestAnimationFrame(() => ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' }));
                         } else {
                              const finalTouch = document.getElementById('final-touch-section');
-                             if (finalTouch) requestAnimationFrame(() => finalTouch.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                             if (finalTouch) {
+                                requestAnimationFrame(() => finalTouch.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                             }
+                             if (!isCodeUnlocked) handleUnlockCode();
                         }
                     }} size="lg" className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-700 hover:via-pink-700 hover:to-red-700 text-white font-bold text-lg sm:text-xl py-4 px-10 rounded-xl shadow-2xl animate-intense-pulse h-auto whitespace-normal text-center leading-normal">
                         <Rocket className="mr-2 h-6 w-6 shrink-0" /> EU DECIDO VIRAR O JOGO!
@@ -1203,7 +1204,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         if(finalTouchSection) {
                            requestAnimationFrame(() => finalTouchSection.scrollIntoView({ behavior: 'smooth', block: 'center' }));
                         }
-                        if(!isCodeUnlocked) handleUnlockCode(); // Only call unlock if not already unlocked
+                        if(!isCodeUnlocked) handleUnlockCode(); 
                     }
                 }} 
                 size="lg" className="goddess-gradient text-primary-foreground font-extrabold text-xl sm:text-2xl py-4 sm:py-5 px-10 sm:px-12 rounded-xl shadow-2xl animate-subtle-vibration hover:shadow-accent/50 transform hover:scale-105 transition-all h-auto whitespace-normal text-center leading-normal">
