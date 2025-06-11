@@ -175,6 +175,16 @@ const VisionCard: React.FC<{ title: string, icon: React.ElementType, dataAiHint:
     </button>
 );
 
+const GuaranteePillarCard: React.FC<{ icon: React.ElementType; title: string; description: string; delay: string; }> = ({ icon: Icon, title, description, delay }) => (
+    <Card className="bg-slate-800/70 border-purple-600/80 p-5 text-center animate-fade-in transform hover:scale-105 transition-transform duration-300 h-full flex flex-col" style={{ animationDelay: delay }}>
+        <div className="flex flex-col items-center flex-grow">
+            <Icon className="h-10 w-10 text-accent mb-3" />
+            <h4 className="text-lg font-semibold text-pink-400 mb-2">{title}</h4>
+            <p className="text-sm text-purple-200/90 leading-relaxed flex-grow">{description}</p>
+        </div>
+    </Card>
+);
+
 
 export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   onRestart,
@@ -223,19 +233,18 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
   const sectionHeaderMessages: Record<string, string> = {
     'diagnostics-section': "ALERTA: SEU DIAGNÓSTICO É CRÍTICO!",
-    'offer-start-section': "A CHAVE PARA SUA LIBERDADE ESTÁ AQUI!",
+    'offer-start-section': "DESBLOQUEIE SEU POTENCIAL AGORA!",
     'modules-section': "O MÉTODO SECRETO: CÓDIGO DA DEUSA™ REVELADO",
-    'testimonials-section': "MILHARES DE MULHERES JÁ SE TRANSFORMARAM!",
-    'price-anchor-section': "OFERTA RELÂMPAGO: ACESSO IMEDIATO!",
-    'map-section': "⚡ SUA JORNADA DE 21 DIAS: O PORTAL DA TRANSFORMAÇÃO",
-    'before-after-section': "DE FIGURANTE A PROTAGONISTA: SUA REALIDADE REESCRITA",
-    'vision-section': "A VIDA QUE JÁ É SUA: TOQUE PARA ATIVAR",
-    'shield-section': "ESCUDO ANTI-FALHA: RISCO ZERO, TRANSFORMAÇÃO TOTAL",
+    'testimonials-section': "VEJA QUEM JÁ SE TRANSFORMOU!",
+    'price-anchor-section': "OFERTA ÚNICA: SUA TRANSFORMAÇÃO!",
+    'map-section': "SUA JORNADA DE 21 DIAS COMEÇA...",
+    'before-after-section': "SUA VIDA: ANTES E DEPOIS DO CÓDIGO",
+    'vision-section': "A VIDA QUE VOCÊ MERECE ESTÁ AQUI.",
+    'shield-section': "RISCO ZERO, TRANSFORMAÇÃO TOTAL!",
     'moving-testimonials-section': "ECOS DA TRANSFORMAÇÃO: ELAS FALAM POR SI",
     'final-touch-section': "A DECISÃO É SUA: O UNIVERSO ESPERA SEU SIM",
     'decision-section': "A ENCRUZILHADA FINAL: ESCOLHA SEU CAMINHO",
     'final-cta-section': "ÚLTIMA CHAMADA: NÃO DEIXE SUA DEUSA INTERIOR ESPERANDO!",
-    // 'final-offer-reveal-card-moved' is no longer a separate section for header text
   };
 
   const registerSectionRef = useCallback((id: string) => (el: HTMLElement | null) => {
@@ -244,63 +253,50 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
   useEffect(() => {
     const handleScroll = () => {
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-      scrollTimeoutRef.current = setTimeout(() => {
-        let activeSectionId: string | null = null;
-        let minDistanceToTop = Infinity;
-        const viewportTop = window.scrollY;
-        const viewportCenterY = viewportTop + window.innerHeight / 2;
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        scrollTimeoutRef.current = setTimeout(() => {
+            let activeSectionId: string | null = null;
+            let minDistanceToViewportTop = Infinity;
 
-        Object.entries(sectionRefs.current).forEach(([id, element]) => {
-          if (element) {
-            const rect = element.getBoundingClientRect();
-            const elementTopRelativeToDocument = rect.top + viewportTop;
-            
-            // Prioritize sections whose top is at or just above the viewport top
-            if (elementTopRelativeToDocument <= viewportTop + 50) { // 50px buffer
-                const distance = viewportTop - elementTopRelativeToDocument;
-                 if (distance < minDistanceToTop) {
-                    minDistanceToTop = distance;
-                    activeSectionId = id;
-                }
-            } else { // Fallback for sections in view but below the top
-                const elementCenterY = elementTopRelativeToDocument + rect.height / 2;
-                if (rect.top < window.innerHeight && rect.bottom > 0) { // Element is somewhat visible
-                    if (!activeSectionId) { // If no section is "at the top", take the first one visible
-                         const distanceToCenter = Math.abs(elementCenterY - viewportCenterY);
-                         // This part needs refinement if multiple sections are in view
-                         // For simplicity, we can just take the one whose top is closest to viewportTop if nothing else matches
-                         if (activeSectionId === null || elementTopRelativeToDocument < (sectionRefs.current[activeSectionId]?.getBoundingClientRect().top || Infinity) + viewportTop) {
-                            // A simple heuristic: if no section is "active" by being at the top,
-                            // consider the highest visible section.
-                            // This part can be tricky without IntersectionObserver.
-                         }
-                    }
-                }
-            }
-          }
-        });
-        
-        // Fallback logic if no section is perfectly matched
-        if (!activeSectionId) {
-            let highestVisibleSectionId: string | null = null;
-            let highestVisibleSectionTop = Infinity;
             Object.entries(sectionRefs.current).forEach(([id, element]) => {
                 if (element) {
                     const rect = element.getBoundingClientRect();
-                    if (rect.top < window.innerHeight && rect.bottom > 0 && rect.top < highestVisibleSectionTop) {
-                        highestVisibleSectionTop = rect.top;
-                        highestVisibleSectionId = id;
+                    // Consider a section "active" if its top is at or above the viewport top,
+                    // or if a significant portion of it is visible near the top.
+                    const distanceToTop = Math.abs(rect.top);
+                    const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
+
+                    if (rect.top <= 100 && rect.bottom >= 100 && visibleHeight > 0) { // Check if top part of section is near viewport top
+                        if (distanceToTop < minDistanceToViewportTop) {
+                            minDistanceToViewportTop = distanceToTop;
+                            activeSectionId = id;
+                        }
                     }
                 }
             });
-            activeSectionId = highestVisibleSectionId;
-        }
-
-        const determinedSectionId = activeSectionId || Object.keys(sectionHeaderMessages)[0];
-        setCurrentHeaderText(sectionHeaderMessages[determinedSectionId] || "MANIFESTE SEU PODER AGORA!");
-
-      }, 150); // Debounce time for scroll
+            
+            if (activeSectionId) {
+                setCurrentHeaderText(sectionHeaderMessages[activeSectionId] || "MANIFESTE SEU PODER AGORA!");
+            } else {
+                // Fallback: if no section is actively near the top, check for the topmost section in view
+                let highestVisibleSectionId: string | null = null;
+                let highestSectionTop = Infinity;
+                Object.entries(sectionRefs.current).forEach(([id, element]) => {
+                    if (element) {
+                        const rect = element.getBoundingClientRect();
+                        if (rect.top < window.innerHeight && rect.bottom > 0 && rect.top < highestSectionTop) {
+                            highestSectionTop = rect.top;
+                            highestVisibleSectionId = id;
+                        }
+                    }
+                });
+                if (highestVisibleSectionId) {
+                    setCurrentHeaderText(sectionHeaderMessages[highestVisibleSectionId] || "MANIFESTE SEU PODER AGORA!");
+                } else {
+                     setCurrentHeaderText(sectionHeaderMessages['diagnostics-section']); // Default
+                }
+            }
+        }, 150); 
     };
     
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -312,7 +308,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       if (unlockingTimeoutRef.current) clearTimeout(unlockingTimeoutRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sectionHeaderMessages]); 
+  }, []); 
   
   useEffect(() => {
     if (priceCardTimeLeft <= 0) return;
@@ -359,7 +355,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     playSound('dream_select.mp3');
     setFinalOfferTimeLeft(finalOfferTimerInitial); 
     setTimeout(() => { 
-        // Scroll to the next section after revealing the price, which is now map-section
         document.getElementById('map-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
   };
@@ -459,7 +454,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 </div>
 
                 <div className="mb-8">
-                    <h3 className="font-headline text-xl sm:text-2xl text-red-300 mb-4">Suas Principais Travas Comportamentais:</h3>
+                     <h3 className="font-headline text-xl sm:text-2xl text-red-300 mb-4">Suas Principais Travas Comportamentais:</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 justify-center">
                         {currentAnalysisResult.keywords.map((keyword, index) => (
                             <TooltipProvider key={index}>
@@ -587,7 +582,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 </Card>
             </section>
 
-            {/* Novos blocos de copy e gamificação entram aqui se o preço foi revelado */}
             {isPriceRevealed && (
                 <>
                     <hr className="border-purple-700/30 my-10 md:my-14" />
@@ -627,6 +621,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     {/* BLOCO 15 – ANTES VS DEPOIS (Interativo) */}
                     <section id="before-after-section" ref={registerSectionRef('before-after-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.4s'}}>
                         <h2 className="font-headline text-3xl sm:text-4xl goddess-text-gradient mb-8">Sua Vida: Antes e Depois do Código</h2>
+                         <p className="text-purple-300/80 text-md sm:text-lg mb-10 max-w-xl mx-auto whitespace-pre-line">
+                            Essa escolha tá na sua mão agora.{"\n"}
+                            E o tempo tá olhando.
+                        </p>
                         <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-stretch">
                             <BeforeAfterCard 
                                 title="ANTES" 
@@ -639,7 +637,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                 borderColor="border-dashed border-red-700/50"
                                 textColor="text-red-300"
                                 icon={ShieldOff}
-                                className="opacity-75 hover:opacity-100"
+                                className="opacity-75 hover:opacity-100 animate-fade-in"
+                                style={{animationDelay: '0.2s'}}
                             />
                             <BeforeAfterCard 
                                 title="DEPOIS" 
@@ -653,13 +652,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                 borderColor="border-green-500/50"
                                 textColor="text-green-300"
                                 icon={ShieldCheck}
-                                className="shadow-2xl shadow-green-500/30"
+                                className="shadow-2xl shadow-green-500/30 animate-fade-in"
+                                style={{animationDelay: '0.5s'}}
                             />
                         </div>
-                        <p className="text-purple-200/90 text-lg sm:text-xl mt-8 max-w-xl mx-auto whitespace-pre-line">
-                            Essa escolha tá na sua mão agora.{"\n"}
-                            E o tempo tá olhando.
-                        </p>
+                       
                         <div className="text-center mt-10">
                             <Button onClick={() => document.getElementById('vision-section')?.scrollIntoView({ behavior: 'smooth' })} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center">
                             <LucideSparkles className="mr-2 h-5 w-5" /> ATIVAR MINHA VISÃO DE VIDA
@@ -672,8 +669,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     {/* BLOCO 16 – VISÃO DE VIDA (Simulação de Possibilidades) */}
                     <section id="vision-section" ref={registerSectionRef('vision-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.6s'}}>
                         <h2 className="font-headline text-3xl sm:text-4xl text-pink-400 mb-3 whitespace-pre-line">Essa é a vida que JÁ É SUA.</h2>
-                        <p className="text-purple-200/90 text-lg sm:text-xl mb-2 max-w-2xl mx-auto whitespace-pre-line">Você está a um <span className="font-bold text-yellow-300">sim</span> da realidade que já é sua.</p>
-                        <p className="text-purple-300/80 text-md sm:text-lg mb-10 max-w-2xl mx-auto whitespace-pre-line">
+                        <p className="text-purple-200/90 text-lg sm:text-xl mb-2 max-w-2xl mx-auto whitespace-pre-line">
+                            Você está a um <span className="font-bold text-yellow-300">sim</span> da realidade que já é sua.
+                        </p>
+                         <p className="text-purple-300/80 text-md sm:text-lg mb-10 max-w-2xl mx-auto whitespace-pre-line">
                             Imagina abrir os olhos e saber que está exatamente onde deveria estar.{"\n"}
                             Não por sorte. Não por acaso.{"\n"}
                             Mas porque você <span className="font-bold text-accent">decidiu</span>.
@@ -709,7 +708,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
                     <hr className="border-purple-700/30 my-10 md:my-14" />
                     
-                    {/* BLOCO 17 – SEM RISCO. SEM VOLTA. (Escudo Anti-Falha) */}
+                    {/* BLOCO 17 – SEM RISCO. SEM VOLTA. */}
                     <section id="shield-section" ref={registerSectionRef('shield-section')} className="animate-fade-in py-10 md:py-12 text-center" style={{animationDelay: '0.8s'}}>
                         <h2 className="font-headline text-3xl sm:text-4xl goddess-text-gradient mb-3 whitespace-pre-line">Sem Risco. Sem Volta.</h2>
                         <p className="text-purple-200/90 text-lg sm:text-xl mb-6 max-w-2xl mx-auto whitespace-pre-line">
@@ -719,7 +718,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         <p className="text-purple-300/80 text-md sm:text-lg mb-10 max-w-xl mx-auto whitespace-pre-line">
                             Agora, pela primeira vez, você vai entrar num caminho <span className="font-bold text-yellow-300">sem risco</span>.
                         </p>
-                        <div className="flex flex-col items-center">
+                        
+                        <div className="flex flex-col items-center mb-10">
                             <div className="relative mb-8 p-6">
                                 <ShieldCheck className="h-24 w-24 sm:h-32 sm:w-32 text-accent animate-subtle-glow" />
                                 <Badge className="absolute top-0 left-0 transform -translate-x-1/4 -translate-y-1/2 bg-pink-500 text-white animate-pop-in" style={{animationDelay:'0.2s'}}>+7.000 desbloqueios</Badge>
@@ -727,19 +727,42 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                 <Badge className="absolute top-1/2 -translate-y-1/2 -right-5 sm:-right-10 transform translate-x-1/4 bg-purple-500 text-white animate-pop-in text-xs sm:text-sm" style={{animationDelay:'0.6s'}}>Testado. Validado.</Badge>
                                 <Badge className="absolute top-1/2 -translate-y-1/2 -left-5 sm:-left-10 transform -translate-x-1/4 bg-yellow-500 text-black animate-pop-in text-xs sm:text-sm" style={{animationDelay:'0.8s'}}>Infalível.</Badge>
                             </div>
-                            <ul className="space-y-3 text-lg text-purple-200/95 max-w-md mx-auto mb-6 text-left">
-                                <li className="flex items-start gap-2"><CheckCircle2 className="h-6 w-6 text-green-400 shrink-0 mt-1" /> Sem chance de dar errado.</li>
-                                <li className="flex items-start gap-2"><CheckCircle2 className="h-6 w-6 text-green-400 shrink-0 mt-1" /> Sem volta pra dor.</li>
-                                <li className="flex items-start gap-2"><CheckCircle2 className="h-6 w-6 text-green-400 shrink-0 mt-1" /> Sem mais desculpas.</li>
-                            </ul>
-                            <p className="text-xl sm:text-2xl text-yellow-300 font-semibold mb-2">💎 Um processo à prova de falhas.</p>
-                            <p className="text-xl sm:text-2xl text-pink-400 font-semibold mb-2">🧬 Um código que já está em você.</p>
-                            <p className="text-xl sm:text-2xl text-green-400 font-semibold mb-6">💰 Por menos do que você gasta em um lanche qualquer.</p>
-                            <p className="text-red-400 font-bold text-lg sm:text-xl animate-subtle-pulse whitespace-pre-line">
-                                E sim…{"\n\n"}
-                                Se você ignorar isso agora, você vai se lembrar disso depois.
-                            </p>
                         </div>
+
+                        <div className="mb-10 space-y-6">
+                            <h3 className="font-headline text-xl sm:text-2xl text-yellow-300">Sua Garantia Absoluta:</h3>
+                            <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
+                                {["Sem chance de dar errado.", "Sem volta pra dor.", "Sem mais desculpas."].map((item, index) => (
+                                    <Card key={index} className="bg-slate-800/60 border-purple-700/70 p-4 animate-fade-in transform hover:scale-105 transition-transform duration-300" style={{animationDelay: `${0.2 + index * 0.15}s`}}>
+                                        <CardContent className="flex items-center gap-3 p-0">
+                                            <CheckCircle2 className="h-7 w-7 text-green-400 shrink-0" />
+                                            <p className="text-md text-purple-200/95 text-left">{item}</p>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="mb-10 space-y-6">
+                            <h3 className="font-headline text-xl sm:text-2xl text-pink-400">Três Pilares da Sua Transformação Irreversível:</h3>
+                            <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
+                                <GuaranteePillarCard icon={Target} title="À Prova de Falhas" description="Um processo desenhado para o seu sucesso." delay="0.5s" />
+                                <GuaranteePillarCard icon={Key} title="Código Pessoal" description="Um sistema que já reside em você, esperando para ser ativado." delay="0.65s" />
+                                <GuaranteePillarCard icon={Gift} title="Investimento Mínimo" description="Por menos do que você gasta em distrações que não te levam a lugar nenhum." delay="0.8s" />
+                            </div>
+                        </div>
+                        
+                        <Card className="bg-destructive/20 border-2 border-destructive/50 p-6 rounded-2xl max-w-2xl mx-auto shadow-xl shadow-destructive/30 animate-fade-in" style={{animationDelay: '1s'}}>
+                            <CardContent className="p-0 text-center space-y-3">
+                                <AlertTriangle className="h-10 w-10 text-red-400 mx-auto" />
+                                <p className="text-red-300 font-semibold text-lg sm:text-xl md:text-2xl leading-tight whitespace-pre-line">
+                                    E sim…{"\n\n"}
+                                    Se você ignorar isso agora,{"\n"}
+                                    você vai se lembrar disso depois.
+                                </p>
+                            </CardContent>
+                        </Card>
+
                         <div className="text-center mt-10">
                             <Button onClick={() => document.getElementById('moving-testimonials-section')?.scrollIntoView({ behavior: 'smooth' })} className="goddess-gradient text-primary-foreground font-bold text-md sm:text-lg py-3 px-6 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300 animate-icon-subtle-float h-auto whitespace-normal text-center">
                             <MessageCircle className="mr-2 h-5 w-5" /> OUVIR QUEM JÁ VIVEU ISSO
@@ -782,9 +805,9 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
                     <hr className="border-purple-700/30 my-10 md:my-14" />
 
-                    {/* BLOCO 19 – TOQUE FINAL (Botão Mágico) */}
+                    {/* BLOCO 19 – TOQUE FINAL */}
                     <section id="final-touch-section" ref={registerSectionRef('final-touch-section')} className="animate-fade-in py-10 md:py-16 text-center" style={{animationDelay: '1.2s'}}>
-                        {!isCodeUnlocked && (
+                        {!isCodeUnlocked && !isUnlockingCode && (
                             <>
                                 <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-yellow-300 mb-6 whitespace-pre-line">
                                     Você pode voltar pra sua vida.{"\n"}
@@ -799,26 +822,25 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                                     É a primeira decisão <span className="font-bold">real</span> que você toma por <span className="font-bold">você</span> em anos.
                                 </p>
                                 
-                                {!isUnlockingCode ? (
-                                    <Button 
-                                        onClick={handleUnlockCode} 
-                                        className="bg-gradient-to-br from-pink-500 via-purple-600 to-accent hover:from-pink-600 hover:via-purple-700 hover:to-yellow-500 text-white font-extrabold text-xl sm:text-2xl md:text-3xl py-6 sm:py-8 px-10 sm:px-12 rounded-full shadow-2xl shadow-primary/50 animate-pulse-goddess transform hover:scale-110 transition-all duration-300 h-auto whitespace-normal text-center"
-                                    >
-                                        <Wand2 className="mr-3 h-8 w-8 shrink-0" />
-                                        DESBLOQUEAR MEU CÓDIGO PESSOAL
-                                    </Button>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center h-20">
-                                        <Loader2 className="h-12 w-12 text-primary animate-spin mb-3" />
-                                        <p className="text-lg text-purple-300 font-semibold">Desbloqueando seu código pessoal...</p>
-                                    </div>
-                                )}
+                                <Button 
+                                    onClick={handleUnlockCode} 
+                                    className="bg-gradient-to-br from-pink-500 via-purple-600 to-accent hover:from-pink-600 hover:via-purple-700 hover:to-yellow-500 text-white font-extrabold text-xl sm:text-2xl md:text-3xl py-6 sm:py-8 px-10 sm:px-12 rounded-full shadow-2xl shadow-primary/50 animate-pulse-goddess transform hover:scale-110 transition-all duration-300 h-auto whitespace-normal text-center"
+                                >
+                                    <Wand2 className="mr-3 h-8 w-8 shrink-0" />
+                                    DESBLOQUEAR MEU CÓDIGO PESSOAL
+                                </Button>
                             </>
+                        )}
+
+                        {isUnlockingCode && (
+                            <div className="flex flex-col items-center justify-center h-24 py-6">
+                                <Loader2 className="h-12 w-12 text-primary animate-spin mb-3" />
+                                <p className="text-lg text-purple-300 font-semibold">Desbloqueando seu código pessoal...</p>
+                            </div>
                         )}
 
                         {isCodeUnlocked && (
                              <div id="final-purchase-cta-section" className="animate-pop-in space-y-6">
-                                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-400 whitespace-pre-line">CÓDIGO DESBLOQUEADO!</p>
                                 <p className="text-purple-200/90 text-lg sm:text-xl whitespace-pre-line">
                                     Sim ou não.{"\n"}
                                     Agora ou nunca.{"\n"}
@@ -927,21 +949,18 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl text-yellow-300 mb-6">É agora ou você vai continuar patinando, {displayName}?</h2>
                 <p className="text-lg sm:text-xl text-purple-200/90 mb-8 max-w-xl mx-auto">A cada segundo de hesitação, você adia a vida extraordinária que MERECE. Outras mulheres estão desbloqueando seus códigos AGORA.</p>
                 <Button onClick={() => {
-                    const finalPurchaseSection = document.getElementById('final-purchase-cta-section'); // This ID is now inside Bloco 19
+                    const finalPurchaseSection = document.getElementById('final-purchase-cta-section'); 
                     if (finalPurchaseSection) {
                         finalPurchaseSection.scrollIntoView({behavior: 'smooth', block: 'center'});
-                        // We might need to ensure the 'final-touch-section' is also visible if the purchase button is nested.
-                        // This logic might need a check: if isCodeUnlocked is false, first click handleUnlockCode.
                         if (!isCodeUnlocked) {
-                            handleUnlockCode(); // Trigger the unlock sequence
+                            handleUnlockCode(); 
                         } else {
                              const purchaseButtonLink = finalPurchaseSection.querySelector('a');
                              if(purchaseButtonLink) purchaseButtonLink.click();
                         }
                     } else {
-                        // Fallback: If direct purchase section not found (e.g. code not unlocked yet),
-                        // scroll to the "Toque Final" button that initiates the unlock.
                         document.getElementById('final-touch-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        if(!isCodeUnlocked) handleUnlockCode();
                     }
                 }} 
                 size="lg" className="goddess-gradient text-primary-foreground font-extrabold text-xl sm:text-2xl py-4 sm:py-5 px-10 sm:px-12 rounded-xl shadow-2xl animate-subtle-vibration hover:shadow-accent/50 transform hover:scale-105 transition-all h-auto whitespace-normal text-center">
@@ -978,15 +997,18 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         <div className="fixed bottom-0 left-0 right-0 md:hidden bg-black/80 backdrop-blur-sm p-3 border-t border-purple-700/50 z-50 shadow-2xl animate-fade-in animate-subtle-vibration" style={{animationDelay: '3s'}}>
             <Button 
                 onClick={() => {
-                    let targetId = 'price-anchor-section'; // Default if nothing else is revealed/unlocked
+                    let targetId = 'price-anchor-section'; 
                     if (isCodeUnlocked) {
                         targetId = 'final-purchase-cta-section';
                     } else if (isPriceRevealed) {
-                        targetId = 'final-touch-section'; // Go to the magic button
+                        targetId = 'final-touch-section'; 
                     }
                     const targetElement = document.getElementById(targetId);
                     if (targetElement) {
                         targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                         if (targetId === 'final-touch-section' && !isCodeUnlocked && !isUnlockingCode) {
+                            handleUnlockCode();
+                        }
                     }
                 }} 
                 className="w-full goddess-gradient text-primary-foreground font-bold text-md py-3 rounded-lg animate-subtle-glow h-auto whitespace-normal text-center"
@@ -1008,6 +1030,5 @@ const formatUserDreams = (dreams?: DreamOption[]): string => {
   const initialDreams = dreams.slice(0, -1).map(d => d.label.toLowerCase()).join(', ');
   return `${initialDreams} e ${lastDream}`;
 };
-
 
     
