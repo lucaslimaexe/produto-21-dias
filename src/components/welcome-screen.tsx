@@ -30,7 +30,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
   }, [fullText]);
 
   const handleStartClick = () => {
-    playSound('start_quiz.mp3'); // Tocar som ao clicar
+    // playSound('start_quiz.mp3'); // Tocar som ao clicar
     onStart();
   };
 

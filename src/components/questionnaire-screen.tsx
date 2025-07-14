@@ -163,13 +163,13 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
 
     setSelectedOptionText(option.text); // Update local state immediately for styling
     onAnswer(option.text); // Inform parent
-    playSound('answer_select.mp3');
+    // playSound('answer_select.mp3');
     setTransitionState('feedback');
     console.log(`[${COMPONENT_NAME}] handleSelectOption: Set selectedOptionText to "${option.text}", transitionState to 'feedback'.`);
     
     if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
     feedbackTimeoutIdRef.current = setTimeout(() => {
-      playSound('feedback_show.mp3'); 
+      // playSound('feedback_show.mp3'); 
       setTransitionState('exiting');
       console.log(`[${COMPONENT_NAME}] handleSelectOption: FEEDBACK_TIMEOUT - Set transitionState to 'exiting'. feedbackTimeoutId: ${feedbackTimeoutIdRef.current}`);
       
@@ -285,6 +285,3 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
     </div>
   );
 };
-
-    
-    

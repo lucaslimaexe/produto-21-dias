@@ -86,19 +86,19 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
 
       if (!isNameComplete || errors.fullName) {
           toast({ title: "Ops, falta seu nome!", description: "Por favor, preencha seu nome completo para continuarmos.", variant: "destructive", duration: 3500 });
-          playSound('form_error.mp3');
+          // playSound('form_error.mp3');
           return;
       }
       if (!isDateSelected || errors.dreamsAchievementDate) {
           toast({ title: "E a data dos sonhos?", description: "Defina quando seus sonhos se realizarão para seguirmos em frente.", variant: "destructive", duration: 3500 });
-          playSound('form_error.mp3');
+          // playSound('form_error.mp3');
           return;
       }
 
       trigger().then(isFormValid => {
         if (isFormValid) {
           setIsProcessingSubmit(true);
-          playSound('form_complete.mp3');
+          // playSound('form_complete.mp3');
           toast({
             title: "Quase lá!",
             description: "Estamos preparando seu diagnóstico personalizado...",
@@ -110,7 +110,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
         } else {
            // Se o trigger() falhar, o Zod já deve ter mostrado os erros nos campos.
            // Poderia adicionar um toast genérico aqui se quisesse.
-           playSound('form_error.mp3');
+           // playSound('form_error.mp3');
         }
       });
     }
@@ -128,7 +128,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
     if (currentIndex === -1) {
       if (currentSelected.length < 3) {
         newSelectedDreams = [...currentSelected, dream];
-        playSound('dream_select.mp3');
+        // playSound('dream_select.mp3');
       } else {
         toast({
           title: "Limite de 3 Sonhos Atingido",
@@ -136,19 +136,19 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
           variant: "default",
           duration: 3000,
         });
-        playSound('limit_reached.mp3');
+        // playSound('limit_reached.mp3');
         return;
       }
     } else {
       newSelectedDreams = currentSelected.filter(d => d.id !== dream.id);
-      playSound('dream_deselect.mp3');
+      // playSound('dream_deselect.mp3');
     }
     setValue('selectedDreams', newSelectedDreams, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
   };
 
   const handleDateSelection = (value: string) => {
     setValue('dreamsAchievementDate', value, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
-    playSound('date_select.mp3');
+    // playSound('date_select.mp3');
   }
 
   return (
