@@ -174,8 +174,8 @@ const TestimonialCard: React.FC<{ name: string, age: number, quote: string, star
     </Card>
 );
 
-const TestimonialStoryCard: React.FC<{ name: string, avatar: string, dataAiHint: string, message: string, className?: string }> = ({ name, avatar, dataAiHint, message, className }) => (
-  <Card className={cn("bg-slate-800/60 border-purple-600/70 text-foreground w-[280px] sm:w-[320px] shrink-0 scroll-snap-align-center p-5 flex flex-col items-start text-left shadow-lg", className)}>
+const TestimonialStoryCard: React.FC<{ name: string, avatar: string, dataAiHint: string, message: string, className?: string, style?: React.CSSProperties }> = ({ name, avatar, dataAiHint, message, className, style }) => (
+  <Card className={cn("bg-slate-800/60 border-purple-600/70 text-foreground w-[280px] sm:w-[320px] shrink-0 scroll-snap-align-center p-5 flex flex-col items-start text-left shadow-lg", className)} style={style}>
     <div className="flex items-center mb-3">
       <Image data-ai-hint={dataAiHint} src={avatar} alt={name} width={40} height={40} className="rounded-full border-2 border-accent mr-3" />
       <CardTitle className="text-md text-accent">{name}</CardTitle>
@@ -204,8 +204,8 @@ const PhaseCard: React.FC<{ phase: string, title: string, description: string | 
     </Card>
 );
 
-const BeforeAfterCard: React.FC<{ title: string, items: string[], bgColor: string, borderColor: string, textColor: string, icon: React.ElementType, className?: string }> = ({ title, items, bgColor, borderColor, textColor, icon: Icon, className }) => (
-    <Card className={cn("p-6 rounded-xl shadow-xl w-full h-full flex flex-col", bgColor, borderColor, className)}>
+const BeforeAfterCard: React.FC<{ title: string, items: string[], bgColor: string, borderColor: string, textColor: string, icon: React.ElementType, className?: string, style?: React.CSSProperties }> = ({ title, items, bgColor, borderColor, textColor, icon: Icon, className, style }) => (
+    <Card className={cn("p-6 rounded-xl shadow-xl w-full h-full flex flex-col", bgColor, borderColor, className)} style={style}>
         <CardHeader className="p-0 mb-4 text-center">
             <Icon className={cn("h-10 w-10 mx-auto mb-2", textColor === "text-red-300" ? "text-red-400" : "text-green-400")} />
             <CardTitle className={cn("text-xl sm:text-2xl", textColor)}>{title}</CardTitle>
@@ -223,7 +223,7 @@ const BeforeAfterCard: React.FC<{ title: string, items: string[], bgColor: strin
     </Card>
 );
 
-const VisionCard: React.FC<{ title: string, icon: React.ElementType, dataAiHint: string, onClick: () => void, isSelected: boolean, className?: string }> = ({ title, icon: Icon, dataAiHint, onClick, isSelected, className }) => (
+const VisionCard: React.FC<{ title: string, icon: React.ElementType, dataAiHint: string, onClick: () => void, isSelected: boolean, className?: string, style?: React.CSSProperties }> = ({ title, icon: Icon, dataAiHint, onClick, isSelected, className, style }) => (
     <button
         onClick={onClick}
         className={cn(
@@ -231,6 +231,7 @@ const VisionCard: React.FC<{ title: string, icon: React.ElementType, dataAiHint:
             isSelected ? "border-accent shadow-2xl shadow-accent/40 scale-105" : "",
             className
         )}
+        style={style}
         aria-pressed={isSelected}
     >
         <Icon data-ai-hint={dataAiHint} className={cn("h-10 w-10 sm:h-12 sm:w-12 mb-2", isSelected ? "text-accent" : "text-purple-400")} />
@@ -275,7 +276,6 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const [isCodeUnlocked, setIsCodeUnlocked] = useState(false);
   
   const [selectedVisionCard, setSelectedVisionCard] = useState<string | null>(null);
-  const [socialProofIntervalId, setSocialProofIntervalId] = useState<NodeJS.Timeout | null>(null);
   
   const displayName = userName || "Querida Deusa";
   const dreamsText = userDreams && userDreams.length > 0 ? formatUserDreams(userDreams) : "seus maiores sonhos";
@@ -340,26 +340,20 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     // playSound('new_purchase_subtle.mp3');
   }, [toast]);
 
+  const socialProofIntervalRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
-    const startInterval = () => {
-      if (socialProofIntervalId) {
-        clearInterval(socialProofIntervalId);
-      }
-      const randomDelay = Math.random() * (45000 - 15000) + 15000; 
-      const newId = setInterval(() => {
-        showSocialProofNotification();
-      }, randomDelay);
-      setSocialProofIntervalId(newId);
-    };
-  
-    startInterval();
+    const randomDelay = Math.random() * (45000 - 15000) + 15000; 
+    socialProofIntervalRef.current = setInterval(() => {
+      showSocialProofNotification();
+    }, randomDelay);
   
     return () => {
-      if (socialProofIntervalId) {
-        clearInterval(socialProofIntervalId);
+      if (socialProofIntervalRef.current) {
+        clearInterval(socialProofIntervalRef.current);
       }
     };
-  }, [showSocialProofNotification]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
   const conditionallyIncrementPercentage = useCallback((increment: number, capBeforeIncrement?: number) => {
@@ -435,38 +429,44 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       window.removeEventListener('scroll', handleScroll);
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     };
-  }, [pageScrollProgress]); 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); 
   
   useEffect(() => {
-    if (priceCardTimeLeft <= 0) return;
     const timerId = setInterval(() => {
-      setPriceCardTimeLeft(prevTime => Math.max(0, prevTime - 1));
+      setPriceCardTimeLeft(prevTime => {
+        if (prevTime <= 0) return 0;
+        const newTime = prevTime - 1;
+        // Reduzir vagas quando chega em 5 minutos
+        if (newTime <= (5 * 60) && newTime > 0) {
+          setPriceCardVacancies(1);
+        }
+        return newTime;
+      });
     }, 1000);
     return () => clearInterval(timerId);
-  }, [priceCardTimeLeft]);
+  }, []);
 
   useEffect(() => {
-    if (priceCardTimeLeft <= (5 * 60) && priceCardTimeLeft > 0 && priceCardVacancies > 1) { 
-        setPriceCardVacancies(1);
-        // playSound('limit_reached.mp3');
-    }
-  }, [priceCardTimeLeft, priceCardVacancies]);
-
-  useEffect(() => {
-    if (!isPriceRevealed || finalOfferTimeLeft <= 0) {
-       setIsFinalOfferTimerBlinking(false);
-       return;
-    }
+    if (!isPriceRevealed) return;
+    
     const timerId = setInterval(() => {
-      setFinalOfferTimeLeft(prevTime => (prevTime > 0 ? prevTime - 1 : 0));
+      setFinalOfferTimeLeft(prevTime => {
+        if (prevTime <= 0) return 0;
+        const newTime = prevTime - 1;
+        // Ativar blinking quando falta 1 minuto
+        if (newTime > 0 && newTime <= 60) {
+          setIsFinalOfferTimerBlinking(true);
+        }
+        if (newTime <= 0) {
+          setIsFinalOfferTimerBlinking(false);
+        }
+        return newTime;
+      });
     }, 1000);
 
-    if (finalOfferTimeLeft > 0 && finalOfferTimeLeft <= 60) {
-        const blinkTimerId = setInterval(() => setIsFinalOfferTimerBlinking(prev => !prev), 500);
-        return () => { clearInterval(timerId); clearInterval(blinkTimerId); };
-    }
     return () => clearInterval(timerId);
-  }, [finalOfferTimeLeft, isPriceRevealed]);
+  }, [isPriceRevealed]);
 
 
   const handleRevealPrice = useCallback(() => {

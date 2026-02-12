@@ -147,7 +147,8 @@ function QuestionnaireContent() {
       progress={progressPercentage}
       isLastQuestion={isLastQuestion}
       onComplete={handleQuestionProceed}
-      currentAnswer={currentAnswerText} 
+      currentAnswer={currentAnswerText}
+      userName={preQuestionnaireData?.name}
     />
   );
 }

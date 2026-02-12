@@ -89,7 +89,6 @@ export const questions: Question[] = [
 ];
 
 type TransitionState = 'entering' | 'idle' | 'feedback' | 'exiting';
-const COMPONENT_NAME = "QuestionnaireScreen";
 
 export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   question,
@@ -109,13 +108,11 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   const exitTimeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    console.log(`[${COMPONENT_NAME}] Component mounted. Initial question ID: ${question.id}. Setting up main timer.`);
     const intervalId = setInterval(() => {
       setElapsedTime(prevTime => prevTime + 1);
     }, 1000);
 
     return () => {
-      console.log(`[${COMPONENT_NAME}] Component unmounting. Clearing main timer, and any pending animation timeouts.`);
       clearInterval(intervalId);
       if (enterTimeoutIdRef.current) clearTimeout(enterTimeoutIdRef.current);
       if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
@@ -124,66 +121,40 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   }, []); 
 
   useEffect(() => {
-    console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}] triggered. currentAnswer prop: "${currentAnswer}", current transitionState: "${transitionState}"`);
-    
     // Clear any pending timeouts from previous question transitions
-    if (enterTimeoutIdRef.current) {
-      console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Clearing previous enterTimeoutId: ${enterTimeoutIdRef.current}`);
-      clearTimeout(enterTimeoutIdRef.current);
-    }
-    if (feedbackTimeoutIdRef.current) { // Also clear feedback/exit timeouts if a new question loads unexpectedly
-      console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Clearing previous feedbackTimeoutId: ${feedbackTimeoutIdRef.current}`);
-      clearTimeout(feedbackTimeoutIdRef.current);
-    }
-    if (exitTimeoutIdRef.current) {
-      console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Clearing previous exitTimeoutId: ${exitTimeoutIdRef.current}`);
-      clearTimeout(exitTimeoutIdRef.current);
-    }
+    if (enterTimeoutIdRef.current) clearTimeout(enterTimeoutIdRef.current);
+    if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
+    if (exitTimeoutIdRef.current) clearTimeout(exitTimeoutIdRef.current);
 
-    setSelectedOptionText(currentAnswer || null); // Set based on prop for potential re-hydration
+    setSelectedOptionText(currentAnswer || null);
     setTransitionState('entering');
-    console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Set selectedOptionText to "${currentAnswer || null}", transitionState to 'entering'.`);
 
     enterTimeoutIdRef.current = setTimeout(() => {
       setTransitionState('idle');
-      console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: ENTER_TIMEOUT - Transitioned to 'idle'. enterTimeoutId: ${enterTimeoutIdRef.current}`);
     }, 400); 
-    console.log(`[${COMPONENT_NAME}] useEffect[question.id=${question.id}]: Configured enterTimeoutId: ${enterTimeoutIdRef.current}`);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question.id]);
 
 
   const handleSelectOption = (option: QuestionOption) => {
-    console.log(`[${COMPONENT_NAME}] handleSelectOption: Clicked "${option.text}". Current transitionState: "${transitionState}"`);
-    if (transitionState !== 'idle') {
-      console.log(`[${COMPONENT_NAME}] handleSelectOption: Action blocked, transitionState is "${transitionState}", not 'idle'.`);
-      return; 
-    }
+    if (transitionState !== 'idle') return; 
 
-    setSelectedOptionText(option.text); // Update local state immediately for styling
-    onAnswer(option.text); // Inform parent
-    // playSound('answer_select.mp3');
+    setSelectedOptionText(option.text);
+    onAnswer(option.text);
     setTransitionState('feedback');
-    console.log(`[${COMPONENT_NAME}] handleSelectOption: Set selectedOptionText to "${option.text}", transitionState to 'feedback'.`);
     
     if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
     feedbackTimeoutIdRef.current = setTimeout(() => {
-      // playSound('feedback_show.mp3'); 
       setTransitionState('exiting');
-      console.log(`[${COMPONENT_NAME}] handleSelectOption: FEEDBACK_TIMEOUT - Set transitionState to 'exiting'. feedbackTimeoutId: ${feedbackTimeoutIdRef.current}`);
       
       if (exitTimeoutIdRef.current) clearTimeout(exitTimeoutIdRef.current);
       exitTimeoutIdRef.current = setTimeout(() => {
-        console.log(`[${COMPONENT_NAME}] handleSelectOption: EXIT_TIMEOUT - Calling onComplete(). exitTimeoutId: ${exitTimeoutIdRef.current}`);
-        setSelectedOptionText(null); // Reset for the next question card, currentAnswer prop will hydrate if needed.
+        setSelectedOptionText(null);
         onComplete(); 
-        // The useEffect listening to question.id will handle setting 'entering' for the new question.
-      }, 400); // Duration of slide-out animation
-      console.log(`[${COMPONENT_NAME}] handleSelectOption: Configured exitTimeoutId: ${exitTimeoutIdRef.current}`);
+      }, 400);
 
-    }, 1500); // Duration of feedback display
-    console.log(`[${COMPONENT_NAME}] handleSelectOption: Configured feedbackTimeoutId: ${feedbackTimeoutIdRef.current}`);
+    }, 1500);
   };
   
   const showQuestionContent = transitionState === 'idle' || transitionState === 'entering' || (transitionState === 'feedback' && selectedOptionText !== null);
