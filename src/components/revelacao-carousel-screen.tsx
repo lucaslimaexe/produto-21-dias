@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "./ui/button";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FIREBASE_STORAGE_VIDEOS } from "@/config/firebase-storage-videos";
 
 const HOOK_TEXT =
   "Não é lei da atração! O sistema esconde isso de você. Qualquer desejo, qualquer objetivo passa a ser alcançável com essa simples mudança e ajuste.";
@@ -13,7 +14,7 @@ const famosos = [
   {
     id: "pabllo",
     nome: "Pabllo Vittar",
-    foto: "https://placehold.co/400x600/1a1a2e/9b51e0?text=Pabllo+Vittar",
+    foto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop&q=80",
     frase: "Sempre busquei meus sonhos e briguei por eles. Eu sempre fui sonhador e determinado!",
   },
   {
@@ -25,7 +26,7 @@ const famosos = [
   {
     id: "gloria",
     nome: "Gloria Groove",
-    foto: "https://placehold.co/400x600/1a1a2e/d4af37?text=Gloria+Groove",
+    foto: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=600&fit=crop&q=80",
     frase: "Sinto-me a fazer o impossível e o improvável todos os dias.",
   },
   {
@@ -37,7 +38,7 @@ const famosos = [
   {
     id: "preta",
     nome: "Preta Gil",
-    foto: "https://placehold.co/400x600/1a1a2e/e91e63?text=Preta+Gil",
+    foto: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=600&fit=crop&q=80",
     frase: "Na minha vida, nada foi dado. O resto todo eu tive que correr atrás.",
   },
   {
@@ -54,10 +55,58 @@ const famosos = [
   },
 ];
 
+const videoSlides = FIREBASE_STORAGE_VIDEOS.map((v) => ({
+  type: "video" as const,
+  content: v,
+}));
+
 const slides = [
+  ...videoSlides,
   { type: "hook" as const, content: HOOK_TEXT },
   ...famosos.map((f) => ({ type: "famoso" as const, content: f })),
 ];
+
+/** Slide de vídeo: reproduz quando é o slide ativo, pausa ao sair */
+function VideoSlide({
+  url,
+  title,
+  isActive,
+}: {
+  url: string;
+  title?: string;
+  isActive: boolean;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (isActive) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [isActive]);
+
+  return (
+    <div className="relative w-full h-full flex flex-col items-center justify-center bg-black rounded-2xl overflow-hidden">
+      <video
+        ref={videoRef}
+        src={url}
+        className="w-full h-full max-h-[70vh] object-contain"
+        playsInline
+        muted={false}
+        loop
+        controls
+      />
+      {title && (
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+          <p className="text-white text-sm font-medium">{title}</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface RevelacaoCarouselScreenProps {
   onContinue: () => void;
@@ -124,54 +173,62 @@ export function RevelacaoCarouselScreen({ onContinue }: RevelacaoCarouselScreenP
       {/* Carrossel Stories - toque na esquerda = voltar, direita = avançar (como Instagram) */}
       <div
         ref={scrollRef}
-        className="flex-1 flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain scrollbar-hide touch-pan-x cursor-default"
+        className="flex-1 flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain scrollbar-hide touch-pan-x cursor-default min-h-0"
         style={{ WebkitOverflowScrolling: "touch" }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onClick={handleTapToNavigate}
         onScroll={handleScroll}
       >
-        {/* Slide 0 - Hook (estilo Story) */}
-        <div className="flex-shrink-0 w-full min-h-[calc(100vh-14rem)] snap-center flex flex-col items-center justify-center px-6 bg-gradient-to-br from-purple-950 via-black to-rose-950">
-          <div className="max-w-md text-center">
-            <p className="text-white text-xl sm:text-2xl font-bold leading-relaxed">
-              {HOOK_TEXT}
-            </p>
-            <p className="text-white/50 text-sm mt-6">
-              toque na direita para avançar · na esquerda para voltar
-            </p>
-          </div>
-        </div>
-
-        {/* Slides - Famosos */}
-        {famosos.map((pessoa) => (
+        {slides.map((slide, i) => (
           <div
-            key={pessoa.id}
-            className="flex-shrink-0 w-full min-h-[calc(100vh-14rem)] snap-center flex flex-col"
+            key={i}
+            className="flex-shrink-0 w-full min-h-[calc(100vh-12rem)] sm:min-h-[calc(100vh-14rem)] snap-center flex flex-col items-center justify-center px-4"
           >
-            <div className="relative flex-1 aspect-[9/16] max-h-[70vh] mx-auto w-full max-w-[400px] rounded-2xl overflow-hidden">
-              <Image
-                src={pessoa.foto}
-                alt={pessoa.nome}
-                fill
-                className="object-cover"
-                sizes="(max-width: 400px) 100vw, 400px"
-                unoptimized
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <p className="font-semibold text-lg mb-2">{pessoa.nome}</p>
-                <p className="text-white/95 text-base leading-relaxed">
-                  &ldquo;{pessoa.frase}&rdquo;
+            {slide.type === "video" && (
+              <div className="w-full max-w-[400px] mx-auto min-h-[50vh] flex flex-col justify-center">
+                <VideoSlide
+                  url={slide.content.url}
+                  title={slide.content.title}
+                  isActive={currentIndex === i}
+                />
+              </div>
+            )}
+            {slide.type === "hook" && (
+              <div className="max-w-md text-center px-6 bg-gradient-to-br from-purple-950 via-black to-rose-950 rounded-2xl py-8">
+                <p className="text-white text-xl sm:text-2xl font-bold leading-relaxed">
+                  {slide.content}
+                </p>
+                <p className="text-white/50 text-sm mt-6">
+                  toque na direita para avançar · na esquerda para voltar
                 </p>
               </div>
-            </div>
+            )}
+            {slide.type === "famoso" && (
+              <div className="relative flex-1 aspect-[9/16] max-h-[70vh] mx-auto w-full max-w-[400px] rounded-2xl overflow-hidden">
+                <Image
+                  src={slide.content.foto}
+                  alt={slide.content.nome}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 400px) 100vw, 400px"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <p className="font-semibold text-lg mb-2">{slide.content.nome}</p>
+                  <p className="text-white/95 text-base leading-relaxed">
+                    &ldquo;{slide.content.frase}&rdquo;
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {/* Dots + navegação */}
-      <div className="flex items-center justify-center gap-2 py-4">
+      {/* Dots + navegação - compacto no mobile */}
+      <div className="flex items-center justify-center gap-2 py-2 shrink-0">
         <button
           type="button"
           onClick={() => goTo(currentIndex - 1)}
@@ -206,17 +263,19 @@ export function RevelacaoCarouselScreen({ onContinue }: RevelacaoCarouselScreenP
         </button>
       </div>
 
-      {/* CTA */}
-      <div className="p-4 pb-8">
-        <Button
-          onClick={onContinue}
-          className={cn(
-            "w-full max-w-md mx-auto goddess-gradient text-white font-semibold rounded-xl h-12 flex items-center justify-center gap-2"
-          )}
-        >
-          <Sparkles className="w-5 h-5" strokeWidth={2} />
-          <span>Descobrir meu bloqueio</span>
-        </Button>
+      {/* CTA fixo - sempre visível sem rolagem (safe-area para iPhone) */}
+      <div className="sticky bottom-0 left-0 right-0 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 bg-gradient-to-t from-black via-black/98 to-transparent shrink-0">
+        <div className="max-w-[470px] mx-auto">
+          <Button
+            onClick={onContinue}
+            className={cn(
+              "w-full goddess-gradient text-white font-semibold rounded-xl h-12 flex items-center justify-center gap-2"
+            )}
+          >
+            <Sparkles className="w-5 h-5" strokeWidth={2} />
+            <span>Descobrir meu bloqueio</span>
+          </Button>
+        </div>
       </div>
     </div>
   );

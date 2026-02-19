@@ -167,8 +167,8 @@ export function InspiracaoScreen({ onContinue }: InspiracaoScreenProps) {
           </div>
         </section>
 
-        {/* CTA fixo no rodapé - estilo barra do IG */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/98 to-transparent pt-12">
+        {/* CTA fixo no rodapé - sempre visível (safe-area para iPhone) */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-8 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/98 to-transparent z-40">
           <div className="max-w-[470px] mx-auto">
             <Button
               onClick={onContinue}
@@ -186,8 +186,8 @@ export function InspiracaoScreen({ onContinue }: InspiracaoScreenProps) {
           </div>
         </div>
 
-        {/* Espaço para o CTA fixo */}
-        <div className="h-24" aria-hidden />
+        {/* Espaço para o CTA fixo (safe-area no iPhone) */}
+        <div className="h-24 min-h-[calc(env(safe-area-inset-bottom)+4rem)]" aria-hidden />
       </main>
     </div>
   );

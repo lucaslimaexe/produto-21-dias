@@ -55,17 +55,17 @@ const offerPriceAnchor = 97;
 const offerPriceFinal = 47;
 
 const testimonialsData = [
-  { id: 1, name: "Maria S.", age: 38, quote: "Estava quebrada. Em 15 dias, tripliquei minha renda. Eu não acreditava que fosse real.", stars: 5, image: "https://placehold.co/100x100.png", dataAiHint: "woman success" },
-  { id: 2, name: "Ana L.", age: 45, quote: "Casamentos anteriores me destruíram. Em 1 semana com o Código, conheci quem eu merecia.", stars: 5, image: "https://placehold.co/100x100.png", dataAiHint: "woman happy love" },
-  { id: 3, name: "Carla P.", age: 29, quote: "Minhas vendas explodiram em 21 dias. O bloqueio que eu não via sumiu.", stars: 5, image: "https://placehold.co/100x100.png", dataAiHint: "businesswoman achievement" },
-  { id: 4, name: "Juliana M.", age: 33, quote: "Finalmente vi o padrão que me sabotava. Agora eu sei o que estava errado.", stars: 5, image: "https://placehold.co/100x100.png", dataAiHint: "woman thoughtful" },
+  { id: 1, name: "Maria S.", age: 38, quote: "Estava quebrada. Em 15 dias, tripliquei minha renda. Eu não acreditava que fosse real.", stars: 5, image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80", dataAiHint: "woman success" },
+  { id: 2, name: "Ana L.", age: 45, quote: "Casamentos anteriores me destruíram. Em 1 semana com o Código, conheci quem eu merecia.", stars: 5, image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&q=80", dataAiHint: "woman happy love" },
+  { id: 3, name: "Carla P.", age: 29, quote: "Minhas vendas explodiram em 21 dias. O bloqueio que eu não via sumiu.", stars: 5, image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&q=80", dataAiHint: "businesswoman achievement" },
+  { id: 4, name: "Juliana M.", age: 33, quote: "Finalmente vi o padrão que me sabotava. Agora eu sei o que estava errado.", stars: 5, image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&q=80", dataAiHint: "woman thoughtful" },
 ];
 
 const storyTestimonialsData = [
-  { id: 1, name: "Ana V.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman profile", message: "“Elas me quebraram.\nEsse ritual me montou de novo, peça por peça.”" },
-  { id: 2, name: "Julia R.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman smiling", message: "“Eu não renasci.\nEu me permiti nascer pela primeira vez.”" },
-  { id: 3, name: "Sofia M.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman confident", message: "“Não sei o que você tá sentindo agora, mas eu sei o que vai sentir no dia 4…”" },
-  { id: 4, name: "Laura B.", avatar: "https://placehold.co/80x80.png", dataAiHint: "woman happy", message: "“Eu nunca pensei que alguém pudesse me destravar assim…”" },
+  { id: 1, name: "Ana V.", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&q=80", dataAiHint: "woman profile", message: "“Elas me quebraram.\nEsse ritual me montou de novo, peça por peça.”" },
+  { id: 2, name: "Julia R.", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&q=80", dataAiHint: "woman smiling", message: "“Eu não renasci.\nEu me permiti nascer pela primeira vez.”" },
+  { id: 3, name: "Sofia M.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=80&h=80&fit=crop&q=80", dataAiHint: "woman confident", message: "“Não sei o que você tá sentindo agora, mas eu sei o que vai sentir no dia 4…”" },
+  { id: 4, name: "Laura B.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&q=80", dataAiHint: "woman happy", message: "“Eu nunca pensei que alguém pudesse me destravar assim…”" },
 ];
 
 const dreamNotificationMap: Record<string, string> = {
@@ -789,7 +789,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                 <p className="text-center text-white/50 mb-5 text-sm">O que elas dizem depois de destravar:</p>
                 <TestimonialVSLSlider testimonials={testimonialsData} />
                  <div className="text-center mt-6">
-                     <Image data-ai-hint="women success celebration" src="https://placehold.co/700x200.png" alt="Mulheres Felizes e Realizadas" width={600} height={171} className="rounded-2xl border border-white/10 w-full mx-auto"/>
+                     <Image data-ai-hint="women success celebration" src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=700&h=200&fit=crop&q=80" alt="Mulheres Felizes e Realizadas" width={600} height={171} className="rounded-2xl border border-white/10 w-full mx-auto"/>
                 </div>
                  <div className="text-center mt-6">
                     <Button 

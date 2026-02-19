@@ -111,8 +111,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         </div>
       </main>
 
-      {/* CTA fixo - mesma barra da inspiração */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/98 to-transparent pt-12">
+      {/* CTA fixo - sempre visível (safe-area para iPhone) */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-8 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/98 to-transparent z-40">
         <div className="max-w-[470px] mx-auto">
           <Button
             onClick={handleStartClick}
