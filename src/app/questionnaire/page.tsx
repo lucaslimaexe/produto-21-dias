@@ -3,10 +3,12 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { QuestionnaireScreen, questions, type Question, type QuestionOption as ImportedQuestionOption } from '@/components/questionnaire-screen';
+import { QuestionnaireScreen, questions, type Question } from '@/components/questionnaire-screen';
 import type { BehavioralAnalysisOutput } from '@/ai/flows/behavioral-analysis-flow';
 import { Loader2 } from 'lucide-react';
-import type { DreamOption } from '@/components/pre-questionnaire-form-screen'; 
+import type { DreamOption } from '@/components/pre-questionnaire-form-screen';
+import { useGamification } from '@/components/gamification';
+import { XP_PER_QUESTION_COMPLETE } from '@/lib/gamification'; 
 
 interface Answer {
   questionId: number;
@@ -75,6 +77,7 @@ const generateLocalAnalysis = (answers: Answer[]): BehavioralAnalysisOutput => {
 function QuestionnaireContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const g = useGamification();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Answer[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -101,6 +104,7 @@ function QuestionnaireContent() {
 
 
   const handleAnswer = (question: Question, answerText: string) => {
+    g?.answerQuestion(question.id - 1);
     const newAnswer = { questionId: question.id, questionText: question.question, answer: answerText };
     setUserAnswers(prev => {
       const filteredAnswers = prev.filter(a => a.questionId !== question.id);
@@ -108,11 +112,17 @@ function QuestionnaireContent() {
     });
   };
   
-  const handleQuestionProceed = () => {
-    if (isNavigating) return; 
+  const handleQuestionProceed = (elapsedSeconds?: number) => {
+    if (isNavigating) return;
+
+    g?.addXp(XP_PER_QUESTION_COMPLETE);
 
     const isLast = currentQuestionIndex === questions.length - 1;
     if (isLast) {
+      g?.unlockAchievement('jornada_completa');
+      if (elapsedSeconds !== undefined && elapsedSeconds <= 60) {
+        g?.unlockAchievement('tempo_60');
+      }
       setIsNavigating(true);
       const localAnalysisResult = generateLocalAnalysis(userAnswers);
       const analysisJsonString = JSON.stringify(localAnalysisResult);

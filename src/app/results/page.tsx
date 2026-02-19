@@ -1,11 +1,23 @@
-
 "use client";
 
-import { ResultsScreen, type BehavioralAnalysisData } from '@/components/results-screen';
+import dynamic from 'next/dynamic';
+import type { BehavioralAnalysisData } from '@/components/results-screen';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
-import type { DreamOption } from '@/components/pre-questionnaire-form-screen'; // Import DreamOption
+import type { DreamOption } from '@/components/pre-questionnaire-form-screen';
+
+const ResultsScreen = dynamic(
+  () => import('@/components/results-screen').then((m) => ({ default: m.ResultsScreen })),
+  {
+    loading: () => (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-black to-red-950">
+        <Loader2 className="h-16 w-16 text-yellow-400 animate-spin" aria-hidden />
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 interface ResultsPageData extends BehavioralAnalysisData {
   userName?: string;

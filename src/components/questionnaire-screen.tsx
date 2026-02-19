@@ -5,8 +5,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { Progress } from './ui/progress';
 import { Sparkles, MessageCircle, Loader2, Clock } from 'lucide-react';
-import { playSound } from '@/lib/audioUtils';
 import { cn } from '@/lib/utils';
+import { PointsDisplay } from '@/components/gamification/PointsDisplay';
 
 export interface QuestionOption {
   text: string;
@@ -25,7 +25,7 @@ interface QuestionnaireScreenProps {
   onAnswer: (answerText: string) => void;
   progress: number;
   isLastQuestion: boolean;
-  onComplete: () => void;
+  onComplete: (elapsedSeconds?: number) => void;
   currentAnswer?: string;
   userName?: string;
 }
@@ -106,6 +106,8 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   const enterTimeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const feedbackTimeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const exitTimeoutIdRef = useRef<NodeJS.Timeout | null>(null);
+  const elapsedTimeRef = useRef(0);
+  elapsedTimeRef.current = elapsedTime;
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -151,7 +153,7 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
       if (exitTimeoutIdRef.current) clearTimeout(exitTimeoutIdRef.current);
       exitTimeoutIdRef.current = setTimeout(() => {
         setSelectedOptionText(null);
-        onComplete(); 
+        onComplete(elapsedTimeRef.current);
       }, 400);
 
     }, 1500);
@@ -178,6 +180,9 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 relative bg-gradient-to-br from-purple-900 via-indigo-900 to-black overflow-hidden">
+      <div className="absolute top-4 right-4 z-20">
+        <PointsDisplay compact />
+      </div>
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-24 h-24 md:w-32 md:h-32 bg-purple-500/20 rounded-full animate-pulse"></div>
         <div className="absolute top-3/4 right-1/4 w-16 h-16 md:w-24 md:h-24 bg-yellow-400/20 rounded-full animate-pulse [animation-delay:1s]"></div>
@@ -219,7 +224,7 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
                     onClick={() => handleSelectOption(option)}
                     disabled={isDisabledDuringTransition || transitionState === 'exiting'}
                     className={cn(
-                      "w-full text-left justify-start p-4 h-auto text-sm sm:text-base leading-normal whitespace-normal transition-all duration-300 ease-in-out rounded-md", // Base classes
+                      "w-full text-left justify-start p-4 h-auto min-h-[44px] text-sm sm:text-base leading-normal whitespace-normal transition-all duration-300 ease-in-out rounded-md", // Base classes, touch target ≥44px
                       
                       // Default non-selected styles
                       !isSelected && 'bg-purple-800/50 border border-purple-600 text-purple-200 hover:bg-purple-700/70 hover:border-purple-400 hover:text-white hover:scale-102',

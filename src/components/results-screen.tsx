@@ -15,6 +15,9 @@ import { Progress } from "@/components/ui/progress";
 import type { DreamOption } from './pre-questionnaire-form-screen';
 import { cn } from '@/lib/utils';
 import { playSound } from '@/lib/audioUtils';
+import { useGamification } from '@/components/gamification';
+import { PointsDisplay } from '@/components/gamification/PointsDisplay';
+import { AchievementBadge } from '@/components/gamification/AchievementBadge';
 
 export interface BehavioralAnalysisData {
   archetype: string;
@@ -259,6 +262,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   userDreams,
   dreamsAchievementDateLabel
 }) => {
+  const g = useGamification();
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [pageScrollProgress, setPageScrollProgress] = useState(0);
@@ -295,6 +299,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   useEffect(() => {
     setGamifiedPercentage(currentAnalysisResult.idealPercentage);
   }, [currentAnalysisResult.idealPercentage]);
+
+  useEffect(() => {
+    if (gamifiedPercentage >= 100) g?.unlockAchievement('100_alinhada');
+  }, [gamifiedPercentage, g]);
 
   const showProgressNotification = useCallback((newPercentage: number) => {
     toast({
@@ -483,6 +491,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   }, [conditionallyIncrementPercentage, showDreamNotification]);
   
   const handleUnlockCode = useCallback(() => {
+    g?.unlockAchievement('codigo_desbloqueado');
     setIsCodeUnlocked(true);
     // playSound('form_complete.mp3');
     showProgressNotification(95);
@@ -495,7 +504,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
            ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     });
-  }, [showDreamNotification, showProgressNotification]);
+  }, [g, showDreamNotification, showProgressNotification]);
   
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -544,12 +553,20 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center pt-16 sm:pt-20 pb-12 bg-gradient-to-br from-purple-950 via-black to-red-950 text-foreground overflow-x-hidden">
-        <header className="fixed top-0 left-0 right-0 z-50 h-2 sm:h-3 bg-slate-800/60 backdrop-blur-sm shadow-lg border-b border-purple-700/30">
+        <header className="fixed top-0 left-0 right-0 z-50 h-2 sm:h-3 bg-slate-800/60 backdrop-blur-sm shadow-lg border-b border-purple-700/30" role="banner">
             <div
                 className="h-full bg-gradient-to-r from-accent via-pink-500 to-primary transition-all duration-150 ease-linear"
                 style={{ width: `${pageScrollProgress}%` }}
+                role="progressbar"
+                aria-valuenow={Math.round(pageScrollProgress)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Progresso da leitura da página"
             />
         </header>
+        <div className="fixed top-4 right-4 z-50">
+          <PointsDisplay compact />
+        </div>
 
         <main className="w-full max-w-5xl space-y-12 md:space-y-16 px-4">
             <section id="diagnostics-section" ref={registerSectionRef('diagnostics-section')} className="animate-fade-in text-center pt-4" style={{animationDuration: '0.7s'}}>
@@ -575,6 +592,17 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                         )}
                     </Card>
                 </div>
+
+                {g && g.achievements.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="font-headline text-lg text-accent mb-3">Conquistas Desbloqueadas</h3>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {g.achievements.map((id) => (
+                        <AchievementBadge key={id} id={id} size="sm" />
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="mb-8">
                      <h3 className="font-headline text-xl sm:text-2xl text-red-300 mb-4">Suas Principais Travas Comportamentais:</h3>

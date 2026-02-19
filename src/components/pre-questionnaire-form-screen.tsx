@@ -13,6 +13,8 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { playSound } from '@/lib/audioUtils';
+import { useGamification } from '@/components/gamification';
+import { PointsDisplay } from '@/components/gamification/PointsDisplay';
 
 export const dreamOptions = [
   { id: 'financial_freedom', label: 'Liberdade Financeira', imageUrl: 'https://www.infomoney.com.br/wp-content/uploads/2019/06/casal-de-sucesso.jpg?fit=900%2C647&quality=50&strip=all', imageAlt: "Casal celebrando sucesso financeiro", dataAiHint: "money success", icon: Gem, iconColorClass: "text-emerald-400" },
@@ -61,6 +63,7 @@ interface PreQuestionnaireFormScreenProps {
 
 export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProps> = ({ onSubmitForm }) => {
   const { toast } = useToast();
+  const g = useGamification();
   const [isProcessingSubmit, setIsProcessingSubmit] = useState(false);
 
   const { control, handleSubmit, setValue, watch, formState: { errors }, getValues, trigger } = useForm<PreQuestionnaireFormData>({
@@ -104,6 +107,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
             description: "Estamos preparando seu diagnóstico personalizado...",
             duration: 2000,
           });
+          g?.completePreForm();
           setTimeout(() => {
             onSubmitForm(currentValues);
           }, 1500);
@@ -152,19 +156,24 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-purple-900 via-indigo-950 to-rose-900 text-foreground font-body">
-      <div className="w-full max-w-xl bg-slate-900/70 backdrop-blur-2xl border border-purple-700/50 shadow-2xl shadow-primary/40 rounded-3xl p-6 sm:p-10 space-y-10">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 bg-gradient-to-br from-purple-900 via-indigo-950 to-rose-900 text-foreground font-body relative">
+      {g && (
+        <div className="absolute top-4 right-4 z-20">
+          <PointsDisplay />
+        </div>
+      )}
+      <div className="w-full max-w-xl bg-slate-900/70 backdrop-blur-2xl border border-purple-700/50 shadow-2xl shadow-primary/40 rounded-3xl p-6 sm:p-8 md:p-10 space-y-8 sm:space-y-10">
 
-        <header className="text-center space-y-3 animate-fade-in">
-          <Wand2 className="h-14 w-14 sm:h-16 sm:w-16 text-accent mx-auto animate-float [animation-duration:3s]" />
-          <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl font-extrabold goddess-text-gradient">Sua Jornada Começa Agora</h1>
-          <p className="text-muted-foreground text-lg sm:text-xl">Conte-nos um pouco sobre você e seus sonhos.</p>
+        <header className="text-center space-y-4 animate-fade-in">
+          <Wand2 className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 text-accent mx-auto animate-float [animation-duration:3s]" aria-hidden />
+          <h1 className="font-headline text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold goddess-text-gradient leading-tight">Sua Jornada Começa Agora</h1>
+          <p className="text-muted-foreground text-base sm:text-lg md:text-xl leading-relaxed">Conte-nos um pouco sobre você e seus sonhos.</p>
         </header>
 
-        <form className="space-y-8">
-          <div className="space-y-2 animate-fade-in">
-            <Label htmlFor="fullName" className="text-base font-semibold text-foreground/90 flex items-center">
-              <User className="h-5 w-5 mr-2 text-primary/80" /> Seu Nome Completo
+        <form className="space-y-6 sm:space-y-8">
+          <div className="space-y-2.5 animate-fade-in">
+            <Label htmlFor="fullName" className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+              <User className="h-5 w-5 text-primary/80 shrink-0" aria-hidden /> Seu Nome Completo
             </Label>
             <Controller
               name="fullName"
@@ -188,8 +197,8 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
 
           {isNameComplete && (
             <div className="space-y-3 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-               <Label className="text-base font-semibold text-foreground/90 flex items-center">
-                 <CalendarDays className="h-5 w-5 mr-2 text-primary/80" /> Quando seus sonhos se realizarão?
+               <Label className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                 <CalendarDays className="h-5 w-5 text-primary/80 shrink-0" aria-hidden /> Quando seus sonhos se realizarão?
               </Label>
               <Controller
                 name="dreamsAchievementDate"
@@ -202,17 +211,18 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                       trigger("dreamsAchievementDate");
                     }}
                     defaultValue={field.value}
-                    className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+                    className="flex flex-col gap-3"
                   >
                     {dateOptions.map((option) => (
-                      <Label
+                      <label
                         key={option.id}
                         htmlFor={option.id}
                         className={cn(
-                          "flex items-center justify-center space-x-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ease-in-out transform hover:scale-105",
+                          "flex items-center gap-4 min-h-[52px] w-full px-5 py-4 rounded-xl border-2 cursor-pointer transition-colors",
                           field.value === option.id
-                            ? "border-accent bg-accent/25 text-accent-foreground shadow-xl shadow-accent/30" 
-                            : "border-purple-600/70 bg-slate-800/70 hover:border-purple-500 text-foreground/80 hover:bg-purple-700/20",
+                            ? "border-accent shadow-lg"
+                            : "border-purple-600/70 bg-slate-800/70 hover:border-purple-500 text-foreground/90",
+                          field.value === option.id && "bg-[#fcd34d]",
                           isProcessingSubmit ? "opacity-60 cursor-not-allowed" : ""
                         )}
                       >
@@ -220,13 +230,21 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                           value={option.id}
                           id={option.id}
                           className={cn(
-                            "h-5 w-5",
-                            field.value === option.id ? "border-accent text-accent" : "border-purple-500 text-purple-500"
+                            "h-5 w-5 shrink-0",
+                            field.value === option.id ? "border-amber-800 text-amber-800" : "border-purple-500 text-purple-500"
                           )}
                           disabled={isProcessingSubmit}
                         />
-                        <span className="font-semibold text-base">{option.label}</span>
-                      </Label>
+                        <span 
+                          className={cn(
+                            "font-semibold text-base sm:text-lg flex-1",
+                            field.value === option.id ? "text-[#1a1a1a]" : ""
+                          )}
+                          style={{ textAlign: 'left', lineHeight: 1.6 }}
+                        >
+                          {option.label}
+                        </span>
+                      </label>
                     ))}
                   </RadioGroup>
                 )}
@@ -238,7 +256,7 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
 
           {isNameComplete && isDateSelected && (
             <div className="space-y-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <Label className="text-base font-semibold text-foreground/90 block text-center">Selecione 3 sonhos que mais pulsam em seu coração:</Label>
+              <Label className="text-base sm:text-lg font-semibold text-foreground block text-center leading-relaxed">Selecione 3 sonhos que mais pulsam em seu coração:</Label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                 {dreamOptions.map((dream) => {
                   const isSelected = watchedSelectedDreams.some(d => d.id === dream.id);
@@ -248,8 +266,8 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                       type="button"
                       onClick={() => handleDreamSelection(dream)}
                       disabled={isProcessingSubmit || (!isSelected && watchedSelectedDreams.length >= 3)}
-                      className={cn(
-                        "relative flex flex-col items-center justify-center p-1 rounded-xl border-2 transition-all duration-200 ease-in-out aspect-square focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-accent overflow-hidden group",
+                  className={cn(
+                    "relative flex flex-col items-center justify-center p-2 sm:p-1 rounded-xl border-2 transition-all duration-200 ease-in-out aspect-square focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-accent overflow-hidden group",
                         isSelected
                           ? 'border-accent bg-accent/20 shadow-xl shadow-accent/40 scale-105 animate-pulse-once hover:shadow-accent/50'
                           : 'border-purple-600/60 bg-slate-800/50 hover:border-accent hover:bg-purple-700/30 hover:shadow-xl hover:shadow-accent/50',
@@ -270,8 +288,8 @@ export const PreQuestionnaireFormScreen: React.FC<PreQuestionnaireFormScreenProp
                           )}
                       />
                       {isSelected && <CheckCircle2 className="absolute top-1.5 right-1.5 h-5 w-5 text-green-400 bg-slate-900/50 rounded-full animate-pop-in z-20" />}
-                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-1.5 text-center z-20">
-                          <span className={cn("text-xs sm:text-sm font-semibold leading-tight", isSelected ? "text-accent" : "text-foreground/80")}>{dream.label}</span>
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-2 py-2 text-center z-20">
+                          <span className={cn("text-xs sm:text-sm font-semibold leading-tight", isSelected ? "text-accent" : "text-foreground/90")}>{dream.label}</span>
                       </div>
                     </button>
                   );
