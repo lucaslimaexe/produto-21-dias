@@ -1,22 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
-import { Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useGamification } from '@/components/gamification';
-import { PointsDisplay } from '@/components/gamification/PointsDisplay';
+import React, { useState, useEffect } from "react";
+import { Button } from "./ui/button";
+import { Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useGamification } from "@/components/gamification";
 
 interface WelcomeScreenProps {
   onStart: () => void;
 }
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
-  const [displayedText, setDisplayedText] = useState('');
+  const [displayedText, setDisplayedText] = useState("");
   const [energyProgress, setEnergyProgress] = useState(0);
   const g = useGamification();
-  const fullText = 'O DIAGNÓSTICO DA DEUSA: Você está no Comando ou sendo Controlada?';
+  const fullText =
+    "por que virginia, luiza sonza, anitta, iza... parecem ter um ímã para dinheiro?";
 
   useEffect(() => {
     let index = 0;
@@ -27,7 +26,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       } else {
         clearInterval(timer);
       }
-    }, 50);
+    }, 45);
     return () => clearInterval(timer);
   }, [fullText]);
 
@@ -48,85 +47,92 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
   const isEnergyReady = energyProgress >= 100;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 md:px-8 relative overflow-hidden">
-      {g && (
-        <div className="absolute top-4 right-4 z-20">
-          <PointsDisplay />
-        </div>
-      )}
-
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-purple-700/10 to-pink-500/20 animate-pulse" aria-hidden />
-      <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-accent/60 rounded-full float opacity-60" style={{ animationDelay: '1s' }} aria-hidden />
-      <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-primary/80 rounded-full float opacity-80" style={{ animationDelay: '1s' }} aria-hidden />
-      <div className="absolute bottom-1/3 left-1/3 w-3 h-3 bg-pink-400/40 rounded-full float opacity-40" style={{ animationDelay: '2s' }} aria-hidden />
-
-      <div className={cn('w-full text-center max-w-4xl relative z-10', 'lg:px-0 md:px-8 sm:px-6 px-4')}>
-        <h1
-          className={cn(
-            'font-headline font-bold mb-6 sm:mb-8 goddess-text-gradient leading-[1.15] sm:leading-tight break-words',
-            'text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl',
-            'tracking-tight'
-          )}
-        >
-          <span className="typing-effect">{displayedText}</span>
+    <div className="min-h-screen flex flex-col bg-[#0a0a0a]">
+      {/* Top bar - estilo Instagram */}
+      <header className="sticky top-0 z-50 flex items-center justify-center h-14 px-4 border-b border-white/10 bg-[#0a0a0a]/95 backdrop-blur-md">
+        <h1 className="font-headline font-semibold text-base text-white tracking-tight">
+          diagnóstico.da.deusa
         </h1>
+      </header>
 
-        <div className="space-y-5 mb-8 sm:mb-10 animate-fade-in" style={{ animationDelay: '3s', animationFillMode: 'forwards', opacity: 0 }}>
-          <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed sm:leading-loose break-words">
-            Responda 5 perguntas e descubra em 60 segundos qual é o seu{' '}
-            <span className="text-accent font-semibold">Nível de Poder de Manifestação</span> (e o que está te sabotando).
-          </p>
-          <p className="text-base sm:text-lg md:text-xl text-destructive font-semibold leading-relaxed">
-            Você tem coragem de encarar a verdade?
-          </p>
+      {/* Conteúdo - coluna central como IG */}
+      <main className="flex-1 flex flex-col max-w-[470px] mx-auto w-full px-4 pt-8 pb-28">
+        {/* Barra de progresso tipo Story (no topo do conteúdo) */}
+        <div className="flex gap-1 mb-8">
+          <div className="flex-1 h-0.5 rounded-full bg-white/20 overflow-hidden">
+            <div
+              className="h-full bg-white rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${energyProgress}%` }}
+            />
+          </div>
+          <div className="flex-1 h-0.5 rounded-full bg-white/20" />
+          <div className="flex-1 h-0.5 rounded-full bg-white/20" />
         </div>
 
-        <div
-          className="mb-8 max-w-md mx-auto animate-fade-in"
-          style={{ animationDelay: '3.2s', animationFillMode: 'forwards', opacity: 0 }}
-        >
-          <p className="text-sm text-muted-foreground mb-2">
-            {isEnergyReady ? 'Energia pronta!' : 'Preparando sua energia...'}
+        {/* Copy principal - estilo caption */}
+        <div className="flex-1 flex flex-col justify-center">
+          <p
+            className={cn(
+              "text-xl sm:text-2xl md:text-3xl leading-relaxed mb-6",
+              "text-white font-medium"
+            )}
+          >
+            você já se perguntou
           </p>
-          <Progress
-            value={energyProgress}
-            className="h-2 bg-primary/20 [&>div]:bg-gradient-to-r [&>div]:from-primary [&>div]:to-accent [&>div]:transition-all [&>div]:duration-300"
-            aria-valuenow={energyProgress}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            role="progressbar"
-            aria-label="Preparação de energia"
-          />
+          <h1
+            className={cn(
+              "font-headline font-bold text-2xl sm:text-3xl md:text-4xl leading-[1.25] mb-8",
+              "text-white"
+            )}
+          >
+            <span className="text-white">{displayedText}</span>
+            <span className="animate-pulse">|</span>
+          </h1>
+          <p
+            className="text-gray-400 text-base sm:text-lg leading-relaxed mb-2 animate-fade-in"
+            style={{ animationDelay: "2s", animationFillMode: "forwards", opacity: 0 }}
+          >
+            enquanto você luta, elas atraem.
+          </p>
+          <p
+            className="text-gray-400 text-base sm:text-lg leading-relaxed mb-8 animate-fade-in"
+            style={{ animationDelay: "2.2s", animationFillMode: "forwards", opacity: 0 }}
+          >
+            amor, dinheiro, oportunidades.
+          </p>
+          <p
+            className="text-gray-500 text-sm animate-fade-in"
+            style={{ animationDelay: "2.4s", animationFillMode: "forwards", opacity: 0 }}
+          >
+            {isEnergyReady
+              ? "pronta para descobrir?"
+              : "calibrando seu campo..."}
+          </p>
         </div>
+      </main>
 
-        <div className="animate-fade-in text-center" style={{ animationDelay: '4s', animationFillMode: 'forwards', opacity: 0 }}>
+      {/* CTA fixo - mesma barra da inspiração */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/98 to-transparent pt-12">
+        <div className="max-w-[470px] mx-auto">
           <Button
             onClick={handleStartClick}
             disabled={!isEnergyReady}
-            aria-label={isEnergyReady ? 'Começar o diagnóstico' : 'Aguarde a energia carregar'}
+            aria-label={
+              isEnergyReady
+                ? "Revelar meus bloqueios ocultos"
+                : "Aguarde o campo energético calibrar"
+            }
             className={cn(
-              'goddess-gradient text-primary-foreground font-bold rounded-full pulse-goddess hover:scale-105 transition-all duration-300 shadow-2xl',
-              'h-auto min-h-[52px] sm:min-h-[60px] md:min-h-[68px] min-h-touch',
-              'text-base sm:text-lg md:text-xl leading-snug',
-              'py-4 sm:py-5 md:py-6',
-              'px-6 sm:px-8 md:px-12',
-              'gap-3 sm:gap-4',
-              'flex items-center justify-center mx-auto whitespace-normal text-center',
-              !isEnergyReady && 'opacity-70 cursor-not-allowed'
+              "w-full goddess-gradient text-white font-semibold rounded-xl",
+              "h-12 text-base",
+              "flex items-center justify-center gap-2 transition-opacity",
+              !isEnergyReady && "opacity-60 cursor-not-allowed"
             )}
           >
-            <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" aria-hidden />
-            <div className="flex flex-col items-center gap-0.5">
-              <span>COMEÇAR O DIAGNÓSTICO</span>
-              <span className="font-extrabold tracking-wide">AGORA!</span>
-            </div>
-            <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" aria-hidden />
+            <Sparkles className="w-5 h-5" strokeWidth={2} />
+            <span>revelar meus bloqueios ocultos</span>
           </Button>
         </div>
-
-        <div className="absolute -top-10 -left-10 text-6xl opacity-20 glow" aria-hidden>✨</div>
-        <div className="absolute -top-5 -right-10 text-4xl opacity-30 glow" style={{ animationDelay: '1s' }} aria-hidden>🌟</div>
-        <div className="absolute -bottom-10 left-5 text-5xl opacity-25 glow" style={{ animationDelay: '2s' }} aria-hidden>💫</div>
       </div>
     </div>
   );

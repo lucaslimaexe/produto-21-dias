@@ -11,8 +11,14 @@ const ResultsScreen = dynamic(
   () => import('@/components/results-screen').then((m) => ({ default: m.ResultsScreen })),
   {
     loading: () => (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-black to-red-950">
-        <Loader2 className="h-16 w-16 text-yellow-400 animate-spin" aria-hidden />
+      <div className="min-h-screen flex flex-col bg-[#0a0a0a]">
+        <header className="flex items-center justify-center h-14 border-b border-white/10">
+          <span className="font-headline font-semibold text-base text-white tracking-tight">diagnóstico.da.deusa</span>
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center p-4">
+          <Loader2 className="h-10 w-10 text-white/70 animate-spin mb-4" aria-hidden />
+          <p className="text-sm text-gray-400">carregando...</p>
+        </div>
       </div>
     ),
     ssr: false,
@@ -83,7 +89,17 @@ function ResultsContent() {
 
 export default function ResultsPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-black to-red-950"><Loader2 className="h-16 w-16 text-yellow-400 animate-spin" /></div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col bg-[#0a0a0a]">
+        <header className="flex items-center justify-center h-14 border-b border-white/10">
+          <span className="font-headline font-semibold text-base text-white tracking-tight">diagnóstico.da.deusa</span>
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center p-4">
+          <Loader2 className="h-10 w-10 text-white/70 animate-spin mb-4" />
+          <p className="text-sm text-gray-400">carregando...</p>
+        </div>
+      </div>
+    }>
       <ResultsContent />
     </Suspense>
   );

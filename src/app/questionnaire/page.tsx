@@ -165,7 +165,17 @@ function QuestionnaireContent() {
 
 export default function QuestionnairePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-950 to-rose-900"><Loader2 className="h-16 w-16 text-accent animate-spin" /></div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col bg-[#0a0a0a]">
+        <header className="flex items-center justify-center h-14 border-b border-white/10">
+          <span className="font-headline font-semibold text-base text-white tracking-tight">diagnóstico.da.deusa</span>
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center p-4">
+          <Loader2 className="h-10 w-10 text-white/70 animate-spin mb-4" />
+          <p className="text-sm text-gray-400">carregando...</p>
+        </div>
+      </div>
+    }>
       <QuestionnaireContent />
     </Suspense>
   );

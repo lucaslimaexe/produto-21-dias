@@ -1,12 +1,8 @@
-
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
-import { Sparkles, MessageCircle, Loader2, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { PointsDisplay } from '@/components/gamification/PointsDisplay';
+import React, { useState, useEffect, useRef } from "react";
+import { MessageCircle, Heart, Share2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface QuestionOption {
   text: string;
@@ -33,62 +29,62 @@ interface QuestionnaireScreenProps {
 export const questions: Question[] = [
   {
     id: 1,
-    question: "{userName}, quando você pensa na vida que deseja, o que você sente com mais força?",
+    question: "{userName}, olha pra sua vida agora. O que você sente de VERDADE?",
     options: [
-      { text: "Uma pontada de esperança, mas logo em seguida a dúvida de que seja possível pra mim.", score: 3 },
-      { text: "Frustração, porque eu já tentei de tudo e nada parece funcionar de verdade.", score: 4 },
-      { text: "Inveja (mesmo que eu não admita) de outras mulheres que parecem ter tudo.", score: 5 },
-      { text: "Cansaço. Estou exausta de lutar e não ver resultados.", score: 5 }
+      { text: "Esperança que morre em 5 minutos e vira dúvida.", score: 3 },
+      { text: "Raiva. Já tentei de TUDO e nada funciona.", score: 4 },
+      { text: "Inveja. Vejo outras mulheres tendo o que eu mereço.", score: 5 },
+      { text: "Exaustão. Cansei de lutar pra nada.", score: 5 },
     ],
-    feedback: "✨ INTERESSANTE... SUA HONESTIDADE É O PRIMEIRO PASSO. ✨"
+    feedback: "SUA DOR É REAL. E ELA TEM UMA CAUSA EXATA.",
   },
   {
     id: 2,
-    question: "{userName}, você se esforça, faz afirmação, visualiza... e no fim do dia, o que acontece?",
+    question: "{userName}, você faz afirmação, visualiza, medita... e o resultado?",
     options: [
-      { text: "A vida continua exatamente a mesma, como se nada tivesse acontecido.", score: 4 },
-      { text: "Eu me sinto bem por alguns minutos, mas depois a realidade bate e eu desanimo.", score: 3 },
-      { text: "Às vezes até piora, como se o universo estivesse rindo da minha cara.", score: 5 },
-      { text: "Eu esqueço de fazer a maior parte do tempo, a rotina me engole.", score: 2 }
+      { text: "Nada muda. Zero. Como se eu nem existisse pro universo.", score: 4 },
+      { text: "Funciona 10 minutos. Depois a realidade me esmaga.", score: 3 },
+      { text: "Piora. Parece que quanto mais eu tento, mais afundo.", score: 5 },
+      { text: "Nem consigo manter a rotina. A vida me engole.", score: 2 },
     ],
-    feedback: "🎯 OK, ESTOU COMEÇANDO A VER UM PADRÃO AQUI. 🎯"
+    feedback: "EXATAMENTE. O PROBLEMA NÃO É VOCÊ. É O MÉTODO.",
   },
   {
     id: 3,
-    question: "{userName}, você já sentiu que existe algo 'bloqueando' seu sucesso, algo que você não consegue ver?",
+    question: "{userName}, você sente que algo INVISÍVEL te bloqueia?",
     options: [
-      { text: "Sim, o tempo todo. Parece uma parede invisível que me impede de avançar.", score: 5 },
-      { text: "Às vezes. Sinto que quando estou quase lá, algo me puxa pra trás.", score: 4 },
-      { text: "Não sei se é um bloqueio, mas sinto que não tenho a mesma 'sorte' que os outros.", score: 3 },
-      { text: "Sim, e desconfio que os métodos que ensinam por aí são incompletos de propósito.", score: 2 }
+      { text: "Sim. Uma parede que eu não consigo quebrar.", score: 5 },
+      { text: "Quando estou quase lá, algo me PUXA DE VOLTA.", score: 4 },
+      { text: "Não sei. Só sei que não tenho a mesma sorte.", score: 3 },
+      { text: "Sim. E desconfio que ninguém ensina o método REAL.", score: 2 },
     ],
-    feedback: "🔥 BINGO! AGORA ESTAMOS CHEGANDO NA RAIZ DO PROBLEMA. 🔥"
+    feedback: "ACHEI. O BLOQUEIO ESTÁ NA SUA IDENTIDADE. NÃO NOS SEUS HÁBITOS.",
   },
   {
     id: 4,
-    question: "Seja honesta, {userName}: No fundo, você se sente 100% merecedora de tudo que sonha?",
+    question: "Responde sem pensar, {userName}: você se acha MERECEDORA?",
     options: [
-      { text: "Honestamente? Não. Uma parte de mim acha que não é pra mim.", score: 5 },
-      { text: "Eu tento acreditar que sim, mas a dúvida sempre aparece.", score: 4 },
-      { text: "Eu me sinto merecedora, mas acho que não sou capaz de conseguir.", score: 3 },
-      { text: "Sim, mas sinto que o mundo é injusto e não me dá o que eu mereço.", score: 2 }
+      { text: "Não. Uma parte de mim sabe que não vai acontecer.", score: 5 },
+      { text: "Tento acreditar. Mas a dúvida SEMPRE vence.", score: 4 },
+      { text: "Mereço sim. Mas não sou capaz.", score: 3 },
+      { text: "Mereço. O mundo que é injusto.", score: 2 },
     ],
-    feedback: "💎 A VERDADE DÓI, MAS LIBERTA. ESTA É A CHAVE. 💎"
+    feedback: "AÍ ESTÁ. ESSA RESPOSTA É O CÓDIGO DO SEU BLOQUEIO.",
   },
   {
     id: 5,
-    question: "{userName}, se existisse um MÉTODO REAL para destravar tudo isso em 21 dias, você teria a CORAGEM de usar?",
+    question: "{userName}, se existir um método de 21 dias que DETONA esse bloqueio... você usa?",
     options: [
-      { text: "Sim, estou desesperada por uma solução que funcione de verdade.", score: 1 },
-      { text: "Talvez... mas tenho medo de me frustrar mais uma vez.", score: 3 },
-      { text: "Não sei, já gastei tanto dinheiro com promessas vazias...", score: 4 },
-      { text: "CORAGEM EU TENHO, SÓ PRECISO SABER SE FUNCIONA MESMO!", score: 2 }
+      { text: "SIM. Estou desesperada por algo REAL.", score: 1 },
+      { text: "Tenho medo de me frustrar de novo...", score: 3 },
+      { text: "Já gastei tanto dinheiro com mentira...", score: 4 },
+      { text: "CORAGEM EU TENHO. ME MOSTRA QUE FUNCIONA.", score: 2 },
     ],
-    feedback: "🔑 SUA DECISÃO FINAL REVELARÁ MUITO... PREPARE-SE! 🔑"
-  }
+    feedback: "SUA RESPOSTA ACABOU DE REVELAR TUDO. PREPARE-SE.",
+  },
 ];
 
-type TransitionState = 'entering' | 'idle' | 'feedback' | 'exiting';
+type TransitionState = "entering" | "idle" | "feedback" | "exiting";
 
 export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   question,
@@ -100,7 +96,7 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   userName,
 }) => {
   const [selectedOptionText, setSelectedOptionText] = useState<string | null>(null);
-  const [transitionState, setTransitionState] = useState<TransitionState>('entering');
+  const [transitionState, setTransitionState] = useState<TransitionState>("entering");
   const [elapsedTime, setElapsedTime] = useState(0);
 
   const enterTimeoutIdRef = useRef<NodeJS.Timeout | null>(null);
@@ -110,153 +106,165 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({
   elapsedTimeRef.current = elapsedTime;
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      setElapsedTime(prevTime => prevTime + 1);
-    }, 1000);
-
+    const intervalId = setInterval(() => setElapsedTime((t) => t + 1), 1000);
     return () => {
       clearInterval(intervalId);
       if (enterTimeoutIdRef.current) clearTimeout(enterTimeoutIdRef.current);
       if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
       if (exitTimeoutIdRef.current) clearTimeout(exitTimeoutIdRef.current);
     };
-  }, []); 
+  }, []);
 
   useEffect(() => {
-    // Clear any pending timeouts from previous question transitions
     if (enterTimeoutIdRef.current) clearTimeout(enterTimeoutIdRef.current);
     if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
     if (exitTimeoutIdRef.current) clearTimeout(exitTimeoutIdRef.current);
 
-    setSelectedOptionText(currentAnswer || null);
-    setTransitionState('entering');
+    setSelectedOptionText(currentAnswer ?? null);
+    setTransitionState("entering");
 
-    enterTimeoutIdRef.current = setTimeout(() => {
-      setTransitionState('idle');
-    }, 400); 
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    enterTimeoutIdRef.current = setTimeout(() => setTransitionState("idle"), 400);
+    // Só reseta ao mudar de pergunta. currentAnswer propositalmente fora: incluir quebraria
+    // a transição (o pai atualiza currentAnswer ao clicar, e o effect resetaria para "entering").
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question.id]);
 
-
   const handleSelectOption = (option: QuestionOption) => {
-    if (transitionState !== 'idle') return; 
+    if (transitionState !== "idle") return;
 
     setSelectedOptionText(option.text);
     onAnswer(option.text);
-    setTransitionState('feedback');
-    
+    setTransitionState("feedback");
+
     if (feedbackTimeoutIdRef.current) clearTimeout(feedbackTimeoutIdRef.current);
+    // 1) feedback: outras somem, selecionada fica destacada
     feedbackTimeoutIdRef.current = setTimeout(() => {
-      setTransitionState('exiting');
-      
+      setTransitionState("exiting");
       if (exitTimeoutIdRef.current) clearTimeout(exitTimeoutIdRef.current);
+      // 2) exiting: selecionada também some, depois avança
       exitTimeoutIdRef.current = setTimeout(() => {
         setSelectedOptionText(null);
         onComplete(elapsedTimeRef.current);
-      }, 400);
-
-    }, 1500);
+      }, 350);
+    }, 500);
   };
-  
-  const showQuestionContent = transitionState === 'idle' || transitionState === 'entering' || (transitionState === 'feedback' && selectedOptionText !== null);
-  const showFeedbackStateVisuals = transitionState === 'feedback'; // For the loader and feedback text
 
-  let animationClass = '';
-  if (transitionState === 'entering') {
-    animationClass = 'animate-slide-in-right';
-  } else if (transitionState === 'exiting') {
-    animationClass = 'animate-slide-out-left';
-  }
+  const isShowingOptions = transitionState !== "exiting" || selectedOptionText;
+  const showSelectedOnly = transitionState === "feedback" || transitionState === "exiting";
+  const hideSelected = transitionState === "exiting";
 
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+  let animationClass = "";
+  if (transitionState === "entering") animationClass = "animate-question-enter";
+  else if (transitionState === "exiting" && !selectedOptionText) animationClass = "animate-question-exit";
+
+  const formatTime = (s: number) =>
+    `${Math.floor(s / 60)
+      .toString()
+      .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   const displayName = userName || "Deusa";
   const currentQuestionText = question.question.replace(/{userName}/g, displayName);
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 relative bg-gradient-to-br from-purple-900 via-indigo-900 to-black overflow-hidden">
-      <div className="absolute top-4 right-4 z-20">
-        <PointsDisplay compact />
+    <div className="min-h-screen w-full flex flex-col bg-black overflow-hidden">
+      {/* Top - progress dots estilo TikTok */}
+      <div className="flex gap-1 px-4 pt-4 pb-2">
+        {questions.map((_, i) => (
+          <div
+            key={i}
+            className={cn(
+              "flex-1 h-0.5 rounded-full transition-all duration-300",
+              i < question.id ? "bg-white" : "bg-white/20"
+            )}
+          />
+        ))}
       </div>
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-24 h-24 md:w-32 md:h-32 bg-purple-500/20 rounded-full animate-pulse"></div>
-        <div className="absolute top-3/4 right-1/4 w-16 h-16 md:w-24 md:h-24 bg-yellow-400/20 rounded-full animate-pulse [animation-delay:1s]"></div>
-      </div>
-      
-      <div className="w-full max-w-2xl bg-black/70 backdrop-blur-md border-2 border-purple-500 shadow-2xl rounded-3xl p-6 sm:p-8 md:p-10">
-        <div className="mb-4">
-          <div className="flex items-center justify-center space-x-2 mb-2">
-            <Clock className="h-5 w-5 text-yellow-300" />
-            <span className="text-yellow-300 font-semibold text-lg tabular-nums">{formatTime(elapsedTime)}</span>
-          </div>
-          <Progress value={progress} className="w-full h-3 bg-purple-700/50 border border-purple-500 [&>div]:bg-gradient-to-r [&>div]:from-yellow-400 [&>div]:to-pink-500" />
-          <p className="text-center text-sm text-yellow-300 mt-2">
-            {displayName}, PERGUNTA {question.id} DE {questions.length}
-          </p>
-        </div>
 
-        <div className={cn("bg-purple-900/30 p-6 rounded-xl border border-purple-700 mb-6 min-h-[300px] flex flex-col justify-center overflow-hidden", animationClass)}>
-          {/* Question Title - Always shown if not in pure feedback mode without selection */}
-          {(transitionState === 'entering' || transitionState === 'idle' || (transitionState === 'feedback' && !showFeedbackStateVisuals) || (transitionState === 'feedback' && selectedOptionText)) && (
-            <h2 className={cn(
-              "font-headline text-xl sm:text-2xl md:text-3xl font-semibold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-400 to-purple-300 leading-tight",
-              showFeedbackStateVisuals && selectedOptionText ? "opacity-70" : "opacity-100" // Dim question text slightly if feedback is also shown
-            )}>
+      {/* Main content - full bleed como vídeo TikTok */}
+      <div className="flex-1 flex min-h-0 relative">
+        {/* Centro - pergunta e opções */}
+        <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 pb-24 overflow-y-auto">
+          <div className={cn("max-w-xl mx-auto w-full", animationClass)}>
+            <p className="text-white/50 text-sm mb-2">
+              pergunta {question.id} de {questions.length}
+            </p>
+            <h2 className="text-white text-xl sm:text-2xl md:text-3xl font-bold leading-tight mb-6">
               {currentQuestionText}
             </h2>
-          )}
 
-          {/* Options Area - Shown when entering, idle, or during feedback if an option is selected */}
-          {(transitionState === 'entering' || transitionState === 'idle' || (transitionState === 'feedback' && selectedOptionText)) && (
-            <div className="space-y-3 sm:space-y-4">
-              {question.options.map((option, index) => {
-                const isSelected = selectedOptionText === option.text;
-                const isDisabledDuringTransition = transitionState !== 'idle' && !isSelected;
+            <div className="space-y-3">
+              {question.options.map((opt, i) => {
+                const isSelected = selectedOptionText === opt.text;
+                const disabled =
+                  (transitionState !== "idle" && !isSelected) ||
+                  transitionState === "exiting";
+
+                const shouldFadeOutOthers = showSelectedOnly && !isSelected;
+                const shouldFadeOutSelected = hideSelected && isSelected;
 
                 return (
-                  <Button
-                    key={index}
-                    onClick={() => handleSelectOption(option)}
-                    disabled={isDisabledDuringTransition || transitionState === 'exiting'}
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleSelectOption(opt)}
+                    disabled={disabled}
                     className={cn(
-                      "w-full text-left justify-start p-4 h-auto min-h-[44px] text-sm sm:text-base leading-normal whitespace-normal transition-all duration-300 ease-in-out rounded-md", // Base classes, touch target ≥44px
-                      
-                      // Default non-selected styles
-                      !isSelected && 'bg-purple-800/50 border border-purple-600 text-purple-200 hover:bg-purple-700/70 hover:border-purple-400 hover:text-white hover:scale-102',
-                      
-                      // Selected styles (takes precedence)
-                      isSelected && 'bg-gradient-to-r from-yellow-500 to-pink-600 text-white border-transparent ring-2 ring-yellow-300 shadow-lg scale-105 hover:from-yellow-400 hover:to-pink-500',
-                      
-                      // Opacity and interactivity during transitions
-                      (transitionState !== 'idle') && (
-                        isSelected 
-                          ? 'opacity-100' // Selected item remains fully opaque
-                          : 'opacity-50 cursor-not-allowed' // Non-selected items fade
-                      )
+                      "w-full text-left px-5 py-4 rounded-2xl text-base sm:text-lg font-medium transition-all duration-300 ease-out",
+                      "border-2",
+                      isSelected
+                        ? "bg-white text-black border-white shadow-lg shadow-white/20 ring-2 ring-white/50 scale-[1.02]"
+                        : "bg-white/5 text-white border-white/20 hover:bg-white/10 hover:border-white/40",
+                      shouldFadeOutOthers && "opacity-0 scale-95 pointer-events-none -translate-y-2",
+                      shouldFadeOutSelected && "opacity-0 scale-95 pointer-events-none",
+                      disabled && !isSelected && "opacity-50 cursor-not-allowed"
                     )}
                   >
-                    <Sparkles className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${isSelected ? 'text-yellow-300' : 'text-purple-400'}`} />
-                    {option.text}
-                  </Button>
+                    {opt.text}
+                  </button>
                 );
               })}
             </div>
-          )}
-
-          {/* Feedback Content - Shown primarily during 'feedback' state, or 'exiting' */}
-          {(transitionState === 'feedback' || transitionState === 'exiting') && (
-            <div className="text-center animate-fade-in flex flex-col items-center justify-center">
-              <MessageCircle className="h-10 w-10 text-yellow-400 mx-auto mb-4 animate-pulse" />
-              <p className="text-yellow-300 font-semibold text-lg sm:text-xl mb-4">{question.feedback}</p>
-              {transitionState === 'feedback' && <Loader2 className="h-8 w-8 text-yellow-400 animate-spin mt-4" />}
-            </div>
-          )}
+          </div>
         </div>
+
+        {/* Coluna direita - ícones TikTok (heart, comment, share) */}
+        <div className="hidden sm:flex flex-col items-center justify-end gap-6 pb-32 pr-3">
+          <button
+            type="button"
+            className="flex flex-col items-center gap-1 text-white/80 hover:text-white transition-colors"
+            aria-label="Curtir"
+          >
+            <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+              <Heart className="w-6 h-6" strokeWidth={1.5} />
+            </div>
+            <span className="text-xs">0</span>
+          </button>
+          <button
+            type="button"
+            className="flex flex-col items-center gap-1 text-white/80 hover:text-white transition-colors"
+            aria-label="Comentar"
+          >
+            <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+              <MessageCircle className="w-6 h-6" strokeWidth={1.5} />
+            </div>
+            <span className="text-xs">0</span>
+          </button>
+          <button
+            type="button"
+            className="flex flex-col items-center gap-1 text-white/80 hover:text-white transition-colors"
+            aria-label="Compartilhar"
+          >
+            <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+              <Share2 className="w-5 h-5" strokeWidth={1.5} />
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Bottom bar - timer + conta */}
+      <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 py-4 bg-gradient-to-t from-black via-black/80 to-transparent">
+        <span className="text-white/60 text-sm tabular-nums">{formatTime(elapsedTime)}</span>
+        <span className="text-white/40 text-sm">@diagnóstico.da.deusa</span>
       </div>
     </div>
   );

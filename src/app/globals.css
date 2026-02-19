@@ -199,18 +199,35 @@ body {
 @layer utilities {
   @keyframes slide-out-left {
     from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(-60%); opacity: 0; } /* Desliza para a esquerda e some */
+    to { transform: translateX(-60%); opacity: 0; }
   }
   .animate-slide-out-left {
     animation: slide-out-left 0.4s ease-in forwards;
   }
 
   @keyframes slide-in-right {
-    from { transform: translateX(60%); opacity: 0; } /* Começa da direita e some */
+    from { transform: translateX(60%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
   }
   .animate-slide-in-right {
     animation: slide-in-right 0.4s ease-out forwards;
+  }
+
+  /* Animações do questionário: dentro da caixa (fade + scale sutil) */
+  @keyframes question-enter {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .animate-question-enter {
+    animation: question-enter 0.4s ease-out forwards;
+  }
+
+  @keyframes question-exit {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.97); }
+  }
+  .animate-question-exit {
+    animation: question-exit 0.4s ease-in forwards;
   }
 
   /* Novas Animações e Efeitos */
@@ -270,6 +287,14 @@ body {
   }
   .animate-subtle-vibration {
     animation: subtle-vibration 0.3s ease-in-out infinite;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
     

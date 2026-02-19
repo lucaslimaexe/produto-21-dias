@@ -1,20 +1,17 @@
-
 "use client";
 
 import { useRouter } from "next/navigation";
-import { WelcomeScreen } from "@/components/welcome-screen";
-import React, { useState } from "react";
+import { RevelacaoCarouselScreen } from "@/components/revelacao-carousel-screen";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
-export default function HomePage() {
+export default function RevelacaoPage() {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
 
-  const handleStart = () => {
+  const handleContinue = () => {
     setIsNavigating(true);
-    // We push to the router. The loading screen will be visible until Next.js
-    // fully transitions to the new page.
-    router.push("/inspiracao");
+    router.push("/pre-questionnaire-form");
   };
 
   if (isNavigating) {
@@ -33,5 +30,5 @@ export default function HomePage() {
     );
   }
 
-  return <WelcomeScreen onStart={handleStart} />;
+  return <RevelacaoCarouselScreen onContinue={handleContinue} />;
 }
